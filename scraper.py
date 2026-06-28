@@ -11,7 +11,7 @@ import stripe
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from fastapi import FastAPI, HTTPException, Security, Header, Request
+from fastapi import FastAPI, HTTPException, Security, Header, Request, Response
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
@@ -345,12 +345,15 @@ h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:
     return HTMLResponse(content=html)
 
 async def verify_api_key(
+    request: Request,
     x_api_key: str = Header(None),
     x_rapidapi_proxy_secret: str = Header(None, alias="X-RapidAPI-Proxy-Secret"),
 ):
     # Allow RapidAPI proxy requests through with their secret
     rapidapi_secret = os.environ.get("RAPIDAPI_PROXY_SECRET", "")
     if rapidapi_secret and x_rapidapi_proxy_secret == rapidapi_secret:
+        request.state.rate_limit = "Unlimited (RapidAPI)"
+        request.state.rate_remaining = "N/A"
         return "rapidapi_user"
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API key")
@@ -384,6 +387,8 @@ async def verify_api_key(
                 status_code=429,
                 detail=f"Rate limit exceeded. {plan.capitalize()} tier limit: {monthly_limit} requests/month"
             )
+        request.state.rate_limit = monthly_limit
+        request.state.rate_remaining = max(0, monthly_limit - current_count)
         return x_api_key
     except HTTPException:
         raise
@@ -496,15 +501,19 @@ async def find_careers_url(page, base_domain: str) -> str:
     return base_domain.rstrip('/') + "/careers"
 
 
-async def scrape(domain: str, api_key: str = Security(verify_api_key)):
+async def scrape(domain: str, request: Request, response: Response, api_key: str = Security(verify_api_key)):
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
     if cached:
+        response.headers["X-RateLimit-Limit"] = str(getattr(request.state, "rate_limit", "N/A"))
+        response.headers["X-RateLimit-Remaining"] = str(getattr(request.state, "rate_remaining", "N/A"))
         return {"source": "cache", "data": json.loads(cached)}
     try:
         raw_text, url, status = await scrape_page(domain)
         extracted = extract_with_openai(raw_text)
         redis_client.setex(cache_key, 604800, json.dumps(extracted))
+        response.headers["X-RateLimit-Limit"] = str(getattr(request.state, "rate_limit", "N/A"))
+        response.headers["X-RateLimit-Remaining"] = str(getattr(request.state, "rate_remaining", "N/A"))
         return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
     except HTTPException:
         raise
