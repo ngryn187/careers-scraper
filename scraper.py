@@ -21,8 +21,6 @@ from playwright.async_api import async_playwright
 
 app = FastAPI(title="Careers Scraper API", version="7.0.0")
 
-# Initialize Postgres connection pool on startup
-init_pool()
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -258,6 +256,8 @@ def init_pool():
             print("Postgres connection pool initialized (min=1, max=10)")
         except Exception as e:
             print(f"Failed to initialize connection pool: {e}")
+
+init_pool()  # Called after function is defined
 
 @contextmanager
 def get_db_connection():
