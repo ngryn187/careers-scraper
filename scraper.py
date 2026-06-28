@@ -6,6 +6,8 @@ import secrets
 import openai
 import psycopg2
 import psycopg2.extras
+import psycopg2.pool
+from contextlib import contextmanager
 import redis as redis_lib
 import stripe
 import smtplib
@@ -18,6 +20,9 @@ import uvicorn
 from playwright.async_api import async_playwright
 
 app = FastAPI(title="Careers Scraper API", version="7.0.0")
+
+# Initialize Postgres connection pool on startup
+init_pool()
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -242,7 +247,31 @@ async function generateKey() {
 class FreeKeyRequest(BaseModel):
     email: str
 
+# Connection pool — initialized once at startup, shared across all requests
+postgre_pool = None
+
+def init_pool():
+    global postgre_pool
+    if DATABASE_URL:
+        try:
+            postgre_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DATABASE_URL)
+            print("Postgres connection pool initialized (min=1, max=10)")
+        except Exception as e:
+            print(f"Failed to initialize connection pool: {e}")
+
+@contextmanager
+def get_db_connection():
+    """Borrow a connection from the pool, return it when done."""
+    if not postgre_pool:
+        raise Exception("Database pool not initialized")
+    conn = postgre_pool.getconn()
+    try:
+        yield conn
+    finally:
+        postgre_pool.putconn(conn)
+
 def get_db():
+    """Legacy: open a single connection (used where pool isn't available)."""
     return psycopg2.connect(DATABASE_URL)
 
 def init_db():
@@ -363,16 +392,15 @@ async def verify_api_key(
             raise HTTPException(status_code=401, detail="Invalid API key")
         return x_api_key
     try:
-        conn = get_db()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT * FROM api_keys WHERE key = %s", (x_api_key,))
-        row = cur.fetchone()
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            cur.execute("SELECT * FROM api_keys WHERE key = %s", (x_api_key,))
+            row = cur.fetchone()
+            cur.close()
         if not row:
-            cur.close(); conn.close()
             raise HTTPException(status_code=401, detail="Invalid API key")
         monthly_limit = row["monthly_limit"]
         plan = row["plan"]
-        cur.close(); conn.close()
 
         # Store rate limit info on request.state for scrape() to use
         import time
