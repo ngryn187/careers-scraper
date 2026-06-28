@@ -527,6 +527,38 @@ async def me(request: Request, api_key: str = Security(verify_api_key)):
 
 
 @app.get("/scrape")
+def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
+    """Detects tech stack via regex on HTML/Scripts. Free and fast."""
+    combined = html_source + " " + " ".join(scripts)
+    tech = set()
+    # Frontend
+    if "react" in combined.lower() or "react-dom" in combined.lower():
+        tech.add("React")
+    if "vue" in combined.lower() or "vue.js" in combined.lower():
+        tech.add("Vue")
+    if "angular" in combined.lower():
+        tech.add("Angular")
+    if "next.js" in combined.lower() or "_next/" in combined.lower():
+        tech.add("Next.js")
+    # Backend/Infra
+    if "aws" in combined.lower() or "amazonaws" in combined.lower():
+        tech.add("AWS")
+    if "cloudflare" in combined.lower():
+        tech.add("Cloudflare")
+    if "vercel" in combined.lower():
+        tech.add("Vercel")
+    if "docker" in combined.lower():
+        tech.add("Docker")
+    # Analytics/Tools
+    if "google-analytics" in combined.lower() or "gtag" in combined.lower():
+        tech.add("Google Analytics")
+    if "sentry" in combined.lower():
+        tech.add("Sentry")
+    if "stripe" in combined.lower():
+        tech.add("Stripe")
+    return list(tech)
+
+
 async def find_careers_url(page, base_domain: str) -> str:
     """Load homepage and follow links containing careers/jobs/team keywords."""
     keywords = ["career", "careers", "jobs", "job", "team", "work", "hiring", "join"]
@@ -561,7 +593,14 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
         return {"source": "cache", "data": json.loads(cached)}
     try:
         raw_text, url, status = await scrape_page(domain)
+        local_tech_stack = detect_tech_stack_locally(raw_text, [])
+        # Early exit: skip OpenAI if page has no job content (saves cost)
+        job_keywords = ["job", "career", "position", "role", "hiring", "opening", "apply", "vacancy"]
+        if len(raw_text) < 500 or not any(kw in raw_text.lower() for kw in job_keywords):
+            print(f"[EARLY EXIT] No job content for {domain}. Skipping OpenAI.")
+            return {"source": "live", "domain": domain, "detected_tech_stack": local_tech_stack, "job_listings": [], "note": "No job content found"}
         extracted = extract_with_openai(raw_text)
+        extracted["detected_tech_stack"] = local_tech_stack
         # Cache ONLY on success — ensure extracted data has meaningful content
         if extracted and extracted.get("company_name"):
             redis_client.setex(cache_key, 604800, json.dumps(extracted))
