@@ -8,6 +8,9 @@ import psycopg2
 import psycopg2.extras
 import redis as redis_lib
 import stripe
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import FastAPI, HTTPException, Security, Header, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -25,6 +28,45 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID", "")
 BASE_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "careers-scraper-production.up.railway.app")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
+
+# SMTP Email Config
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+FROM_EMAIL = os.environ.get("FROM_EMAIL", "ngrynai@gmail.com")
+
+
+def send_api_key_email(user_email: str, api_key: str, tier: str = "Free"):
+    """Send API key to user via email after signup or Stripe payment."""
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        print(f"SMTP not configured, skipping email to {user_email}")
+        return
+    try:
+        html_body = f"""
+        <html><body style="font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:30px">
+        <h2 style="color:#58a6ff">Your StackSight API Key ({tier} Tier)</h2>
+        <p>Thanks for signing up! Here is your API key:</p>
+        <pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">{api_key}</pre>
+        <h3>Quick Start</h3>
+        <pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
+     -H "x-api-key: {api_key}"</pre>
+        <p>Read the <a href="https://careers-scraper-production.up.railway.app/docs" style="color:#58a6ff">full API docs</a>.</p>
+        <p>Thank you for your business!</p>
+        </body></html>
+        """
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"Your StackSight API Key ({tier} Tier)"
+        msg['From'] = FROM_EMAIL
+        msg['To'] = user_email
+        msg.attach(MIMEText(html_body, 'html'))
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.sendmail(FROM_EMAIL, user_email, msg.as_string())
+        print(f"API key email sent to {user_email}")
+    except Exception as e:
+        print(f"Failed to send email to {user_email}: {e}")
 
 EXTRACTION_PROMPT = (
     "You are a B2B data extraction engine. Given raw text from a company careers page, "
@@ -249,6 +291,7 @@ async def generate_free_key(body: FreeKeyRequest):
             return {"api_key": row["key"], "plan": row["plan"], "existing": True}
         new_key = "sk_free_" + secrets.token_urlsafe(32)
         cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 50))
+        send_api_key_email(email, new_key, "Free")
         conn.commit()
         cur.close(); conn.close()
         return {"api_key": new_key, "plan": "free", "monthly_limit": 50}
@@ -357,6 +400,7 @@ async def stripe_webhook(request: Request):
                 else:
                     new_key = "sk_live_" + secrets.token_urlsafe(32)
                     cur.execute("INSERT INTO api_keys (key, email, stripe_customer_id, plan, monthly_limit) VALUES (%s,%s,%s,%s,%s)", (new_key, email, customer_id, "pro", 2500))
+                    send_api_key_email(email, new_key, "Pro")
                 conn.commit()
                 cur.close(); conn.close()
             except Exception as e:
