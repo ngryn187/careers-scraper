@@ -9,31 +9,113 @@ import psycopg2.extras
 import redis as redis_lib
 import stripe
 from fastapi import FastAPI, HTTPException, Security, Header, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import BaseModel
 import uvicorn
 from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper", version="4.0.0")
+app = FastAPI(title="Careers Scraper API", version="5.0.0")
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
-# Redis setup
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 
-# Stripe setup
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID", "")
+BASE_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "careers-scraper-production.up.railway.app")
 
-# Database
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 EXTRACTION_PROMPT = (
     "You are a B2B data extraction engine. Given raw text from a company careers page, "
     "extract structured data. Return ONLY valid JSON. If a field cannot be determined, "
-    "return an empty array or false. Look for: job titles, technology keywords "
-    "(React, AWS, Kubernetes, etc.), and company name. Schema: "
+    "return an empty array or false. Schema: "
     "{company_name: string, is_hiring: boolean, engineering_roles: [string], "
     "sales_roles: [string], detected_tech_stack: [string]}"
 )
+
+LANDING_HTML = """<!DOCTYPE html>
+<html>
+<head>
+<title>HireSignal API - B2B Hiring Intent Data</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:700px;margin:60px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0}
+h1{font-size:2rem;margin-bottom:8px}
+p{color:#999;margin-bottom:32px}
+.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:28px;margin-bottom:20px}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:12px}
+.free-badge{background:#1a3a1a;color:#4caf50;border:1px solid #4caf50}
+.pro-badge{background:#1a1a3a;color:#7c83fc;border:1px solid #7c83fc}
+h2{margin:0 0 8px;font-size:1.2rem}
+.sub{color:#777;font-size:14px;margin-bottom:20px}
+input{width:100%;padding:10px 14px;background:#111;border:1px solid #444;border-radius:8px;color:#fff;font-size:15px;box-sizing:border-box;margin-bottom:12px}
+button{padding:10px 20px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%}
+.btn-free{background:#4caf50;color:#000}
+.btn-pro{background:#7c83fc;color:#000}
+.result{margin-top:16px;padding:14px;background:#111;border-radius:8px;border:1px solid #333;font-family:monospace;font-size:13px;word-break:break-all;display:none}
+ul{color:#777;font-size:14px;padding-left:20px;margin:0 0 20px}
+li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<h1>HireSignal API</h1>
+<p>Real-time B2B hiring intent & tech stack data. Scrape any company's careers page and get structured JSON in seconds.</p>
+
+<div class="card">
+  <span class="badge free-badge">FREE</span>
+  <h2>Free Tier</h2>
+  <p class="sub">50 requests/month — no credit card required</p>
+  <ul>
+    <li>Hiring signals (is_hiring, role counts)</li>
+    <li>Tech stack detection</li>
+    <li>Engineering & sales role extraction</li>
+  </ul>
+  <input type="email" id="email" placeholder="your@email.com" />
+  <button class="btn-free" onclick="getFreeKey()">Get Free API Key</button>
+  <div class="result" id="free-result"></div>
+</div>
+
+<div class="card">
+  <span class="badge pro-badge">PRO</span>
+  <h2>Pro Tier — $49/month</h2>
+  <p class="sub">2,500 requests/month + priority support</p>
+  <ul>
+    <li>Everything in Free</li>
+    <li>Redis-cached results (instant repeat queries)</li>
+    <li>Higher rate limits</li>
+    <li>SLA support</li>
+  </ul>
+  <button class="btn-pro" onclick="goProCheckout()">Upgrade to Pro ($49/mo)</button>
+</div>
+
+<script>
+async function getFreeKey() {
+  const email = document.getElementById('email').value;
+  if (!email) { alert('Enter your email'); return; }
+  const res = await fetch('/generate-free-key', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const data = await res.json();
+  const el = document.getElementById('free-result');
+  el.style.display = 'block';
+  if (data.api_key) {
+    el.innerHTML = '<b>Your API Key:</b><br>' + data.api_key + '<br><br><span style=\"color:#777\">Use as header: <code>x-api-key: ' + data.api_key + '</code></span>';
+  } else {
+    el.innerHTML = 'Error: ' + (data.detail || JSON.stringify(data));
+  }
+}
+async function goProCheckout() {
+  const res = await fetch('/create-checkout-session', {method:'POST'});
+  const data = await res.json();
+  if (data.url) { window.location.href = data.url; }
+  else { alert('Error: ' + (data.detail || JSON.stringify(data))); }
+}
+</script>
+</body>
+</html>"""
+
+
+class FreeKeyRequest(BaseModel):
+    email: str
 
 
 def get_db():
@@ -60,7 +142,6 @@ def init_db():
         conn.commit()
         cur.close()
         conn.close()
-        print("DB initialized")
     except Exception as e:
         print(f"DB init error: {e}")
 
@@ -70,17 +151,102 @@ async def startup():
     init_db()
 
 
+@app.get("/", response_class=HTMLResponse)
+async def landing():
+    return HTMLResponse(content=LANDING_HTML)
+
+
+@app.post("/generate-free-key")
+async def generate_free_key(body: FreeKeyRequest):
+    if not DATABASE_URL:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    email = body.email.lower().strip()
+    try:
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        # Check existing key for this email
+        cur.execute("SELECT key, plan FROM api_keys WHERE email = %s LIMIT 1", (email,))
+        row = cur.fetchone()
+        if row:
+            cur.close(); conn.close()
+            return {"api_key": row["key"], "plan": row["plan"], "existing": True}
+        # Create new free key
+        new_key = "sk_free_" + secrets.token_urlsafe(32)
+        cur.execute(
+            "INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)",
+            (new_key, email, "free", 50)
+        )
+        conn.commit()
+        cur.close(); conn.close()
+        print(f"FREE KEY: {email} -> {new_key}")
+        return {"api_key": new_key, "plan": "free", "monthly_limit": 50}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/create-checkout-session")
+async def create_checkout_session():
+    if not stripe.api_key:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    if not STRIPE_PRICE_ID:
+        raise HTTPException(status_code=500, detail="STRIPE_PRICE_ID not set")
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": STRIPE_PRICE_ID, "quantity": 1}],
+            mode="subscription",
+            success_url=f"https://{BASE_URL}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"https://{BASE_URL}/",
+        )
+        return {"url": session.url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/success", response_class=HTMLResponse)
+async def success(session_id: str = ""):
+    api_key = None
+    plan = "pro"
+    email = ""
+    if session_id and stripe.api_key:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            email = session.get("customer_details", {}).get("email", "")
+            if email and DATABASE_URL:
+                conn = get_db()
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur.execute("SELECT key, plan FROM api_keys WHERE email = %s LIMIT 1", (email.lower(),))
+                row = cur.fetchone()
+                if row:
+                    api_key = row["key"]
+                    plan = row["plan"]
+                cur.close(); conn.close()
+        except Exception as e:
+            print(f"Success page error: {e}")
+    html = f"""<!DOCTYPE html>
+<html>
+<head><title>Welcome to HireSignal Pro</title>
+<style>body{{font-family:system-ui,sans-serif;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0;text-align:center}}
+h1{{color:#7c83fc}}code{{background:#1a1a1a;padding:12px 20px;border-radius:8px;display:block;margin:20px 0;font-size:14px;word-break:break-all;border:1px solid #333}}</style>
+</head>
+<body>
+<h1>&#127881; You're on Pro!</h1>
+<p>Payment confirmed. Your API key is ready.</p>
+{"<code>" + api_key + "</code>" if api_key else "<p>Your key will appear here once payment is confirmed. Check back in 30 seconds.</p>"}
+<p style="color:#777;font-size:14px">Use header: <code style='display:inline;padding:2px 6px'>x-api-key: {"your-key" if not api_key else api_key}</code></p>
+<p><a href="/" style="color:#7c83fc">Back to home</a></p>
+</body></html>"""
+    return HTMLResponse(content=html)
+
+
 async def verify_api_key(x_api_key: str = Header(None)):
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API key")
-
     if not DATABASE_URL:
-        # Dev fallback: static env var
         valid_key = os.environ.get("VALID_API_KEY", "")
         if valid_key and x_api_key != valid_key:
             raise HTTPException(status_code=401, detail="Invalid API key")
         return x_api_key
-
     try:
         conn = get_db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -99,7 +265,6 @@ async def verify_api_key(x_api_key: str = Header(None)):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Auth error: {e}")
-
     return x_api_key
 
 
@@ -152,11 +317,7 @@ async def scrape(domain: str, api_key: str = Security(verify_api_key)):
     raw_text, url, status = await scrape_page(domain)
     extracted = extract_with_openai(raw_text)
     redis_client.setex(cache_key, 604800, json.dumps(extracted))
-    return {
-        "source": "live",
-        "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)},
-        "data": extracted,
-    }
+    return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
 
 
 @app.get("/scrape/raw")
@@ -170,7 +331,6 @@ async def scrape_raw(domain: str):
 async def stripe_webhook(request: Request):
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
-
     if STRIPE_WEBHOOK_SECRET:
         try:
             event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
@@ -178,57 +338,41 @@ async def stripe_webhook(request: Request):
             raise HTTPException(status_code=400, detail="Invalid signature")
     else:
         event = json.loads(payload)
-
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        email = session.get("customer_details", {}).get("email", "unknown@unknown.com")
+        email = session.get("customer_details", {}).get("email", "").lower()
         customer_id = session.get("customer", "")
-        new_key = "sk_live_" + secrets.token_urlsafe(32)
-
+        if not email:
+            return {"status": "ok"}
         if DATABASE_URL:
             try:
                 conn = get_db()
-                cur = conn.cursor()
-                cur.execute(
-                    "INSERT INTO api_keys (key, email, stripe_customer_id, plan, monthly_limit) "
-                    "VALUES (%s, %s, %s, %s, %s)",
-                    (new_key, email, customer_id, "pro", 2500),
-                )
+                cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                cur.execute("SELECT key FROM api_keys WHERE email = %s LIMIT 1", (email,))
+                row = cur.fetchone()
+                if row:
+                    cur.execute("UPDATE api_keys SET plan='pro', monthly_limit=2500, stripe_customer_id=%s WHERE email=%s", (customer_id, email))
+                    print(f"UPGRADED: {email} -> pro")
+                else:
+                    new_key = "sk_live_" + secrets.token_urlsafe(32)
+                    cur.execute("INSERT INTO api_keys (key, email, stripe_customer_id, plan, monthly_limit) VALUES (%s,%s,%s,%s,%s)", (new_key, email, customer_id, "pro", 2500))
+                    print(f"NEW PRO KEY: {email} -> {new_key}")
                 conn.commit()
                 cur.close(); conn.close()
-                print(f"NEW KEY: {email} -> {new_key}")
             except Exception as e:
-                print(f"Key creation error: {e}")
-                raise HTTPException(status_code=500, detail=str(e))
-        else:
-            print(f"NEW KEY (no DB): {email} -> {new_key}")
-
+                print(f"Webhook error: {e}")
     return {"status": "ok"}
 
 
 @app.get("/health")
 async def health():
-    try:
-        redis_client.ping()
-        redis_ok = True
-    except Exception:
-        redis_ok = False
-
+    try: redis_client.ping(); redis_ok = True
+    except: redis_ok = False
     db_ok = False
     if DATABASE_URL:
-        try:
-            conn = get_db()
-            conn.close()
-            db_ok = True
-        except Exception:
-            pass
-
-    return {
-        "status": "ok",
-        "openai_key_set": bool(openai.api_key),
-        "redis_connected": redis_ok,
-        "db_connected": db_ok,
-    }
+        try: conn = get_db(); conn.close(); db_ok = True
+        except: pass
+    return {"status": "ok", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 
 if __name__ == "__main__":
