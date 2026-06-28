@@ -3,19 +3,35 @@ import json
 import os
 
 import openai
-from fastapi import FastAPI, HTTPException
-from playwright.async_api import async_playwright
+import redis as redis_lib
+from fastapi import FastAPI, HTTPException, Security, Header
 import uvicorn
+from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper", version="2.0.0")
+app = FastAPI(title="Careers Scraper", version="3.0.0")
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
+# Redis setup
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
+
 EXTRACTION_PROMPT = (
-    "You are a data extraction assistant. Given raw text from a careers/jobs page, "
-    "return a JSON object with: company_is_hiring (bool), total_jobs_found (int or null), "
-    "departments (list), locations (list), sample_job_titles (up to 10), "
-    "hiring_signals (list). Use null for unknown fields."
+    "You are a B2B data extraction engine. Given raw text from a company careers page, "
+    "extract structured data. Return ONLY valid JSON. If a field cannot be determined, "
+    "return an empty array or false. Look for: job titles, technology keywords "
+    "(React, AWS, Kubernetes, etc.), and company name. Schema: "
+    "{company_name: string, is_hiring: boolean, engineering_roles: [string], "
+    "sales_roles: [string], detected_tech_stack: [string]}"
 )
+
+# API Key Auth
+async def verify_api_key(x_api_key: str = Header(None)):
+    valid_key = os.environ.get("VALID_API_KEY", "")
+    if not valid_key:
+        return  # if no key configured, allow all (dev mode)
+    if not x_api_key or x_api_key != valid_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    return x_api_key
 
 
 async def scrape_page(domain: str):
@@ -59,10 +75,26 @@ def extract_with_openai(raw_text: str):
 
 
 @app.get("/scrape")
-async def scrape(domain: str):
+async def scrape(domain: str, api_key: str = Security(verify_api_key)):
+    cache_key = f"domain:{domain}"
+
+    # Check cache first
+    cached = redis_client.get(cache_key)
+    if cached:
+        return {"source": "cache", "data": json.loads(cached)}
+
+    # Live scrape
     raw_text, url, status = await scrape_page(domain)
     extracted = extract_with_openai(raw_text)
-    return {"scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "extracted_data": extracted}
+
+    # Save to cache (7 days TTL)
+    redis_client.setex(cache_key, 604800, json.dumps(extracted))
+
+    return {
+        "source": "live",
+        "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)},
+        "data": extracted
+    }
 
 
 @app.get("/scrape/raw")
@@ -74,7 +106,16 @@ async def scrape_raw(domain: str):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "openai_key_set": bool(openai.api_key)}
+    try:
+        redis_client.ping()
+        redis_ok = True
+    except Exception:
+        redis_ok = False
+    return {
+        "status": "ok",
+        "openai_key_set": bool(openai.api_key),
+        "redis_connected": redis_ok
+    }
 
 
 if __name__ == "__main__":
