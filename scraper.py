@@ -433,7 +433,7 @@ async def stripe_webhook(request: Request):
         except stripe.error.SignatureVerificationError:
             raise HTTPException(status_code=400, detail="Invalid signature")
     else:
-        event = json.loads(payload)
+        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured — rejecting request")
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         email = session.get("customer_details", {}).get("email", "").lower()
