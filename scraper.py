@@ -511,14 +511,19 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
     try:
         raw_text, url, status = await scrape_page(domain)
         extracted = extract_with_openai(raw_text)
-        redis_client.setex(cache_key, 604800, json.dumps(extracted))
+        # Cache ONLY on success — ensure extracted data has meaningful content
+        if extracted and extracted.get("company_name"):
+            redis_client.setex(cache_key, 604800, json.dumps(extracted))
+        else:
+            print(f"[WARN] Extracted data empty or missing company_name for {domain}. Not caching.")
         response.headers["X-RateLimit-Limit"] = str(getattr(request.state, "rate_limit", "N/A"))
         response.headers["X-RateLimit-Remaining"] = str(getattr(request.state, "rate_remaining", "N/A"))
         return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Scrape error: {str(e)}")
+        print(f"[ERROR] Failed to scrape {domain}: {str(e)}")
+        return {"source": "error", "domain": domain, "error": f"Scrape failed: {str(e)}"}
 
 @app.get("/scrape/raw")
 async def scrape_raw(domain: str):
