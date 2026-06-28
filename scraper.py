@@ -14,7 +14,7 @@ from pydantic import BaseModel
 import uvicorn
 from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper API", version="5.0.0")
+app = FastAPI(title="Careers Scraper API", version="6.0.0")
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -54,41 +54,34 @@ button{padding:10px 20px;border:none;border-radius:8px;font-size:15px;font-weigh
 .btn-free{background:#4caf50;color:#000}
 .btn-pro{background:#7c83fc;color:#000}
 .result{margin-top:16px;padding:14px;background:#111;border-radius:8px;border:1px solid #333;font-family:monospace;font-size:13px;word-break:break-all;display:none}
-ul{color:#777;font-size:14px;padding-left:20px;margin:0 0 20px}
-li{margin-bottom:4px}
 </style>
 </head>
 <body>
 <h1>HireSignal API</h1>
-<p>Real-time B2B hiring intent & tech stack data. Scrape any company's careers page and get structured JSON in seconds.</p>
-
+<p>Real-time B2B hiring intent data.</p>
 <div class="card">
   <span class="badge free-badge">FREE</span>
   <h2>Free Tier</h2>
-  <p class="sub">50 requests/month — no credit card required</p>
-  <ul>
-    <li>Hiring signals (is_hiring, role counts)</li>
-    <li>Tech stack detection</li>
-    <li>Engineering & sales role extraction</li>
-  </ul>
+  <p class="sub">50 requests/month - no credit card required</p>
   <input type="email" id="email" placeholder="your@email.com" />
   <button class="btn-free" onclick="getFreeKey()">Get Free API Key</button>
   <div class="result" id="free-result"></div>
 </div>
-
 <div class="card">
   <span class="badge pro-badge">PRO</span>
-  <h2>Pro Tier — $49/month</h2>
-  <p class="sub">2,500 requests/month + priority support</p>
-  <ul>
-    <li>Everything in Free</li>
-    <li>Redis-cached results (instant repeat queries)</li>
-    <li>Higher rate limits</li>
-    <li>SLA support</li>
-  </ul>
+  <h2>Pro Tier - $49/month</h2>
+  <p class="sub">2,500 requests/month</p>
   <button class="btn-pro" onclick="goProCheckout()">Upgrade to Pro ($49/mo)</button>
 </div>
-
+<div class="card" style="border-color:#222">
+  <h2 style="margin-bottom:8px">Quick Start</h2>
+  <p style="color:#777;font-size:13px;margin-bottom:12px">After getting your key:</p>
+  <div style="position:relative;background:#111;border:1px solid #333;border-radius:8px;padding:14px">
+    <code id="curl-box" style="font-size:12px;color:#c0c0c0;display:block;white-space:pre-wrap">curl "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" -H "x-api-key: YOUR_KEY"</code>
+    <button onclick="copyCurl()" style="position:absolute;top:8px;right:8px;padding:3px 10px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;width:auto">Copy</button>
+  </div>
+  <p style="margin-top:12px;font-size:13px"><a href="/docs" target="_blank" style="color:#7c83fc">API docs (Swagger)</a></p>
+</div>
 <script>
 async function getFreeKey() {
   const email = document.getElementById('email').value;
@@ -98,10 +91,15 @@ async function getFreeKey() {
   const el = document.getElementById('free-result');
   el.style.display = 'block';
   if (data.api_key) {
-    el.innerHTML = '<b>Your API Key:</b><br>' + data.api_key + '<br><br><span style=\"color:#777\">Use as header: <code>x-api-key: ' + data.api_key + '</code></span>';
-  } else {
-    el.innerHTML = 'Error: ' + (data.detail || JSON.stringify(data));
-  }
+    el.innerHTML = '<b>Your API Key:</b><br>' + data.api_key;
+    window._lastKey = data.api_key;
+    var cb = document.getElementById('curl-box');
+    if (cb) cb.textContent = 'curl "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" -H "x-api-key: ' + data.api_key + '"';
+  } else { el.innerHTML = 'Error: ' + (data.detail || JSON.stringify(data)); }
+}
+function copyCurl() {
+  var k = window._lastKey || 'YOUR_KEY';
+  navigator.clipboard.writeText('curl "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" -H "x-api-key: ' + k + '"').then(function(){ alert('Copied!'); });
 }
 async function goProCheckout() {
   const res = await fetch('/create-checkout-session', {method:'POST'});
@@ -113,14 +111,11 @@ async function goProCheckout() {
 </body>
 </html>"""
 
-
 class FreeKeyRequest(BaseModel):
     email: str
 
-
 def get_db():
     return psycopg2.connect(DATABASE_URL)
-
 
 def init_db():
     if not DATABASE_URL:
@@ -145,16 +140,13 @@ def init_db():
     except Exception as e:
         print(f"DB init error: {e}")
 
-
 @app.on_event("startup")
 async def startup():
     init_db()
 
-
 @app.get("/", response_class=HTMLResponse)
 async def landing():
     return HTMLResponse(content=LANDING_HTML)
-
 
 @app.post("/generate-free-key")
 async def generate_free_key(body: FreeKeyRequest):
@@ -164,25 +156,18 @@ async def generate_free_key(body: FreeKeyRequest):
     try:
         conn = get_db()
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        # Check existing key for this email
         cur.execute("SELECT key, plan FROM api_keys WHERE email = %s LIMIT 1", (email,))
         row = cur.fetchone()
         if row:
             cur.close(); conn.close()
             return {"api_key": row["key"], "plan": row["plan"], "existing": True}
-        # Create new free key
         new_key = "sk_free_" + secrets.token_urlsafe(32)
-        cur.execute(
-            "INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)",
-            (new_key, email, "free", 50)
-        )
+        cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 50))
         conn.commit()
         cur.close(); conn.close()
-        print(f"FREE KEY: {email} -> {new_key}")
         return {"api_key": new_key, "plan": "free", "monthly_limit": 50}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/create-checkout-session")
 async def create_checkout_session():
@@ -202,11 +187,9 @@ async def create_checkout_session():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/success", response_class=HTMLResponse)
 async def success(session_id: str = ""):
     api_key = None
-    plan = "pro"
     email = ""
     if session_id and stripe.api_key:
         try:
@@ -219,25 +202,18 @@ async def success(session_id: str = ""):
                 row = cur.fetchone()
                 if row:
                     api_key = row["key"]
-                    plan = row["plan"]
                 cur.close(); conn.close()
         except Exception as e:
             print(f"Success page error: {e}")
-    html = f"""<!DOCTYPE html>
-<html>
-<head><title>Welcome to HireSignal Pro</title>
-<style>body{{font-family:system-ui,sans-serif;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0;text-align:center}}
-h1{{color:#7c83fc}}code{{background:#1a1a1a;padding:12px 20px;border-radius:8px;display:block;margin:20px 0;font-size:14px;word-break:break-all;border:1px solid #333}}</style>
-</head>
-<body>
-<h1>&#127881; You're on Pro!</h1>
-<p>Payment confirmed. Your API key is ready.</p>
-{"<code>" + api_key + "</code>" if api_key else "<p>Your key will appear here once payment is confirmed. Check back in 30 seconds.</p>"}
-<p style="color:#777;font-size:14px">Use header: <code style='display:inline;padding:2px 6px'>x-api-key: {"your-key" if not api_key else api_key}</code></p>
-<p><a href="/" style="color:#7c83fc">Back to home</a></p>
-</body></html>"""
+    html = f"""<!DOCTYPE html><html><head><title>HireSignal - Success</title>
+<style>body{{font-family:system-ui;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0}}
+.card{{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:32px}}
+h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12px}}</style></head>
+<body><div class="card"><h1>Payment Successful!</h1>
+{"<p>Your API key:</p><code>" + api_key + "</code>" if api_key else "<p>Key being activated...</p>"}
+<p style="margin-top:24px"><a href="/docs" style="color:#7c83fc">API docs</a> &nbsp; <a href="/" style="color:#7c83fc">Home</a></p>
+</div></body></html>"""
     return HTMLResponse(content=html)
-
 
 async def verify_api_key(x_api_key: str = Header(None)):
     if not x_api_key:
@@ -267,66 +243,6 @@ async def verify_api_key(x_api_key: str = Header(None)):
         raise HTTPException(status_code=500, detail=f"Auth error: {e}")
     return x_api_key
 
-
-async def scrape_page(domain: str):
-    domain = domain.strip().lower().rstrip("/")
-    if not domain.startswith("http"):
-        domain = "https://" + domain
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
-        await page.set_extra_http_headers({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        })
-        for suffix in ["/careers", "/jobs"]:
-            url = domain + suffix
-            try:
-                resp = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
-                if resp and resp.status < 400:
-                    await asyncio.sleep(2)
-                    text = await page.inner_text("body")
-                    await browser.close()
-                    return text, url, resp.status
-            except Exception:
-                continue
-        await browser.close()
-        raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
-
-
-def extract_with_openai(raw_text: str):
-    if not openai.api_key:
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set")
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": EXTRACTION_PROMPT},
-            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:10000]},
-        ],
-        temperature=0,
-    )
-    return json.loads(response.choices[0].message.content)
-
-
-@app.get("/scrape")
-async def scrape(domain: str, api_key: str = Security(verify_api_key)):
-    cache_key = f"domain:{domain}"
-    cached = redis_client.get(cache_key)
-    if cached:
-        return {"source": "cache", "data": json.loads(cached)}
-    raw_text, url, status = await scrape_page(domain)
-    extracted = extract_with_openai(raw_text)
-    redis_client.setex(cache_key, 604800, json.dumps(extracted))
-    return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
-
-
-@app.get("/scrape/raw")
-async def scrape_raw(domain: str):
-    raw_text, url, status = await scrape_page(domain)
-    lines = [l.strip() for l in raw_text.splitlines() if l.strip()]
-    return {"url": url, "status": status, "total_lines": len(lines), "preview": lines[:50]}
-
-
 @app.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
     payload = await request.body()
@@ -352,17 +268,67 @@ async def stripe_webhook(request: Request):
                 row = cur.fetchone()
                 if row:
                     cur.execute("UPDATE api_keys SET plan='pro', monthly_limit=2500, stripe_customer_id=%s WHERE email=%s", (customer_id, email))
-                    print(f"UPGRADED: {email} -> pro")
                 else:
                     new_key = "sk_live_" + secrets.token_urlsafe(32)
                     cur.execute("INSERT INTO api_keys (key, email, stripe_customer_id, plan, monthly_limit) VALUES (%s,%s,%s,%s,%s)", (new_key, email, customer_id, "pro", 2500))
-                    print(f"NEW PRO KEY: {email} -> {new_key}")
                 conn.commit()
                 cur.close(); conn.close()
             except Exception as e:
                 print(f"Webhook error: {e}")
     return {"status": "ok"}
 
+async def scrape_page(domain: str):
+    domain = domain.strip().lower().rstrip("/")
+    if not domain.startswith("http"):
+        domain = "https://" + domain
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        await page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+        for suffix in ["/careers", "/jobs"]:
+            url = domain + suffix
+            try:
+                resp = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
+                if resp and resp.status < 400:
+                    await asyncio.sleep(2)
+                    text = await page.inner_text("body")
+                    await browser.close()
+                    return text, url, resp.status
+            except Exception:
+                continue
+        await browser.close()
+        raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
+
+def extract_with_openai(raw_text: str):
+    if not openai.api_key:
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set")
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": EXTRACTION_PROMPT},
+            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:10000]},
+        ],
+        temperature=0,
+    )
+    return json.loads(response.choices[0].message.content)
+
+@app.get("/scrape")
+async def scrape(domain: str, api_key: str = Security(verify_api_key)):
+    cache_key = f"domain:{domain}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        return {"source": "cache", "data": json.loads(cached)}
+    raw_text, url, status = await scrape_page(domain)
+    extracted = extract_with_openai(raw_text)
+    redis_client.setex(cache_key, 604800, json.dumps(extracted))
+    return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
+
+@app.get("/scrape/raw")
+async def scrape_raw(domain: str):
+    raw_text, url, status = await scrape_page(domain)
+    lines = [l.strip() for l in raw_text.splitlines() if l.strip()]
+    return {"url": url, "status": status, "total_lines": len(lines), "preview": lines[:50]}
 
 @app.get("/health")
 async def health():
@@ -373,7 +339,6 @@ async def health():
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
     return {"status": "ok", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
-
 
 if __name__ == "__main__":
     uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
