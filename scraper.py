@@ -374,21 +374,21 @@ async def verify_api_key(
         plan = row["plan"]
         cur.close(); conn.close()
 
-        # Redis atomic rate limiting — prevents concurrent request abuse
+        # Store rate limit info on request.state for scrape() to use
         import time
         current_month = time.strftime("%Y-%m")
         redis_key = f"usage:{x_api_key}:{current_month}"
-        current_count = redis_client.incr(redis_key)
-        if current_count == 1:
-            # Set TTL to ~35 days on first use so key auto-expires after the month
-            redis_client.expire(redis_key, 35 * 24 * 3600)
-        if current_count > monthly_limit:
+        current_count = int(redis_client.get(redis_key) or 0)
+        if current_count >= monthly_limit:
             raise HTTPException(
                 status_code=429,
                 detail=f"Rate limit exceeded. {plan.capitalize()} tier limit: {monthly_limit} requests/month"
             )
+        request.state.redis_key = redis_key
+        request.state.monthly_limit = monthly_limit
         request.state.rate_limit = monthly_limit
         request.state.rate_remaining = max(0, monthly_limit - current_count)
+        request.state.plan = plan
         return x_api_key
     except HTTPException:
         raise
@@ -475,6 +475,29 @@ def extract_with_openai(raw_text: str):
     except openai.OpenAIError as e:
         raise HTTPException(status_code=502, detail=f"OpenAI error: {str(e)}")
 
+@app.get("/me")
+async def me(request: Request, api_key: str = Security(verify_api_key)):
+    """Return the current user's plan, monthly limit, and Redis usage count."""
+    import time
+    current_month = time.strftime("%Y-%m")
+    redis_key = f"usage:{api_key}:{current_month}"
+    current_count = int(redis_client.get(redis_key) or 0)
+
+    # Get plan details from Postgres (or fallback)
+    monthly_limit = getattr(request.state, "monthly_limit", 0)
+    plan = getattr(request.state, "plan", "free")
+    rate_remaining = max(0, monthly_limit - current_count)
+
+    return {
+        "api_key": api_key[:8] + "...",
+        "plan": plan,
+        "monthly_limit": monthly_limit,
+        "requests_used": current_count,
+        "requests_remaining": rate_remaining,
+        "billing_period": current_month,
+    }
+
+
 @app.get("/scrape")
 async def find_careers_url(page, base_domain: str) -> str:
     """Load homepage and follow links containing careers/jobs/team keywords."""
@@ -516,6 +539,14 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
             redis_client.setex(cache_key, 604800, json.dumps(extracted))
         else:
             print(f"[WARN] Extracted data empty or missing company_name for {domain}. Not caching.")
+        # Increment usage counter only for live scrapes (cache hits are free)
+        redis_key = getattr(request.state, "redis_key", None)
+        if redis_key:
+            new_count = redis_client.incr(redis_key)
+            if new_count == 1:
+                redis_client.expire(redis_key, 35 * 24 * 3600)
+            monthly_limit = getattr(request.state, "monthly_limit", 0)
+            request.state.rate_remaining = max(0, monthly_limit - new_count)
         response.headers["X-RateLimit-Limit"] = str(getattr(request.state, "rate_limit", "N/A"))
         response.headers["X-RateLimit-Remaining"] = str(getattr(request.state, "rate_remaining", "N/A"))
         return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
