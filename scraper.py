@@ -344,7 +344,14 @@ h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:
 </div></body></html>"""
     return HTMLResponse(content=html)
 
-async def verify_api_key(x_api_key: str = Header(None)):
+async def verify_api_key(
+    x_api_key: str = Header(None),
+    x_rapidapi_proxy_secret: str = Header(None, alias="X-RapidAPI-Proxy-Secret"),
+):
+    # Allow RapidAPI proxy requests through with their secret
+    rapidapi_secret = os.environ.get("RAPIDAPI_PROXY_SECRET", "")
+    if rapidapi_secret and x_rapidapi_proxy_secret == rapidapi_secret:
+        return "rapidapi_user"
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing API key")
     if not DATABASE_URL:
@@ -422,6 +429,10 @@ async def scrape_page(domain: str):
                 if resp and resp.status < 400:
                     await asyncio.sleep(2)
                     text = await page.inner_text("body")
+                    # Extract script tags for better tech stack detection
+                    scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
+                    if scripts:
+                        text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
                     await browser.close()
                     return text, url, resp.status
             except Exception:
