@@ -422,21 +422,21 @@ async def scrape_page(domain: str):
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
-        for suffix in ["/careers", "/jobs"]:
-            url = domain + suffix
-            try:
-                resp = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
-                if resp and resp.status < 400:
-                    await asyncio.sleep(2)
-                    text = await page.inner_text("body")
-                    # Extract script tags for better tech stack detection
-                    scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
-                    if scripts:
-                        text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
-                    await browser.close()
-                    return text, url, resp.status
-            except Exception:
-                continue
+        # Dynamic careers URL discovery via homepage link following
+        careers_url = await find_careers_url(page, domain)
+        try:
+            resp = await page.goto(careers_url, wait_until="domcontentloaded", timeout=15000)
+            if resp and resp.status < 400:
+                await asyncio.sleep(2)
+                text = await page.inner_text("body")
+                # Extract script tags for better tech stack detection
+                scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
+                if scripts:
+                    text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
+                await browser.close()
+                return text, careers_url, resp.status
+        except Exception:
+            pass
         await browser.close()
         raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
 
@@ -460,6 +460,31 @@ def extract_with_openai(raw_text: str):
         raise HTTPException(status_code=502, detail=f"OpenAI error: {str(e)}")
 
 @app.get("/scrape")
+async def find_careers_url(page, base_domain: str) -> str:
+    """Load homepage and follow links containing careers/jobs/team keywords."""
+    keywords = ["career", "careers", "jobs", "job", "team", "work", "hiring", "join"]
+    try:
+        await page.goto(base_domain, wait_until="domcontentloaded", timeout=15000)
+        links = await page.evaluate("""() => {
+            return Array.from(document.querySelectorAll('a[href]')).map(a => ({
+                href: a.href,
+                text: a.innerText.toLowerCase().trim()
+            }));
+        }""")
+        for link in links:
+            href = link.get('href', '')
+            text = link.get('text', '')
+            if any(kw in text for kw in keywords) or any(kw in href.lower() for kw in keywords):
+                if href.startswith('http') and (base_domain.replace('https://', '').replace('http://', '').split('/')[0] in href or href.startswith('/')):
+                    if href.startswith('/'):
+                        href = base_domain.rstrip('/') + href
+                    return href
+    except Exception:
+        pass
+    # Fallback: guess common paths
+    return base_domain.rstrip('/') + "/careers"
+
+
 async def scrape(domain: str, api_key: str = Security(verify_api_key)):
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
