@@ -9,12 +9,12 @@ import psycopg2.extras
 import redis as redis_lib
 import stripe
 from fastapi import FastAPI, HTTPException, Security, Header, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
 from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper API", version="6.0.0")
+app = FastAPI(title="Careers Scraper API", version="7.0.0")
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -24,13 +24,11 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID", "")
 BASE_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "careers-scraper-production.up.railway.app")
-
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 EXTRACTION_PROMPT = (
     "You are a B2B data extraction engine. Given raw text from a company careers page, "
-    "extract structured data. Return ONLY valid JSON. If a field cannot be determined, "
-    "return an empty array or false. Schema: "
+    "extract structured data. Return ONLY valid JSON. Schema: "
     "{company_name: string, is_hiring: boolean, engineering_roles: [string], "
     "sales_roles: [string], detected_tech_stack: [string]}"
 )
@@ -198,7 +196,7 @@ async def success(session_id: str = ""):
             if email and DATABASE_URL:
                 conn = get_db()
                 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-                cur.execute("SELECT key, plan FROM api_keys WHERE email = %s LIMIT 1", (email.lower(),))
+                cur.execute("SELECT key FROM api_keys WHERE email = %s LIMIT 1", (email.lower(),))
                 row = cur.fetchone()
                 if row:
                     api_key = row["key"]
@@ -302,16 +300,21 @@ async def scrape_page(domain: str):
 def extract_with_openai(raw_text: str):
     if not openai.api_key:
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set")
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": EXTRACTION_PROMPT},
-            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:10000]},
-        ],
-        temperature=0,
-    )
-    return json.loads(response.choices[0].message.content)
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": EXTRACTION_PROMPT},
+                {"role": "user", "content": "Careers page text:\n\n" + raw_text[:10000]},
+            ],
+            temperature=0,
+        )
+        return json.loads(response.choices[0].message.content)
+    except openai.RateLimitError:
+        raise HTTPException(status_code=503, detail="OpenAI quota exceeded - service temporarily unavailable")
+    except openai.OpenAIError as e:
+        raise HTTPException(status_code=502, detail=f"OpenAI error: {str(e)}")
 
 @app.get("/scrape")
 async def scrape(domain: str, api_key: str = Security(verify_api_key)):
@@ -319,10 +322,15 @@ async def scrape(domain: str, api_key: str = Security(verify_api_key)):
     cached = redis_client.get(cache_key)
     if cached:
         return {"source": "cache", "data": json.loads(cached)}
-    raw_text, url, status = await scrape_page(domain)
-    extracted = extract_with_openai(raw_text)
-    redis_client.setex(cache_key, 604800, json.dumps(extracted))
-    return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
+    try:
+        raw_text, url, status = await scrape_page(domain)
+        extracted = extract_with_openai(raw_text)
+        redis_client.setex(cache_key, 604800, json.dumps(extracted))
+        return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scrape error: {str(e)}")
 
 @app.get("/scrape/raw")
 async def scrape_raw(domain: str):
@@ -338,7 +346,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "7.0.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 if __name__ == "__main__":
     uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
