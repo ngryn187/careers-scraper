@@ -1,3 +1,4 @@
+# v3.0.0 - Redis caching + API auth
 import asyncio
 import json
 import os
