@@ -6,3 +6,5 @@ pydantic
 redis
 psycopg2-binary
 stripe
+
+python-multipart
