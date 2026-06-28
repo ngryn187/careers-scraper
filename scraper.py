@@ -356,7 +356,7 @@ async def verify_api_key(
         raise HTTPException(status_code=401, detail="Missing API key")
     if not DATABASE_URL:
         valid_key = os.environ.get("VALID_API_KEY", "")
-        if valid_key and x_api_key != valid_key:
+        if x_api_key != valid_key:
             raise HTTPException(status_code=401, detail="Invalid API key")
         return x_api_key
     try:
@@ -367,19 +367,30 @@ async def verify_api_key(
         if not row:
             cur.close(); conn.close()
             raise HTTPException(status_code=401, detail="Invalid API key")
-        if row["usage_count"] >= row["monthly_limit"]:
-            cur.close(); conn.close()
-            raise HTTPException(status_code=429, detail="Monthly limit exceeded")
-        cur.execute("UPDATE api_keys SET usage_count = usage_count + 1 WHERE key = %s", (x_api_key,))
-        conn.commit()
+        monthly_limit = row["monthly_limit"]
+        plan = row["plan"]
         cur.close(); conn.close()
+
+        # Redis atomic rate limiting — prevents concurrent request abuse
+        import time
+        current_month = time.strftime("%Y-%m")
+        redis_key = f"usage:{x_api_key}:{current_month}"
+        current_count = redis_client.incr(redis_key)
+        if current_count == 1:
+            # Set TTL to ~35 days on first use so key auto-expires after the month
+            redis_client.expire(redis_key, 35 * 24 * 3600)
+        if current_count > monthly_limit:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded. {plan.capitalize()} tier limit: {monthly_limit} requests/month"
+            )
+        return x_api_key
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Auth error: {e}")
-    return x_api_key
+        raise HTTPException(status_code=500, detail=f"Auth error: {str(e)}")
 
-@app.post("/webhook/stripe")
+
 async def stripe_webhook(request: Request):
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
