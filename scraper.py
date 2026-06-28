@@ -13,7 +13,7 @@ import stripe
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from fastapi import FastAPI, HTTPException, Security, Header, Request, Response
+from fastapi import FastAPI, HTTPException, Security, Header, Request, Response, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
@@ -641,3 +641,57 @@ async def health():
 
 if __name__ == "__main__":
     uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
+
+
+@app.get("/admin/stats")
+async def admin_stats(admin_password: str = Query(None)):
+    """Password-protected admin analytics dashboard."""
+    if admin_password != os.getenv("ADMIN_PASSWORD"):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    stats = {}
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            # 1. User counts by plan
+            cur.execute("SELECT plan, COUNT(*) FROM api_keys GROUP BY plan")
+            plan_counts = dict(cur.fetchall())
+            stats["users_by_plan"] = plan_counts
+            stats["total_users"] = sum(plan_counts.values())
+
+            # 2. Estimated Monthly Recurring Revenue
+            mrr = 0
+            for plan, count in plan_counts.items():
+                if plan == "pro": mrr += count * 49
+                elif plan == "business": mrr += count * 199
+            stats["estimated_mrr"] = mrr
+
+            # 3. Recent signups (last 5)
+            try:
+                cur.execute("SELECT email, plan, created_at FROM api_keys ORDER BY created_at DESC LIMIT 5")
+                recent = cur.fetchall()
+                stats["recent_signups"] = [{"email": r[0], "plan": r[1], "created_at": str(r[2])} for r in recent]
+            except Exception:
+                stats["recent_signups"] = []
+
+    # 4. Redis cache performance
+    try:
+        redis_info = redis_client.info()
+        stats["redis"] = {
+            "total_commands_processed": redis_info.get("total_commands_processed", 0),
+            "keyspace_hits": redis_info.get("keyspace_hits", 0),
+            "keyspace_misses": redis_info.get("keyspace_misses", 0),
+        }
+    except Exception:
+        stats["redis"] = "unavailable"
+
+    # 5. Total API usage this month across all users
+    import time
+    current_month = time.strftime("%Y-%m")
+    usage_keys = redis_client.keys(f"usage:*:{current_month}")
+    total_usage = 0
+    for key in usage_keys:
+        total_usage += int(redis_client.get(key) or 0)
+    stats["total_api_calls_this_month"] = total_usage
+
+    return stats
