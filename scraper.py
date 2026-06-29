@@ -414,7 +414,7 @@ async def success(session_id: str = ""):
     html = f"""<!DOCTYPE html><html><head><title>StackSight - Success</title>
 <style>body{{font-family:system-ui;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0}}
 .card{{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:32px}}
-h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12py}}</style></head>
+h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12px}}</style></head>
 <body><div class="card"><h1>Payment Successful!</h1>
 {"<p>Your API key:</p><code>" + api_key + "</code>" if api_key else "<p>Key being activated...</p>"}
 <p style="margin-top:24px"><a href="/docs" style="color:#7c83fc">API docs</a> &nbsp; <a href="/" style="color:#7c83fc">Home</a></p>
@@ -863,7 +863,7 @@ async def background_scrape(domain: str):
             redis_client.setex(cache_key, 604800, json.dumps(data))
             print(f"[BACKGROUND] Cached result for {domain}")
     except Exception as e:
-        print(f"[BACKGROUND EPRROR] {domain}: {e}")
+        print(f"[BACKGROUND ERROR] {domain}: {e}")
 
 
 @app.post("/scrape/bulk")
@@ -905,6 +905,59 @@ async def bulk_scrape(
         "total": len(results),
         "cached": sum(1 for r in results if r["source"] == "cache"),
         "queued": sum(1 for r in results if r["source"] == "background"),
+    }
+
+
+
+TOP_SAAS_DOMAINS = [
+    "salesforce.com", "hubspot.com", "zendesk.com", "intercom.com", "slack.com",
+    "notion.so", "airtable.com", "asana.com", "monday.com", "linear.app",
+    "stripe.com", "brex.com", "ramp.com", "rippling.com", "gusto.com",
+    "workday.com", "greenhouse.io", "lever.co", "ashbyhq.com", "lattice.com",
+    "figma.com", "miro.com", "loom.com", "zoom.us", "webex.com",
+    "datadog.com", "newrelic.com", "pagerduty.com", "splunk.com", "elastic.co",
+    "snowflake.com", "databricks.com", "dbt.com", "fivetran.com", "segment.com",
+    "twilio.com", "sendgrid.com", "mailchimp.com", "klaviyo.com", "braze.com",
+    "amplitude.com", "mixpanel.com", "heap.io", "fullstory.com", "hotjar.com",
+    "cloudflare.com", "fastly.com", "vercel.com", "netlify.com", "heroku.com",
+    "mongodb.com", "redis.com", "planetscale.com", "supabase.com", "neon.tech",
+    "openai.com", "anthropic.com", "cohere.com", "deepmind.com", "scale.com",
+    "confluent.com", "mulesoft.com", "apigee.com", "postman.com", "stoplight.io",
+    "okta.com", "auth0.com", "ping.com", "crowdstrike.com", "sentinelone.com",
+    "servicenow.com", "freshworks.com", "zoho.com", "pipedrive.com", "close.com",
+    "gong.io", "chorus.ai", "outreach.io", "salesloft.com", "apollo.io",
+    "zoominfo.com", "clearbit.com", "lusha.com", "hunter.io", "snov.io",
+    "bill.com", "expensify.com", "netsuite.com", "sage.com", "quickbooks.com",
+    "shopify.com", "bigcommerce.com", "woocommerce.com", "magento.com", "squarespace.com",
+]
+
+
+@app.post("/cron/warm-cache")
+async def warm_cache(
+    background_tasks: BackgroundTasks,
+    secret: str = Query(None),
+):
+    """Secret-protected endpoint to pre-scrape top SaaS domains and warm Redis cache."""
+    cron_secret = os.getenv("CRON_SECRET")
+    if not cron_secret or secret != cron_secret:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    queued_count = 0
+    already_cached = 0
+    for domain in TOP_SAAS_DOMAINS:
+        cache_key = f"domain:{domain}"
+        if redis_client.get(cache_key):
+            already_cached += 1
+        else:
+            background_tasks.add_task(background_scrape, domain)
+            queued_count += 1
+
+    return {
+        "status": "success",
+        "message": f"Queued {queued_count} domains for cache warming.",
+        "total_domains_checked": len(TOP_SAAS_DOMAINS),
+        "already_cached": already_cached,
+        "queued_for_scrape": queued_count,
     }
 
 
