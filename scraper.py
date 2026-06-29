@@ -117,21 +117,31 @@ LANDING_HTML = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StackSight API - Hiring Intent & Tech Stack Data</title>
+<title>StackSight API - B2B Hiring Intent &amp; Tech Stack Data</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
-.container { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+.container { max-width: 900px; margin: 0 auto; padding: 60px 20px; }
 .badge { display: inline-block; background: #161b22; border: 1px solid #30363d; color: #58a6ff; font-size: 0.75em; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
 h1 { color: #58a6ff; font-size: 2.8em; margin-bottom: 12px; line-height: 1.2; }
-.subtitle { font-size: 1.2em; color: #8b949e; margin-bottom: 50px; max-width: 600px; }
+.subtitle { font-size: 1.2em; color: #8b949e; margin-bottom: 30px; max-width: 640px; }
+.cta-group { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 50px; }
+.btn { display: inline-block; padding: 12px 24px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 1em; cursor: pointer; border: none; }
+.btn-primary { background: #238636; color: white; }
+.btn-primary:hover { background: #2ea043; }
+.btn-secondary { background: #1f6feb; color: white; }
+.btn-secondary:hover { background: #388bfd; }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 40px 0; }
+.feature { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; }
+.feature h3 { color: #e6edf3; font-size: 1em; margin-bottom: 10px; }
+.feature p { color: #8b949e; font-size: 0.9em; line-height: 1.5; }
 .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 30px; margin-bottom: 24px; }
 .card h3 { color: #e6edf3; font-size: 1.1em; margin-bottom: 12px; }
 .card p { color: #8b949e; font-size: 0.95em; margin-bottom: 16px; }
 input[type="email"] { width: 100%; padding: 12px 16px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: 1em; margin-bottom: 12px; outline: none; }
 input[type="email"]:focus { border-color: #58a6ff; }
-button { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1em; cursor: pointer; width: 100%; font-weight: 600; }
-button:hover { background: #2ea043; }
+button.gen-btn { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1em; cursor: pointer; width: 100%; font-weight: 600; }
+button.gen-btn:hover { background: #2ea043; }
 .key-display { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 14px; font-family: monospace; font-size: 0.9em; color: #79c0ff; margin-top: 12px; display: none; word-break: break-all; }
 pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 20px; overflow-x: auto; margin: 16px 0; }
 code { color: #79c0ff; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
@@ -142,49 +152,73 @@ code { color: #79c0ff; font-family: 'SFMono-Regular', Consolas, monospace; font-
 .price-box .price { font-size: 2em; font-weight: 700; color: #58a6ff; margin: 12px 0; }
 .price-box ul { list-style: none; color: #8b949e; font-size: 0.9em; text-align: left; }
 .price-box ul li { padding: 5px 0; }
-.price-box ul li::before { content: "\\2713 "; color: #2ea043; }
-.price-box button { margin-top: 16px; background: #238636; }
-.price-box.featured button { background: #1f6feb; }
-.price-box.featured button:hover { background: #388bfd; }
+.price-box ul li::before { content: "\2713 "; color: #2ea043; }
+.price-box .plan-btn { margin-top: 16px; background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+.price-box.featured .plan-btn { background: #1f6feb; }
+.price-box.featured .plan-btn:hover { background: #388bfd; }
 .section-title { font-size: 1.5em; color: #e6edf3; margin: 50px 0 20px; }
 .endpoint-row { display: flex; align-items: center; gap: 12px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
 .method { background: #0d7a3c; color: white; font-size: 0.8em; font-weight: 700; padding: 3px 10px; border-radius: 4px; font-family: monospace; }
+.method.post { background: #1f4080; }
 .path { color: #79c0ff; font-family: monospace; }
 .desc { color: #8b949e; font-size: 0.9em; margin-left: auto; }
 footer { border-top: 1px solid #30363d; margin-top: 60px; padding-top: 30px; color: #8b949e; font-size: 0.9em; text-align: center; }
 footer a { color: #58a6ff; text-decoration: none; }
-.demo-btn { display: inline-block; background: #1f6feb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-bottom: 16px; }
-@media (max-width: 600px) { .pricing { grid-template-columns: 1fr; } h1 { font-size: 2em; } }
+@media (max-width: 600px) { .pricing { grid-template-columns: 1fr; } h1 { font-size: 2em; } .features { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div class="container">
-<div class="badge">&#x1F680; Now on RapidAPI</div>
+<div class="badge">&#x1F680; Now on RapidAPI &middot; v8.3.0</div>
 <h1>StackSight API</h1>
-<p class="subtitle">Real-time B2B hiring intent and tech stack detection for any company domain. Know which companies are growing, hiring engineers, and which tools they use &mdash; before your competitors do.</p>
+<p class="subtitle">Turn any company domain into actionable B2B sales intelligence. Real-time hiring intent, deterministic tech stack detection, and bulk enrichment &mdash; before your competitors know what hit them.</p>
+<div class="cta-group">
+<a href="/demo/stripe.com" class="btn btn-secondary">&#x1F50D; Live Demo</a>
+<a href="#get-key" class="btn btn-primary">Get Free API Key</a>
+</div>
 
-<div class="card">
-<h3>&#x26A1; See It In Action</h3>
-<p>Try the live demo Ã¢ÂÂ no API key needed:</p>
-<a href="/demo/stripe.com" class="demo-btn">&#x1F50D; Live Demo: Stripe.com</a>
-<p>Or get 50 free requests instantly:</p>
+<div class="features">
+<div class="feature">
+<h3>&#x1F3AF; Real-Time Hiring Intent</h3>
+<p>Know exactly which companies are actively hiring engineers, sales reps, or executives. Stop cold-calling companies that are not growing.</p>
+</div>
+<div class="feature">
+<h3>&#x1F9EC; Deterministic Tech Stack</h3>
+<p>We parse actual script tags to detect React, AWS, Stripe, and 20+ technologies with 100% accuracy. No guessing.</p>
+</div>
+<div class="feature">
+<h3>&#x1F4E6; Bulk Enrichment API</h3>
+<p>Process up to 50 domains in one request. Cached results return in under 50ms. Uncached domains queue in background.</p>
+</div>
+<div class="feature">
+<h3>&#x26A1; Lightning Fast Cache</h3>
+<p>All scrapes cached in Redis for 7 days. Top 80 SaaS domains pre-warmed nightly. Most requests return instantly.</p>
+</div>
+</div>
+
+<div class="card" id="get-key">
+<h3>&#x26A1; Get Started Free</h3>
+<p>50 requests/month, no credit card required:</p>
 <input type="email" id="email" placeholder="you@company.com">
-<button onclick="generateKey()">Get My Free API Key</button>
+<button class="gen-btn" onclick="generateKey()">Get My Free API Key</button>
 <div class="key-display" id="keyResult"></div>
 </div>
 
 <h2 class="section-title">Try It Now</h2>
 <div class="card">
 <h3>Example Request</h3>
-<pre><code id="curlExample">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\
+<pre><code id="curlExample">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
 -H "X-API-Key: YOUR_API_KEY"</code></pre>
 <h3 style="margin-top:20px;">Example Response</h3>
 <pre><code>{
-  "company_name": "Stripe",
-  "is_hiring": true,
-  "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"],
-  "sales_roles": ["Account Executive", "Solutions Engineer"],
-  "detected_tech_stack": ["Go", "Ruby", "AWS", "Kubernetes", "Kafka"]
+  "source": "cache",
+  "data": {
+    "company_name": "Stripe",
+    "is_hiring": true,
+    "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"],
+    "sales_roles": ["Account Executive", "Solutions Engineer"],
+    "detected_tech_stack": ["React", "AWS", "Stripe", "Cloudflare", "Sentry"]
+  }
 }</code></pre>
 </div>
 
@@ -192,17 +226,22 @@ footer a { color: #58a6ff; text-decoration: none; }
 <div class="endpoint-row">
 <span class="method">GET</span>
 <span class="path">/scrape?domain={domain}</span>
-<span class="desc">Scrape hiring intent + tech stack for a domain</span>
+<span class="desc">Hiring intent + tech stack (Redis cached)</span>
+</div>
+<div class="endpoint-row">
+<span class="method post">POST</span>
+<span class="path">/scrape/bulk</span>
+<span class="desc">Bulk enrichment up to 50 domains (Pro)</span>
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
 <span class="path">/demo/{domain}</span>
-<span class="desc">Interactive HTML demo Ã¢ÂÂ no API key needed</span>
+<span class="desc">Interactive HTML demo - no key needed</span>
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
 <span class="path">/me</span>
-<span class="desc">View your plan, usage, and remaining requests</span>
+<span class="desc">Your plan, usage and remaining requests</span>
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
@@ -212,10 +251,10 @@ footer a { color: #58a6ff; text-decoration: none; }
 <div class="endpoint-row">
 <span class="method">GET</span>
 <span class="path">/health</span>
-<span class="desc">API health check</span>
+<span class="desc">API health and version check</span>
 </div>
 
-<h2 class="section-title">Pricing</h2>
+<h2 class="section-title" id="pricing">Pricing</h2>
 <div class="pricing">
 <div class="price-box">
 <h3>Free</h3>
@@ -226,7 +265,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>JSON responses</li>
 <li>Community support</li>
 </ul>
-<button onclick="document.getElementById('email').focus()">Get Started</button>
+<button class="plan-btn" onclick="document.getElementById('email').focus()">Get Started</button>
 </div>
 <div class="price-box featured">
 <h3>Pro</h3>
@@ -234,10 +273,11 @@ footer a { color: #58a6ff; text-decoration: none; }
 <ul>
 <li>2,500 requests/month</li>
 <li>10 requests/second</li>
+<li>Bulk API (50 domains)</li>
 <li>Redis-cached responses</li>
 <li>Priority support</li>
 </ul>
-<button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Subscribe on RapidAPI</button>
+<button class="plan-btn" onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Subscribe on RapidAPI</button>
 </div>
 <div class="price-box">
 <h3>Business</h3>
@@ -248,12 +288,12 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>Webhook support</li>
 <li>Dedicated support</li>
 </ul>
-<button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Contact Sales</button>
+<button class="plan-btn" onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Contact Sales</button>
 </div>
 </div>
 
 <footer>
-<p>StackSight API &mdash; <a href="/docs">Documentation</a> &middot; <a href="https://rapidapi.com" target="_blank">RapidAPI</a> &middot; Built with FastAPI</p>
+<p>StackSight API &mdash; <a href="/docs">API Docs</a> &middot; <a href="https://rapidapi.com" target="_blank">RapidAPI</a> &middot; <a href="https://github.com/ngryn187/careers-scraper" target="_blank">GitHub</a> &middot; Built with FastAPI</p>
 <p style="margin-top:8px;">Questions? Email <a href="mailto:ngrynai@gmail.com">ngrynai@gmail.com</a></p>
 </footer>
 </div>
@@ -274,8 +314,8 @@ async function generateKey() {
         if (data.api_key) {
             const box = document.getElementById('keyResult');
             box.style.display = 'block';
-            box.innerHTML = '<strong style="color:#2ea043">\\u2713 Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
-            document.getElementById('curlExample').textContent = 'curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\\\\\n -H "X-API-Key: ' + data.api_key + '"';
+            box.innerHTML = '<strong style="color:#2ea043">â Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
+            document.getElementById('curlExample').textContent = 'curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\\\n -H "X-API-Key: ' + data.api_key + '"';
         } else {
             alert(data.detail || 'Error generating key. Please try again.');
         }
@@ -788,7 +828,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.2.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.3.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
