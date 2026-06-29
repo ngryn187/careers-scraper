@@ -8,7 +8,7 @@ import openai
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 import redis as redis_lib
 import stripe
 import smtplib
@@ -20,9 +20,33 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List
 import uvicorn
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, Playwright
 
-app = FastAPI(title="Careers Scraper API", version="8.1.0")
+# Global Playwright singleton â launched once at startup, reused for all requests
+_playwright: Playwright = None
+_browser = None
+_browser_context = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global _playwright, _browser, _browser_context
+    print("[STARTUP] Launching Playwright browser singleton...")
+    _playwright = await async_playwright().start()
+    _browser = await _playwright.chromium.launch(
+        headless=True,
+        args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+    )
+    _browser_context = await _browser.new_context(
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+    print("[STARTUP] Browser singleton ready.")
+    yield
+    print("[SHUTDOWN] Closing Playwright browser...")
+    await _browser_context.close()
+    await _browser.close()
+    await _playwright.stop()
+
+app = FastAPI(title="Careers Scraper API", version="8.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -141,7 +165,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 
 <div class="card">
 <h3>&#x26A1; See It In Action</h3>
-<p>Try the live demo â no API key needed:</p>
+<p>Try the live demo Ã¢ÂÂ no API key needed:</p>
 <a href="/demo/stripe.com" class="demo-btn">&#x1F50D; Live Demo: Stripe.com</a>
 <p>Or get 50 free requests instantly:</p>
 <input type="email" id="email" placeholder="you@company.com">
@@ -173,7 +197,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <div class="endpoint-row">
 <span class="method">GET</span>
 <span class="path">/demo/{domain}</span>
-<span class="desc">Interactive HTML demo â no API key needed</span>
+<span class="desc">Interactive HTML demo Ã¢ÂÂ no API key needed</span>
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
@@ -268,7 +292,7 @@ async function generateKey() {
 class FreeKeyRequest(BaseModel):
     email: str
 
-# Connection pool â initialized once at startup, shared across all requests
+# Connection pool Ã¢ÂÂ initialized once at startup, shared across all requests
 postgre_pool = None
 
 def init_pool():
@@ -390,7 +414,7 @@ async def success(session_id: str = ""):
     html = f"""<!DOCTYPE html><html><head><title>StackSight - Success</title>
 <style>body{{font-family:system-ui;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0}}
 .card{{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:32px}}
-h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12px}}</style></head>
+h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12py}}</style></head>
 <body><div class="card"><h1>Payment Successful!</h1>
 {"<p>Your API key:</p><code>" + api_key + "</code>" if api_key else "<p>Key being activated...</p>"}
 <p style="margin-top:24px"><a href="/docs" style="color:#7c83fc">API docs</a> &nbsp; <a href="/" style="color:#7c83fc">Home</a></p>
@@ -455,7 +479,7 @@ async def stripe_webhook(request: Request):
         except stripe.error.SignatureVerificationError:
             raise HTTPException(status_code=400, detail="Invalid signature")
     else:
-        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured â rejecting request")
+        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured Ã¢ÂÂ rejecting request")
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         email = session.get("customer_details", {}).get("email", "").lower()
@@ -539,25 +563,26 @@ async def scrape_page(domain: str):
     domain = domain.strip().lower().rstrip("/")
     if not domain.startswith("http"):
         domain = "https://" + domain
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
-        await page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
+    if not _browser_context:
+        raise HTTPException(status_code=503, detail="Browser not initialized")
+    page = await _browser_context.new_page()
+    try:
         careers_url = await find_careers_url(page, domain)
-        try:
-            resp = await page.goto(careers_url, wait_until="domcontentloaded", timeout=15000)
-            if resp and resp.status < 400:
-                await asyncio.sleep(2)
-                text = await page.inner_text("body")
-                scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
-                if scripts:
-                    text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
-                await browser.close()
-                return text, careers_url, resp.status
-        except Exception:
-            pass
-        await browser.close()
+        resp = await page.goto(careers_url, wait_until="domcontentloaded", timeout=15000)
+        if resp and resp.status < 400:
+            await asyncio.sleep(2)
+            text = await page.inner_text("body")
+            scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
+            if scripts:
+                text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
+            return text, careers_url, resp.status
         raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
+    finally:
+        await page.close()
 
 def extract_with_openai(raw_text: str):
     if not openai.api_key:
@@ -638,7 +663,7 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo_endpoint(domain: str, request: Request):
-    """Public interactive demo â no API key required. Rate-limited to 5/hour per IP."""
+    """Public interactive demo Ã¢ÂÂ no API key required. Rate-limited to 5/hour per IP."""
     client_ip = request.client.host if request.client else "unknown"
     demo_limit_key = f"demo_limit:{client_ip}"
     count = redis_client.incr(demo_limit_key)
@@ -702,7 +727,7 @@ async def demo_endpoint(domain: str, request: Request):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StackSight Demo â {data.get('company_name', domain)}</title>
+<title>StackSight Demo Ã¢ÂÂ {data.get('company_name', domain)}</title>
 <style>
 body {{ font-family: -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; max-width: 800px; margin: 40px auto; padding: 20px; }}
 h1 {{ color: #58a6ff; }} h2 {{ color: #e6edf3; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin: 24px 0 12px; }}
@@ -744,7 +769,7 @@ code {{ color: #79c0ff; font-family: monospace; font-size: 0.9em; }}
 <pre><code>{json.dumps(data, indent=2)}</code></pre>
 </div>
 
-<a href="/" class="cta">Get Your Free API Key â 50 Requests/Month</a>
+<a href="/" class="cta">Get Your Free API Key Ã¢ÂÂ 50 Requests/Month</a>
 </body>
 </html>"""
     return HTMLResponse(content=html)
@@ -763,7 +788,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.0.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.2.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -838,7 +863,7 @@ async def background_scrape(domain: str):
             redis_client.setex(cache_key, 604800, json.dumps(data))
             print(f"[BACKGROUND] Cached result for {domain}")
     except Exception as e:
-        print(f"[BACKGROUND ERROR] {domain}: {e}")
+        print(f"[BACKGROUND EPRROR] {domain}: {e}")
 
 
 @app.post("/scrape/bulk")
