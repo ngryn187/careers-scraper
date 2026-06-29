@@ -14,13 +14,23 @@ import stripe
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from fastapi import FastAPI, HTTPException, Security, Header, Request, Response, Query
+from fastapi import FastAPI, HTTPException, Security, Header, Request, Response, Query, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from typing import List
 import uvicorn
 from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper API", version="8.0.0")
+app = FastAPI(title="Careers Scraper API", version="8.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
@@ -799,6 +809,79 @@ async def admin_stats(admin_password: str = Query(None)):
     stats["total_api_calls_this_month"] = total_usage
 
     return stats
+
+
+class BulkDomainPayload(BaseModel):
+    domains: List[str]
+
+
+async def background_scrape(domain: str):
+    """Runs the full scrape pipeline for a domain and caches the result."""
+    print(f"[BACKGROUND] Starting scrape for {domain}")
+    cache_key = f"domain:{domain}"
+    try:
+        raw_text, url, status = await scrape_page(domain)
+        local_tech_stack = detect_tech_stack_locally(raw_text, [])
+        job_keywords = ["job", "career", "position", "role", "hiring", "opening", "apply", "vacancy"]
+        if len(raw_text) < 500 or not any(kw in raw_text.lower() for kw in job_keywords):
+            data = {
+                "company_name": domain.split(".")[0].capitalize(),
+                "is_hiring": False,
+                "engineering_roles": [],
+                "sales_roles": [],
+                "detected_tech_stack": local_tech_stack,
+            }
+        else:
+            data = extract_with_openai(raw_text)
+            data["detected_tech_stack"] = local_tech_stack
+        if data.get("company_name"):
+            redis_client.setex(cache_key, 604800, json.dumps(data))
+            print(f"[BACKGROUND] Cached result for {domain}")
+    except Exception as e:
+        print(f"[BACKGROUND ERROR] {domain}: {e}")
+
+
+@app.post("/scrape/bulk")
+async def bulk_scrape(
+    payload: BulkDomainPayload,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    api_key: str = Security(verify_api_key),
+):
+    """Bulk enrichment: returns cached data instantly, queues uncached domains in background."""
+    plan = getattr(request.state, "plan", "free")
+    max_domains = 5 if plan == "free" else 50
+    if len(payload.domains) > max_domains:
+        raise HTTPException(
+            status_code=403,
+            detail=f"{'Free' if plan == 'free' else 'Pro'} tier limited to {max_domains} domains per bulk request."
+        )
+
+    results = []
+    for domain in payload.domains:
+        domain = domain.strip().lower().rstrip("/")
+        domain_key = domain.replace("https://", "").replace("http://", "").split("/")[0]
+        cache_key = f"domain:{domain_key}"
+        cached = redis_client.get(cache_key)
+        if cached:
+            results.append({"domain": domain_key, "status": "success", "source": "cache", "data": json.loads(cached)})
+        else:
+            background_tasks.add_task(background_scrape, domain_key)
+            results.append({
+                "domain": domain_key,
+                "status": "processing",
+                "source": "background",
+                "data": None,
+                "message": f"Scraping in background. Poll GET /scrape?domain={domain_key} in 30-60s."
+            })
+
+    return {
+        "results": results,
+        "total": len(results),
+        "cached": sum(1 for r in results if r["source"] == "cache"),
+        "queued": sum(1 for r in results if r["source"] == "background"),
+    }
+
 
 if __name__ == "__main__":
     uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
