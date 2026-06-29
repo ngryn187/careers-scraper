@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import secrets
+import time
 
 import openai
 import psycopg2
@@ -19,7 +20,7 @@ from pydantic import BaseModel
 import uvicorn
 from playwright.async_api import async_playwright
 
-app = FastAPI(title="Careers Scraper API", version="7.0.0")
+app = FastAPI(title="Careers Scraper API", version="8.0.0")
 
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
@@ -39,7 +40,6 @@ SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
 FROM_EMAIL = os.environ.get("FROM_EMAIL", "ngrynai@gmail.com")
 
-
 def send_api_key_email(user_email: str, api_key: str, tier: str = "Free"):
     """Send API key to user via email after signup or Stripe payment."""
     if not SMTP_USERNAME or not SMTP_PASSWORD:
@@ -47,17 +47,17 @@ def send_api_key_email(user_email: str, api_key: str, tier: str = "Free"):
         return
     try:
         html_body = f"""
-        <html><body style="font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:30px">
-        <h2 style="color:#58a6ff">Your StackSight API Key ({tier} Tier)</h2>
-        <p>Thanks for signing up! Here is your API key:</p>
-        <pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">{api_key}</pre>
-        <h3>Quick Start</h3>
-        <pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
-     -H "x-api-key: {api_key}"</pre>
-        <p>Read the <a href="https://careers-scraper-production.up.railway.app/docs" style="color:#58a6ff">full API docs</a>.</p>
-        <p>Thank you for your business!</p>
-        </body></html>
-        """
+<html><body style="font-family:sans-serif;background:#0d1117;color:#c9d1d9;padding:30px">
+<h2 style="color:#58a6ff">Your StackSight API Key ({tier} Tier)</h2>
+<p>Thanks for signing up! Here is your API key:</p>
+<pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">{api_key}</pre>
+<h3>Quick Start</h3>
+<pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\
+-H "x-api-key: {api_key}"</pre>
+<p>Read the <a href="https://careers-scraper-production.up.railway.app/docs" style="color:#58a6ff">full API docs</a>.</p>
+<p>Thank you for your business!</p>
+</body></html>
+"""
         msg = MIMEMultipart('alternative')
         msg['Subject'] = f"Your StackSight API Key ({tier} Tier)"
         msg['From'] = FROM_EMAIL
@@ -81,134 +81,147 @@ EXTRACTION_PROMPT = (
 LANDING_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StackSight API - Hiring Intent & Tech Stack Data</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
-        .container { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
-        .badge { display: inline-block; background: #161b22; border: 1px solid #30363d; color: #58a6ff; font-size: 0.75em; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
-        h1 { color: #58a6ff; font-size: 2.8em; margin-bottom: 12px; line-height: 1.2; }
-        .subtitle { font-size: 1.2em; color: #8b949e; margin-bottom: 50px; max-width: 600px; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 30px; margin-bottom: 24px; }
-        .card h3 { color: #e6edf3; font-size: 1.1em; margin-bottom: 12px; }
-        .card p { color: #8b949e; font-size: 0.95em; margin-bottom: 16px; }
-        input[type="email"] { width: 100%; padding: 12px 16px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: 1em; margin-bottom: 12px; outline: none; }
-        input[type="email"]:focus { border-color: #58a6ff; }
-        button { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1em; cursor: pointer; width: 100%; font-weight: 600; }
-        button:hover { background: #2ea043; }
-        .key-display { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 14px; font-family: monospace; font-size: 0.9em; color: #79c0ff; margin-top: 12px; display: none; word-break: break-all; }
-        pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 20px; overflow-x: auto; margin: 16px 0; }
-        code { color: #79c0ff; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
-        .pricing { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
-        .price-box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; text-align: center; }
-        .price-box.featured { border-color: #58a6ff; }
-        .price-box h3 { color: #e6edf3; margin-bottom: 8px; }
-        .price-box .price { font-size: 2em; font-weight: 700; color: #58a6ff; margin: 12px 0; }
-        .price-box ul { list-style: none; color: #8b949e; font-size: 0.9em; text-align: left; }
-        .price-box ul li { padding: 5px 0; }
-        .price-box ul li::before { content: "\u2713 "; color: #2ea043; }
-        .price-box button { margin-top: 16px; background: #238636; }
-        .price-box.featured button { background: #1f6feb; }
-        .price-box.featured button:hover { background: #388bfd; }
-        .section-title { font-size: 1.5em; color: #e6edf3; margin: 50px 0 20px; }
-        .endpoint-row { display: flex; align-items: center; gap: 12px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
-        .method { background: #0d7a3c; color: white; font-size: 0.8em; font-weight: 700; padding: 3px 10px; border-radius: 4px; font-family: monospace; }
-        .path { color: #79c0ff; font-family: monospace; }
-        .desc { color: #8b949e; font-size: 0.9em; margin-left: auto; }
-        footer { border-top: 1px solid #30363d; margin-top: 60px; padding-top: 30px; color: #8b949e; font-size: 0.9em; text-align: center; }
-        footer a { color: #58a6ff; text-decoration: none; }
-        @media (max-width: 600px) { .pricing { grid-template-columns: 1fr; } h1 { font-size: 2em; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackSight API - Hiring Intent & Tech Stack Data</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+.container { max-width: 860px; margin: 0 auto; padding: 60px 20px; }
+.badge { display: inline-block; background: #161b22; border: 1px solid #30363d; color: #58a6ff; font-size: 0.75em; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; }
+h1 { color: #58a6ff; font-size: 2.8em; margin-bottom: 12px; line-height: 1.2; }
+.subtitle { font-size: 1.2em; color: #8b949e; margin-bottom: 50px; max-width: 600px; }
+.card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 30px; margin-bottom: 24px; }
+.card h3 { color: #e6edf3; font-size: 1.1em; margin-bottom: 12px; }
+.card p { color: #8b949e; font-size: 0.95em; margin-bottom: 16px; }
+input[type="email"] { width: 100%; padding: 12px 16px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: 1em; margin-bottom: 12px; outline: none; }
+input[type="email"]:focus { border-color: #58a6ff; }
+button { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1em; cursor: pointer; width: 100%; font-weight: 600; }
+button:hover { background: #2ea043; }
+.key-display { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 14px; font-family: monospace; font-size: 0.9em; color: #79c0ff; margin-top: 12px; display: none; word-break: break-all; }
+pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 20px; overflow-x: auto; margin: 16px 0; }
+code { color: #79c0ff; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+.pricing { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
+.price-box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; text-align: center; }
+.price-box.featured { border-color: #58a6ff; }
+.price-box h3 { color: #e6edf3; margin-bottom: 8px; }
+.price-box .price { font-size: 2em; font-weight: 700; color: #58a6ff; margin: 12px 0; }
+.price-box ul { list-style: none; color: #8b949e; font-size: 0.9em; text-align: left; }
+.price-box ul li { padding: 5px 0; }
+.price-box ul li::before { content: "\\2713 "; color: #2ea043; }
+.price-box button { margin-top: 16px; background: #238636; }
+.price-box.featured button { background: #1f6feb; }
+.price-box.featured button:hover { background: #388bfd; }
+.section-title { font-size: 1.5em; color: #e6edf3; margin: 50px 0 20px; }
+.endpoint-row { display: flex; align-items: center; gap: 12px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
+.method { background: #0d7a3c; color: white; font-size: 0.8em; font-weight: 700; padding: 3px 10px; border-radius: 4px; font-family: monospace; }
+.path { color: #79c0ff; font-family: monospace; }
+.desc { color: #8b949e; font-size: 0.9em; margin-left: auto; }
+footer { border-top: 1px solid #30363d; margin-top: 60px; padding-top: 30px; color: #8b949e; font-size: 0.9em; text-align: center; }
+footer a { color: #58a6ff; text-decoration: none; }
+.demo-btn { display: inline-block; background: #1f6feb; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-bottom: 16px; }
+@media (max-width: 600px) { .pricing { grid-template-columns: 1fr; } h1 { font-size: 2em; } }
+</style>
 </head>
 <body>
 <div class="container">
-    <div class="badge">&#x1F680; Now on RapidAPI</div>
-    <h1>StackSight API</h1>
-    <p class="subtitle">Real-time B2B hiring intent and tech stack detection for any company domain. Know which companies are growing, hiring engineers, and which tools they use &mdash; before your competitors do.</p>
+<div class="badge">&#x1F680; Now on RapidAPI</div>
+<h1>StackSight API</h1>
+<p class="subtitle">Real-time B2B hiring intent and tech stack detection for any company domain. Know which companies are growing, hiring engineers, and which tools they use &mdash; before your competitors do.</p>
 
-    <div class="card">
-        <h3>&#x26A1; Quick Start &mdash; Free Tier</h3>
-        <p>Get 50 free API requests instantly. No credit card required.</p>
-        <input type="email" id="email" placeholder="you@company.com">
-        <button onclick="generateKey()">Get My Free API Key</button>
-        <div class="key-display" id="keyResult"></div>
-    </div>
+<div class="card">
+<h3>&#x26A1; See It In Action</h3>
+<p>Try the live demo â no API key needed:</p>
+<a href="/demo/stripe.com" class="demo-btn">&#x1F50D; Live Demo: Stripe.com</a>
+<p>Or get 50 free requests instantly:</p>
+<input type="email" id="email" placeholder="you@company.com">
+<button onclick="generateKey()">Get My Free API Key</button>
+<div class="key-display" id="keyResult"></div>
+</div>
 
-    <h2 class="section-title">Try It Now</h2>
-    <div class="card">
-        <h3>Example Request</h3>
-        <pre><code id="curlExample">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
-     -H "X-API-Key: YOUR_API_KEY"</code></pre>
-        <h3 style="margin-top:20px;">Example Response</h3>
-        <pre><code>{
+<h2 class="section-title">Try It Now</h2>
+<div class="card">
+<h3>Example Request</h3>
+<pre><code id="curlExample">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\
+-H "X-API-Key: YOUR_API_KEY"</code></pre>
+<h3 style="margin-top:20px;">Example Response</h3>
+<pre><code>{
   "company_name": "Stripe",
   "is_hiring": true,
   "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"],
   "sales_roles": ["Account Executive", "Solutions Engineer"],
   "detected_tech_stack": ["Go", "Ruby", "AWS", "Kubernetes", "Kafka"]
 }</code></pre>
-    </div>
+</div>
 
-    <h2 class="section-title">Endpoints</h2>
-    <div class="endpoint-row">
-        <span class="method">GET</span>
-        <span class="path">/scrape?domain={domain}</span>
-        <span class="desc">Scrape hiring intent + tech stack for a domain</span>
-    </div>
-    <div class="endpoint-row">
-        <span class="method">GET</span>
-        <span class="path">/docs</span>
-        <span class="desc">Interactive Swagger documentation</span>
-    </div>
-    <div class="endpoint-row">
-        <span class="method">GET</span>
-        <span class="path">/health</span>
-        <span class="desc">API health check</span>
-    </div>
+<h2 class="section-title">Endpoints</h2>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/scrape?domain={domain}</span>
+<span class="desc">Scrape hiring intent + tech stack for a domain</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/demo/{domain}</span>
+<span class="desc">Interactive HTML demo â no API key needed</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/me</span>
+<span class="desc">View your plan, usage, and remaining requests</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/docs</span>
+<span class="desc">Interactive Swagger documentation</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/health</span>
+<span class="desc">API health check</span>
+</div>
 
-    <h2 class="section-title">Pricing</h2>
-    <div class="pricing">
-        <div class="price-box">
-            <h3>Free</h3>
-            <div class="price">$0<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
-            <ul>
-                <li>50 requests/month</li>
-                <li>1 request/second</li>
-                <li>JSON responses</li>
-                <li>Community support</li>
-            </ul>
-            <button onclick="document.getElementById('email').focus()">Get Started</button>
-        </div>
-        <div class="price-box featured">
-            <h3>Pro</h3>
-            <div class="price">$49<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
-            <ul>
-                <li>2,500 requests/month</li>
-                <li>10 requests/second</li>
-                <li>Redis-cached responses</li>
-                <li>Priority support</li>
-            </ul>
-            <button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Subscribe on RapidAPI</button>
-        </div>
-        <div class="price-box">
-            <h3>Business</h3>
-            <div class="price">$199<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
-            <ul>
-                <li>15,000 requests/month</li>
-                <li>Unlimited rate limit</li>
-                <li>Webhook support</li>
-                <li>Dedicated support</li>
-            </ul>
-            <button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Contact Sales</button>
-        </div>
-    </div>
+<h2 class="section-title">Pricing</h2>
+<div class="pricing">
+<div class="price-box">
+<h3>Free</h3>
+<div class="price">$0<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
+<ul>
+<li>50 requests/month</li>
+<li>1 request/second</li>
+<li>JSON responses</li>
+<li>Community support</li>
+</ul>
+<button onclick="document.getElementById('email').focus()">Get Started</button>
+</div>
+<div class="price-box featured">
+<h3>Pro</h3>
+<div class="price">$49<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
+<ul>
+<li>2,500 requests/month</li>
+<li>10 requests/second</li>
+<li>Redis-cached responses</li>
+<li>Priority support</li>
+</ul>
+<button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Subscribe on RapidAPI</button>
+</div>
+<div class="price-box">
+<h3>Business</h3>
+<div class="price">$199<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
+<ul>
+<li>15,000 requests/month</li>
+<li>Unlimited rate limit</li>
+<li>Webhook support</li>
+<li>Dedicated support</li>
+</ul>
+<button onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Contact Sales</button>
+</div>
+</div>
 
-    <footer>
-        <p>StackSight API &mdash; <a href="/docs">Documentation</a> &middot; <a href="https://rapidapi.com" target="_blank">RapidAPI</a> &middot; Built with FastAPI</p>
-        <p style="margin-top:8px;">Questions? Email <a href="mailto:ngrynai@gmail.com">ngrynai@gmail.com</a></p>
-    </footer>
+<footer>
+<p>StackSight API &mdash; <a href="/docs">Documentation</a> &middot; <a href="https://rapidapi.com" target="_blank">RapidAPI</a> &middot; Built with FastAPI</p>
+<p style="margin-top:8px;">Questions? Email <a href="mailto:ngrynai@gmail.com">ngrynai@gmail.com</a></p>
+</footer>
 </div>
 <script>
 async function generateKey() {
@@ -227,8 +240,8 @@ async function generateKey() {
         if (data.api_key) {
             const box = document.getElementById('keyResult');
             box.style.display = 'block';
-            box.innerHTML = '<strong style="color:#2ea043">\u2713 Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
-            document.getElementById('curlExample').textContent = 'curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\\n     -H "X-API-Key: ' + data.api_key + '"';
+            box.innerHTML = '<strong style="color:#2ea043">\\u2713 Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
+            document.getElementById('curlExample').textContent = 'curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\\\\\n -H "X-API-Key: ' + data.api_key + '"';
         } else {
             alert(data.detail || 'Error generating key. Please try again.');
         }
@@ -245,7 +258,7 @@ async function generateKey() {
 class FreeKeyRequest(BaseModel):
     email: str
 
-# Connection pool — initialized once at startup, shared across all requests
+# Connection pool â initialized once at startup, shared across all requests
 postgre_pool = None
 
 def init_pool():
@@ -271,7 +284,7 @@ def get_db_connection():
         postgre_pool.putconn(conn)
 
 def get_db():
-    """Legacy: open a single connection (used where pool isn't available)."""
+    """Legacy: open a single connection."""
     return psycopg2.connect(DATABASE_URL)
 
 def init_db():
@@ -305,6 +318,7 @@ async def startup():
 async def landing():
     return HTMLResponse(content=LANDING_HTML)
 
+@app.post("/generate-key")
 @app.post("/generate-free-key")
 async def generate_free_key(body: FreeKeyRequest):
     if not DATABASE_URL:
@@ -363,7 +377,7 @@ async def success(session_id: str = ""):
                 cur.close(); conn.close()
         except Exception as e:
             print(f"Success page error: {e}")
-    html = f"""<!DOCTYPE html><html><head><title>HireSignal - Success</title>
+    html = f"""<!DOCTYPE html><html><head><title>StackSight - Success</title>
 <style>body{{font-family:system-ui;max-width:600px;margin:80px auto;padding:0 20px;background:#0f0f0f;color:#e0e0e0}}
 .card{{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:32px}}
 h1{{color:#4caf50}}code{{background:#111;padding:12px;border-radius:8px;display:block;word-break:break-all;margin-top:12px}}</style></head>
@@ -397,33 +411,31 @@ async def verify_api_key(
             cur.execute("SELECT * FROM api_keys WHERE key = %s", (x_api_key,))
             row = cur.fetchone()
             cur.close()
-        if not row:
-            raise HTTPException(status_code=401, detail="Invalid API key")
-        monthly_limit = row["monthly_limit"]
-        plan = row["plan"]
+            if not row:
+                raise HTTPException(status_code=401, detail="Invalid API key")
+            monthly_limit = row["monthly_limit"]
+            plan = row["plan"]
 
-        # Store rate limit info on request.state for scrape() to use
-        import time
-        current_month = time.strftime("%Y-%m")
-        redis_key = f"usage:{x_api_key}:{current_month}"
-        current_count = int(redis_client.get(redis_key) or 0)
-        if current_count >= monthly_limit:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Rate limit exceeded. {plan.capitalize()} tier limit: {monthly_limit} requests/month"
-            )
-        request.state.redis_key = redis_key
-        request.state.monthly_limit = monthly_limit
-        request.state.rate_limit = monthly_limit
-        request.state.rate_remaining = max(0, monthly_limit - current_count)
-        request.state.plan = plan
-        return x_api_key
+            current_month = time.strftime("%Y-%m")
+            redis_key = f"usage:{x_api_key}:{current_month}"
+            current_count = int(redis_client.get(redis_key) or 0)
+            if current_count >= monthly_limit:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Rate limit exceeded. {plan.capitalize()} tier limit: {monthly_limit} requests/month"
+                )
+            request.state.redis_key = redis_key
+            request.state.monthly_limit = monthly_limit
+            request.state.rate_limit = monthly_limit
+            request.state.rate_remaining = max(0, monthly_limit - current_count)
+            request.state.plan = plan
+            return x_api_key
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Auth error: {str(e)}")
 
-
+@app.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
@@ -433,7 +445,7 @@ async def stripe_webhook(request: Request):
         except stripe.error.SignatureVerificationError:
             raise HTTPException(status_code=400, detail="Invalid signature")
     else:
-        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured — rejecting request")
+        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured â rejecting request")
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         email = session.get("customer_details", {}).get("email", "").lower()
@@ -458,6 +470,61 @@ async def stripe_webhook(request: Request):
                 print(f"Webhook error: {e}")
     return {"status": "ok"}
 
+def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
+    """Detects tech stack via regex on HTML/Scripts. Free and fast."""
+    combined = html_source + " " + " ".join(scripts)
+    tech = set()
+    # Frontend
+    if "react" in combined.lower() or "react-dom" in combined.lower():
+        tech.add("React")
+    if "vue" in combined.lower() or "vue.js" in combined.lower():
+        tech.add("Vue")
+    if "angular" in combined.lower():
+        tech.add("Angular")
+    if "next.js" in combined.lower() or "_next/" in combined.lower():
+        tech.add("Next.js")
+    # Backend/Infra
+    if "aws" in combined.lower() or "amazonaws" in combined.lower():
+        tech.add("AWS")
+    if "cloudflare" in combined.lower():
+        tech.add("Cloudflare")
+    if "vercel" in combined.lower():
+        tech.add("Vercel")
+    if "docker" in combined.lower():
+        tech.add("Docker")
+    # Analytics/Tools
+    if "google-analytics" in combined.lower() or "gtag" in combined.lower():
+        tech.add("Google Analytics")
+    if "sentry" in combined.lower():
+        tech.add("Sentry")
+    if "stripe" in combined.lower():
+        tech.add("Stripe")
+    return list(tech)
+
+async def find_careers_url(page, base_domain: str) -> str:
+    """Load homepage and follow links containing careers/jobs/team keywords."""
+    keywords = ["career", "careers", "jobs", "job", "team", "work", "hiring", "join"]
+    try:
+        await page.goto(base_domain, wait_until="domcontentloaded", timeout=15000)
+        links = await page.evaluate("""() => {
+            return Array.from(document.querySelectorAll('a[href]')).map(a => ({
+                href: a.href,
+                text: a.innerText.toLowerCase().trim()
+            }));
+        }""")
+        for link in links:
+            href = link.get('href', '')
+            text = link.get('text', '')
+            if any(kw in text for kw in keywords) or any(kw in href.lower() for kw in keywords):
+                if href.startswith('http') and (base_domain.replace('https://', '').replace('http://', '').split('/')[0] in href or href.startswith('/')):
+                    if href.startswith('/'):
+                        href = base_domain.rstrip('/') + href
+                    return href
+    except Exception:
+        pass
+    # Fallback: guess common paths
+    return base_domain.rstrip('/') + "/careers"
+
 async def scrape_page(domain: str):
     domain = domain.strip().lower().rstrip("/")
     if not domain.startswith("http"):
@@ -466,14 +533,12 @@ async def scrape_page(domain: str):
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.set_extra_http_headers({"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"})
-        # Dynamic careers URL discovery via homepage link following
         careers_url = await find_careers_url(page, domain)
         try:
             resp = await page.goto(careers_url, wait_until="domcontentloaded", timeout=15000)
             if resp and resp.status < 400:
                 await asyncio.sleep(2)
                 text = await page.inner_text("body")
-                # Extract script tags for better tech stack detection
                 scripts = await page.evaluate("""() => Array.from(document.querySelectorAll('script[src]')).map(s => s.src).filter(Boolean)""")
                 if scripts:
                     text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
@@ -506,16 +571,12 @@ def extract_with_openai(raw_text: str):
 @app.get("/me")
 async def me(request: Request, api_key: str = Security(verify_api_key)):
     """Return the current user's plan, monthly limit, and Redis usage count."""
-    import time
     current_month = time.strftime("%Y-%m")
     redis_key = f"usage:{api_key}:{current_month}"
     current_count = int(redis_client.get(redis_key) or 0)
-
-    # Get plan details from Postgres (or fallback)
     monthly_limit = getattr(request.state, "monthly_limit", 0)
     plan = getattr(request.state, "plan", "free")
     rate_remaining = max(0, monthly_limit - current_count)
-
     return {
         "api_key": api_key[:8] + "...",
         "plan": plan,
@@ -525,65 +586,7 @@ async def me(request: Request, api_key: str = Security(verify_api_key)):
         "billing_period": current_month,
     }
 
-
 @app.get("/scrape")
-def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
-    """Detects tech stack via regex on HTML/Scripts. Free and fast."""
-    combined = html_source + " " + " ".join(scripts)
-    tech = set()
-    # Frontend
-    if "react" in combined.lower() or "react-dom" in combined.lower():
-        tech.add("React")
-    if "vue" in combined.lower() or "vue.js" in combined.lower():
-        tech.add("Vue")
-    if "angular" in combined.lower():
-        tech.add("Angular")
-    if "next.js" in combined.lower() or "_next/" in combined.lower():
-        tech.add("Next.js")
-    # Backend/Infra
-    if "aws" in combined.lower() or "amazonaws" in combined.lower():
-        tech.add("AWS")
-    if "cloudflare" in combined.lower():
-        tech.add("Cloudflare")
-    if "vercel" in combined.lower():
-        tech.add("Vercel")
-    if "docker" in combined.lower():
-        tech.add("Docker")
-    # Analytics/Tools
-    if "google-analytics" in combined.lower() or "gtag" in combined.lower():
-        tech.add("Google Analytics")
-    if "sentry" in combined.lower():
-        tech.add("Sentry")
-    if "stripe" in combined.lower():
-        tech.add("Stripe")
-    return list(tech)
-
-
-async def find_careers_url(page, base_domain: str) -> str:
-    """Load homepage and follow links containing careers/jobs/team keywords."""
-    keywords = ["career", "careers", "jobs", "job", "team", "work", "hiring", "join"]
-    try:
-        await page.goto(base_domain, wait_until="domcontentloaded", timeout=15000)
-        links = await page.evaluate("""() => {
-            return Array.from(document.querySelectorAll('a[href]')).map(a => ({
-                href: a.href,
-                text: a.innerText.toLowerCase().trim()
-            }));
-        }""")
-        for link in links:
-            href = link.get('href', '')
-            text = link.get('text', '')
-            if any(kw in text for kw in keywords) or any(kw in href.lower() for kw in keywords):
-                if href.startswith('http') and (base_domain.replace('https://', '').replace('http://', '').split('/')[0] in href or href.startswith('/')):
-                    if href.startswith('/'):
-                        href = base_domain.rstrip('/') + href
-                    return href
-    except Exception:
-        pass
-    # Fallback: guess common paths
-    return base_domain.rstrip('/') + "/careers"
-
-
 async def scrape(domain: str, request: Request, response: Response, api_key: str = Security(verify_api_key)):
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
@@ -601,12 +604,12 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
             return {"source": "live", "domain": domain, "detected_tech_stack": local_tech_stack, "job_listings": [], "note": "No job content found"}
         extracted = extract_with_openai(raw_text)
         extracted["detected_tech_stack"] = local_tech_stack
-        # Cache ONLY on success — ensure extracted data has meaningful content
+        # Cache ONLY on success
         if extracted and extracted.get("company_name"):
             redis_client.setex(cache_key, 604800, json.dumps(extracted))
         else:
             print(f"[WARN] Extracted data empty or missing company_name for {domain}. Not caching.")
-        # Increment usage counter only for live scrapes (cache hits are free)
+        # Increment usage only for live scrapes (cache hits are free)
         redis_key = getattr(request.state, "redis_key", None)
         if redis_key:
             new_count = redis_client.incr(redis_key)
@@ -623,6 +626,119 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
         print(f"[ERROR] Failed to scrape {domain}: {str(e)}")
         return {"source": "error", "domain": domain, "error": f"Scrape failed: {str(e)}"}
 
+@app.get("/demo/{domain}", response_class=HTMLResponse)
+async def demo_endpoint(domain: str, request: Request):
+    """Public interactive demo â no API key required. Rate-limited to 5/hour per IP."""
+    client_ip = request.client.host if request.client else "unknown"
+    demo_limit_key = f"demo_limit:{client_ip}"
+    count = redis_client.incr(demo_limit_key)
+    if count == 1:
+        redis_client.expire(demo_limit_key, 3600)
+    if count > 5:
+        return HTMLResponse(
+            "<html><body style='font-family:sans-serif;max-width:600px;margin:80px auto;padding:20px'>"
+            "<h2>Demo limit reached</h2>"
+            "<p>You've used 5 free demos this hour. <a href='/'>Get a free API key</a> for full access.</p>"
+            "</body></html>",
+            status_code=429
+        )
+
+    # Check cache first
+    cache_key = f"domain:{domain}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        data = json.loads(cached)
+        source = "cache"
+    else:
+        try:
+            raw_text, url, status = await scrape_page(domain)
+            local_tech_stack = detect_tech_stack_locally(raw_text, [])
+            job_keywords = ["job", "career", "position", "role", "hiring", "opening", "apply", "vacancy"]
+            if len(raw_text) < 500 or not any(kw in raw_text.lower() for kw in job_keywords):
+                data = {
+                    "company_name": domain.split('.')[0].capitalize(),
+                    "is_hiring": False,
+                    "engineering_roles": [],
+                    "sales_roles": [],
+                    "detected_tech_stack": local_tech_stack,
+                }
+            else:
+                data = extract_with_openai(raw_text)
+                data["detected_tech_stack"] = local_tech_stack
+                if data.get("company_name"):
+                    redis_client.setex(cache_key, 604800, json.dumps(data))
+            source = "live"
+        except Exception as e:
+            return HTMLResponse(
+                f"<html><body style='font-family:sans-serif;max-width:600px;margin:80px auto;padding:20px'>"
+                f"<h2>Error scraping {domain}</h2><p>{str(e)}</p>"
+                f"<p><a href='/'>Back to home</a></p></body></html>",
+                status_code=500
+            )
+
+    def fmt_list(items):
+        if not items:
+            return "<li style='color:#888'>None detected</li>"
+        return "".join(f"<li>{item}</li>" for item in items)
+
+    hiring_badge = (
+        '<span style="background:#2ea043;color:white;padding:4px 10px;border-radius:4px">Actively Hiring</span>'
+        if data.get("is_hiring") else
+        '<span style="background:#6e7681;color:white;padding:4px 10px;border-radius:4px">Not Hiring / Unknown</span>'
+    )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StackSight Demo â {data.get('company_name', domain)}</title>
+<style>
+body {{ font-family: -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; max-width: 800px; margin: 40px auto; padding: 20px; }}
+h1 {{ color: #58a6ff; }} h2 {{ color: #e6edf3; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin: 24px 0 12px; }}
+.card {{ background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }}
+ul {{ list-style: none; padding: 0; }}
+li {{ background: #0d1117; margin: 5px 0; padding: 10px 14px; border-radius: 4px; border: 1px solid #21262d; }}
+.meta {{ color: #8b949e; font-size: 0.85em; margin-bottom: 20px; }}
+.cta {{ display: inline-block; background: #238636; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }}
+pre {{ background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 16px; overflow-x: auto; }}
+code {{ color: #79c0ff; font-family: monospace; font-size: 0.9em; }}
+</style>
+</head>
+<body>
+<h1>StackSight Demo: {data.get('company_name', domain)}</h1>
+<p class="meta">Domain: <strong>{domain}</strong> &nbsp;|&nbsp; Source: <strong>{source}</strong></p>
+
+<div class="card">
+<h2>Hiring Status</h2>
+{hiring_badge}
+</div>
+
+<div class="card">
+<h2>Engineering Roles</h2>
+<ul>{fmt_list(data.get('engineering_roles', []))}</ul>
+</div>
+
+<div class="card">
+<h2>Sales Roles</h2>
+<ul>{fmt_list(data.get('sales_roles', []))}</ul>
+</div>
+
+<div class="card">
+<h2>Detected Tech Stack</h2>
+<ul>{fmt_list(data.get('detected_tech_stack', []))}</ul>
+</div>
+
+<div class="card">
+<h2>Raw JSON</h2>
+<pre><code>{json.dumps(data, indent=2)}</code></pre>
+</div>
+
+<a href="/" class="cta">Get Your Free API Key â 50 Requests/Month</a>
+</body>
+</html>"""
+    return HTMLResponse(content=html)
+
 @app.get("/scrape/raw")
 async def scrape_raw(domain: str):
     raw_text, url, status = await scrape_page(domain)
@@ -637,11 +753,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "7.0.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
-
-if __name__ == "__main__":
-    uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
-
+    return {"status": "ok", "version": "8.0.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -653,20 +765,17 @@ async def admin_stats(admin_password: str = Query(None)):
 
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            # 1. User counts by plan
             cur.execute("SELECT plan, COUNT(*) FROM api_keys GROUP BY plan")
             plan_counts = dict(cur.fetchall())
             stats["users_by_plan"] = plan_counts
             stats["total_users"] = sum(plan_counts.values())
 
-            # 2. Estimated Monthly Recurring Revenue
             mrr = 0
             for plan, count in plan_counts.items():
                 if plan == "pro": mrr += count * 49
                 elif plan == "business": mrr += count * 199
             stats["estimated_mrr"] = mrr
 
-            # 3. Recent signups (last 5)
             try:
                 cur.execute("SELECT email, plan, created_at FROM api_keys ORDER BY created_at DESC LIMIT 5")
                 recent = cur.fetchall()
@@ -674,7 +783,6 @@ async def admin_stats(admin_password: str = Query(None)):
             except Exception:
                 stats["recent_signups"] = []
 
-    # 4. Redis cache performance
     try:
         redis_info = redis_client.info()
         stats["redis"] = {
@@ -685,13 +793,12 @@ async def admin_stats(admin_password: str = Query(None)):
     except Exception:
         stats["redis"] = "unavailable"
 
-    # 5. Total API usage this month across all users
-    import time
     current_month = time.strftime("%Y-%m")
     usage_keys = redis_client.keys(f"usage:*:{current_month}")
-    total_usage = 0
-    for key in usage_keys:
-        total_usage += int(redis_client.get(key) or 0)
+    total_usage = sum(int(redis_client.get(k) or 0) for k in usage_keys)
     stats["total_api_calls_this_month"] = total_usage
 
     return stats
+
+if __name__ == "__main__":
+    uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
