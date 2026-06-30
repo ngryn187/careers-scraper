@@ -422,6 +422,12 @@ def init_db():
                 UNIQUE(api_key, domain)
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS newsletter_subs (
+                email VARCHAR(255) PRIMARY KEY,
+                subscribed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
         conn.commit()
         cur.close()
         conn.close()
@@ -882,7 +888,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.8.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.9.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -1199,6 +1205,76 @@ tr:hover td{{background:#1c2128}}
 <div class="cta"><a href="/">Get API Access → Scrape any company's hiring data in 1 line of code</a></div>
 </body></html>"""
     return HTMLResponse(content=html)
+
+
+class EmailPayload(BaseModel):
+    email: str
+
+
+@app.post("/newsletter/subscribe")
+async def newsletter_subscribe(payload: EmailPayload):
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO newsletter_subs (email) VALUES (%s)
+            ON CONFLICT (email) DO NOTHING
+        """, (payload.email,))
+        conn.commit()
+        cur.close()
+    return {"status": "success", "message": "Subscribed! You'll get weekly hiring updates."}
+
+
+@app.post("/cron/send-newsletter")
+async def send_newsletter_cron(secret: str = Query(None)):
+    if secret != os.getenv("CRON_SECRET", ""):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    keys = redis_client.keys("domain:*")
+    companies = []
+    for key in keys:
+        try:
+            cached_data = redis_client.get(key)
+            if cached_data:
+                data = json.loads(cached_data)
+                domain = key.split(":", 1)[1] if isinstance(key, str) else key.decode().split(":", 1)[1]
+                score = len(data.get("sample_job_titles", [])) + len(data.get("departments", []))
+                companies.append({"name": data.get("company_name", domain), "domain": domain, "jobs": data.get("sample_job_titles", [])[:3], "score": score})
+        except Exception:
+            continue
+    companies.sort(key=lambda x: x["score"], reverse=True)
+    top_5 = companies[:5]
+    rows = ""
+    for c in top_5:
+        jobs = ", ".join(c["jobs"]) if c["jobs"] else "N/A"
+        rows += f'<li><strong>{c["name"]}</strong> is hiring: {jobs}. <a href="https://careers-scraper-production.up.railway.app/demo/{c["domain"]}">View full data →</a></li>'
+    html_body = f"""<html><body style="font-family:sans-serif;background:#0d1117;color:#e6edf3;padding:2rem">
+<h2 style="color:#f0f6fc">🔥 Weekly Hiring Update from StackSight</h2>
+<p>Here are the top companies actively hiring this week:</p>
+<ul style="line-height:2">{rows}</ul>
+<p>Want to scrape any company in 1 line? <a href="https://careers-scraper-production.up.railway.app" style="color:#58a6ff">Get API access →</a></p>
+<p style="color:#666;font-size:.8rem">Unsubscribe: reply to this email with "unsubscribe"</p>
+</body></html>"""
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT email FROM newsletter_subs")
+        subs = cur.fetchall()
+        cur.close()
+    sent_count = 0
+    for sub in subs:
+        email = sub[0]
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = "Weekly Update: Companies Hiring Right Now"
+            msg['From'] = os.getenv("FROM_EMAIL", SMTP_USERNAME)
+            msg['To'] = email
+            msg.attach(MIMEText(html_body, 'html'))
+            with smtplib.SMTP(os.getenv("SMTP_SERVER", "smtp.gmail.com"), int(os.getenv("SMTP_PORT", 587))) as server:
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.sendmail(os.getenv("FROM_EMAIL", SMTP_USERNAME), email, msg.as_string())
+            sent_count += 1
+        except Exception as e:
+            print(f"[NEWSLETTER ERROR] Failed to send to {email}: {e}")
+    return {"status": "success", "emails_sent": sent_count}
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
