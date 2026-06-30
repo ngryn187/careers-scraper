@@ -1,3 +1,4 @@
+![API Tests](https://github.com/ngryn187/careers-scraper/actions/workflows/tests.yml/badge.svg)
 # StackSight API — Real-time B2B Hiring Intent & Tech Stack Detection
 
 ## 🚀 Try It Instantly
