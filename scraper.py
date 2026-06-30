@@ -903,7 +903,7 @@ async def background_scrape(domain: str):
         if data.get("company_name"):
             redis_client.setex(cache_key, 604800, json.dumps(data))
             print(f"[BACKGROUND] Cached result for {domain}")
-  # except Exception as e:
+    except Exception as e:
         print(f"[BACKGROUND ERROR] {domain}: {e}")
 
 
