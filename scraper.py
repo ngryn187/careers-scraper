@@ -888,7 +888,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.11.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.12.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -1277,6 +1277,38 @@ async def send_newsletter_cron(secret: str = Query(None)):
     return {"status": "success", "emails_sent": sent_count}
 
 
+
+
+@app.get("/badge/{domain}.svg", response_class=Response)
+async def hiring_badge(domain: str):
+    cache_key = "domain:" + domain
+    cached_data = redis_client.get(cache_key)
+    is_hiring = False
+    if cached_data:
+        data = json.loads(cached_data)
+        is_hiring = data.get("is_hiring", False)
+    label = "Hiring" if is_hiring else "Not Hiring"
+    color = "#28a745" if is_hiring else "#dc3545"
+    text_len = "370" if is_hiring else "600"
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="20" role="img">'
+        '<linearGradient id="s" x2="0" y2="100%">'
+        '<stop offset="0" stop-color="#bbb" stop-opacity=".1"/>'
+        '<stop offset="1" stop-opacity=".1"/>'
+        '</linearGradient>'
+        '<clipPath id="r"><rect width="120" height="20" rx="3" fill="#fff"/></clipPath>'
+        '<g clip-path="url(#r)">'
+        '<rect width="65" height="20" fill="#555"/>'
+        '<rect x="65" width="55" height="20" fill="' + color + '"/>'
+        '<rect width="120" height="20" fill="url(#s)"/>'
+        '</g>'
+        '<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,sans-serif" font-size="110">'
+        '<text x="325" y="140" transform="scale(.1)" textLength="550">StackSight</text>'
+        '<text x="925" y="140" transform="scale(.1)" textLength="' + text_len + '">' + label + '</text>'
+        '</g>'
+        '</svg>'
+    )
+    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": "no-cache, max-age=0"})
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
