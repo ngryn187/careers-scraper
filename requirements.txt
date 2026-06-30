@@ -9,3 +9,5 @@ stripe
 
 python-multipart
 httpx
+pytest
+pytest-asyncio
