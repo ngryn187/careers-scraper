@@ -7,7 +7,7 @@ import time
 
 import openai
 import psycopg2
-import psycopg2.extras
+import psycopg2.extrash
 import psycopg2.pool
 from contextlib import contextmanager, asynccontextmanager
 import redis as redis_lib
@@ -200,7 +200,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 
 <div class="card" id="get-key">
 <h3>&#x26A1; Get Started Free</h3>
-<p>50 requests/month, no credit card required:</p>
+<p>5 requests/month, no credit card required:</p>
 <input type="email" id="email" placeholder="you@company.com">
 <button class="gen-btn" onclick="generateKey()">Get My Free API Key</button>
 <div class="key-display" id="keyResult"></div>
@@ -279,7 +279,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>Redis-cached responses</li>
 <li>Priority support</li>
 </ul>
-<button class="plan-btn" onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Subscribe on RapidAPI</button>
+<button class="plan-btn" onclick="window.location.href='mailto:ngrynai@gmail.com?subject=StackSight%20Pro%20Subscription'">Subscribe on RapidAPI</button>
 </div>
 <div class="price-box">
 <h3>Business</h3>
@@ -670,7 +670,31 @@ async def scrape_page(domain: str):
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
+        # Fallback: try common direct paths
+    fallback_paths = [
+        "/about/careers", "/company/careers", "/company/jobs",
+        "/open-positions", "/open-roles", "/join-us", "/join",
+        "/hiring", "/work-with-us", "/about/jobs",
+    ]
+    for path in fallback_paths:
+        try:
+            r = await page.goto(domain.rstrip("/") + path, wait_until="domcontentloaded", timeout=8000)
+            if r and r.status < 400:
+                body = await page.inner_text("body")
+                if any(k in body.lower() for k in ["apply", "position", "role", "opening", "vacancy"]):
+                    return domain.rstrip("/") + path
+        except Exception:
+            continue
+    # Try careers subdomain
+    try:
+        dom_root = domain.replace("https://", "").replace("http://", "").split("/")[0]
+        sub = "https://careers." + dom_root
+        r = await page.goto(sub, wait_until="domcontentloaded", timeout=8000)
+        if r and r.status < 400:
+            return sub
+    except Exception:
+        pass
+    raise HTTPException(status_code=404, detail="No careers/jobs page found for " + domain)
     finally:
         await page.close()
 
