@@ -16,7 +16,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import FastAPI, HTTPException, Security, Header, Request, Response, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List
 import uvicorn
@@ -828,7 +829,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.3.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.4.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -902,7 +903,7 @@ async def background_scrape(domain: str):
         if data.get("company_name"):
             redis_client.setex(cache_key, 604800, json.dumps(data))
             print(f"[BACKGROUND] Cached result for {domain}")
-    except Exception as e:
+  # except Exception as e:
         print(f"[BACKGROUND ERROR] {domain}: {e}")
 
 
@@ -999,6 +1000,37 @@ async def warm_cache(
         "already_cached": already_cached,
         "queued_for_scrape": queued_count,
     }
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots():
+    return """User-agent: *
+Allow: /
+Disallow: /scrape
+Disallow: /me
+Disallow: /admin
+Sitemap: https://careers-scraper-production.up.railway.app/sitemap.xml
+"""
+
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    top_domains = [
+        "stripe.com", "notion.so", "airbnb.com", "uber.com", "shopify.com",
+        "figma.com", "github.com", "gitlab.com", "twilio.com", "sendgrid.com",
+        "cloudflare.com", "vercel.com", "netlify.com", "supabase.com", "planetscale.com",
+        "linear.app", "slack.com", "zoom.us", "asana.com", "monday.com",
+        "hubspot.com", "salesforce.com", "zendesk.com", "intercom.com", "mixpanel.com",
+        "datadog.com", "newrelic.com", "pagerduty.com", "amplitude.com", "segment.com",
+    ]
+    base_url = "https://careers-scraper-production.up.railway.app"
+    today = datetime.now().strftime("%Y-%m-%d")
+    urls = [f"<url><loc>{base_url}/</loc><lastmod>{today}</lastmod><priority>1.0</priority></url>"]
+    for domain in top_domains:
+        urls.append(f'<url><loc>{base_url}/demo/{domain}</loc><lastmod>{today}</lastmod><priority>0.8</priority></url>')
+    urls_str = "".join(urls)
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls_str + "\n</urlset>"
+    return PlainTextResponse(content=xml_content, media_type="application/xml")
 
 
 if __name__ == "__main__":
