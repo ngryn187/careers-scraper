@@ -1,5 +1,14 @@
 # StackSight API — Real-time B2B Hiring Intent & Tech Stack Detection
 
+## 🚀 Try It Instantly
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://github.com/ngryn187/careers-scraper/blob/main/stacksight_postman_collection.json)
+
+Don't want to write code? Import our Postman Collection for 1-click API testing.
+
+> Can't use the button? Manually import `stacksight_postman_collection.json` from this repo into Postman.
+
+
 > Know which companies are hiring engineers and what tech they use — before your competitors do.
 
 [![API Status](https://img.shields.io/badge/API-Live-brightgreen)](https://careers-scraper-production.up.railway.app)
