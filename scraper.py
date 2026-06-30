@@ -1,5 +1,6 @@
 import asyncio
 import json
+import httpx
 import os
 import secrets
 import time
@@ -841,7 +842,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.5.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.6.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -1046,6 +1047,54 @@ async def get_subscriptions(api_key: str = Security(verify_api_key)):
         results = cur.fetchall()
         cur.close()
     return {"subscriptions": [{"domain": r["domain"], "webhook_url": r["webhook_url"], "last_known_status": r["last_known_status"]} for r in results]}
+
+
+@app.post("/cron/check-webhooks")
+async def check_webhooks(background_tasks: BackgroundTasks, secret: str = Query(None)):
+    if secret != os.getenv("CRON_SECRET", ""):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT id, api_key, domain, webhook_url, last_known_status FROM webhook_subscriptions")
+        subscriptions = cur.fetchall()
+        cur.close()
+    queued_count = 0
+    for sub in subscriptions:
+        sub_id, api_key, domain, webhook_url, last_known_status = sub
+        cache_key = f"domain:{domain}"
+        cached_data = redis_client.get(cache_key)
+        if cached_data:
+            data = json.loads(cached_data)
+            current_status = data.get("is_hiring", False)
+            if current_status != last_known_status:
+                background_tasks.add_task(
+                    dispatch_webhook,
+                    sub_id, api_key, domain, webhook_url, current_status, data
+                )
+                queued_count += 1
+    return {"status": "success", "total_subscriptions": len(subscriptions), "webhooks_queued": queued_count}
+
+
+async def dispatch_webhook(sub_id: int, api_key: str, domain: str, webhook_url: str, new_status: bool, data: dict):
+    payload = {
+        "event": "hiring_status_changed",
+        "domain": domain,
+        "is_hiring": new_status,
+        "timestamp": datetime.now().isoformat(),
+        "data": data,
+    }
+    headers = {"Content-Type": "application/json", "X-StackSight-Event": "hiring_status_changed"}
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.post(webhook_url, json=payload, headers=headers, timeout=10.0)
+            print(f"[WEBHOOK] Sent to {webhook_url} for {domain}. Status: {res.status_code}")
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("UPDATE webhook_subscriptions SET last_known_status = %s WHERE id = %s", (new_status, sub_id))
+            conn.commit()
+            cur.close()
+    except Exception as e:
+        print(f"[WEBHOOK ERROR] Failed to send to {webhook_url}: {e}")
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
