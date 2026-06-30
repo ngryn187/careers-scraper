@@ -359,6 +359,36 @@ def get_db_connection():
     finally:
         postgre_pool.putconn(conn)
 
+def send_usage_alert_email(user_email: str, plan: str, usage: int, limit: int):
+    """Sends email when user hits 80% or 100% of monthly quota."""
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        return
+    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    from_email = os.getenv("FROM_EMAIL", SMTP_USERNAME)
+    if usage >= limit:
+        subject = f"Action Required: StackSight API Limit Reached ({limit}/{limit})"
+        body = (f"You have reached your monthly limit of {limit} requests on the {plan} tier. "
+                f"Upgrade to continue: https://careers-scraper-production.up.railway.app")
+    else:
+        subject = f"Heads Up: StackSight API Usage at 80% ({usage}/{limit})"
+        body = (f"You've used {usage} of {limit} requests on the {plan} tier. "
+                f"Upgrade to avoid interruptions: https://careers-scraper-production.up.railway.app")
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = user_email
+    msg.attach(MIMEText(body, 'plain'))
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.sendmail(from_email, user_email, msg.as_string())
+        print(f"[EMAIL] Usage alert sent to {user_email} ({usage}/{limit})")
+    except Exception as e:
+        print(f"[EMAIL ERROR] {e}")
+
+
 def get_db():
     """Legacy: open a single connection."""
     return psycopg2.connect(DATABASE_URL)
@@ -676,7 +706,7 @@ async def me(request: Request, api_key: str = Security(verify_api_key)):
     }
 
 @app.get("/scrape")
-async def scrape(domain: str, request: Request, response: Response, api_key: str = Security(verify_api_key)):
+async def scrape(domain: str, request: Request, response: Response, background_tasks: BackgroundTasks, api_key: str = Security(verify_api_key)):
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
     if cached:
@@ -706,6 +736,16 @@ async def scrape(domain: str, request: Request, response: Response, api_key: str
                 redis_client.expire(redis_key, 35 * 24 * 3600)
             monthly_limit = getattr(request.state, "monthly_limit", 0)
             request.state.rate_remaining = max(0, monthly_limit - new_count)
+
+            # Email alert at 80% and 100% usage
+            if monthly_limit > 0 and (new_count == int(monthly_limit * 0.8) or new_count == monthly_limit):
+                with get_db_connection() as conn:
+                    _ac = conn.cursor()
+                    _ac.execute("SELECT email, plan FROM api_keys WHERE key = %s", (api_key,))
+                    _ar = _ac.fetchone()
+                    _ac.close()
+                if _ar:
+                    background_tasks.add_task(send_usage_alert_email, _ar[0], _ar[1], new_count, monthly_limit)
         response.headers["X-RateLimit-Limit"] = str(getattr(request.state, "rate_limit", "N/A"))
         response.headers["X-RateLimit-Remaining"] = str(getattr(request.state, "rate_remaining", "N/A"))
         return {"source": "live", "scrape_metadata": {"url": url, "status": status, "raw_chars": len(raw_text)}, "data": extracted}
@@ -842,7 +882,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.6.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.7.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
