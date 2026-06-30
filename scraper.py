@@ -882,7 +882,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.7.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.8.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -1135,6 +1135,70 @@ async def dispatch_webhook(sub_id: int, api_key: str, domain: str, webhook_url: 
             cur.close()
     except Exception as e:
         print(f"[WEBHOOK ERROR] Failed to send to {webhook_url}: {e}")
+
+
+@app.get("/trending", response_class=HTMLResponse)
+async def trending_companies():
+    keys = redis_client.keys("domain:*")
+    companies = []
+    for key in keys:
+        try:
+            cached_data = redis_client.get(key)
+            if cached_data:
+                data = json.loads(cached_data)
+                domain = key.split(":", 1)[1] if isinstance(key, str) else key.decode().split(":", 1)[1]
+                job_count = len(data.get("sample_job_titles", []))
+                dept_count = len(data.get("departments", []))
+                companies.append({
+                    "domain": domain,
+                    "name": data.get("company_name", domain.capitalize()),
+                    "is_hiring": data.get("is_hiring", False),
+                    "jobs": data.get("sample_job_titles", [])[:3],
+                    "departments": data.get("departments", []),
+                    "tech": data.get("detected_tech_stack", [])[:4],
+                    "score": job_count + dept_count,
+                })
+        except Exception:
+            continue
+    companies.sort(key=lambda x: x["score"], reverse=True)
+    companies = companies[:20]
+    rows = ""
+    for c in companies:
+        badge = '<span style="color:#2ea043;font-weight:bold">● Hiring</span>' if c["is_hiring"] else '<span style="color:#888">○ No Roles</span>'
+        jobs = ", ".join(c["jobs"]) if c["jobs"] else "N/A"
+        tech = ", ".join(c["tech"]) if c["tech"] else "N/A"
+        rows += f'<tr><td><a href="/demo/{c["domain"]}" style="color:#58a6ff">{c["name"]}</a></td><td>{badge}</td><td style="color:#ccc">{jobs}</td><td style="color:#aaa">{tech}</td></tr>'
+    count = len(companies)
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Live list of companies actively hiring engineers right now. Updated automatically via StackSight API.">
+<title>Trending Hiring Companies | StackSight API</title>
+<style>
+body{{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0;padding:2rem}}
+h1{{color:#f0f6fc;font-size:2rem;margin-bottom:.5rem}}
+p.sub{{color:#8b949e;margin-bottom:2rem}}
+table{{width:100%;border-collapse:collapse;background:#161b22;border-radius:8px;overflow:hidden}}
+th{{background:#21262d;color:#8b949e;padding:.75rem 1rem;text-align:left;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em}}
+td{{padding:.75rem 1rem;border-bottom:1px solid #21262d;font-size:.9rem}}
+tr:last-child td{{border-bottom:none}}
+tr:hover td{{background:#1c2128}}
+.cta{{margin-top:2rem;padding:1rem 1.5rem;background:#1f6feb22;border:1px solid #1f6feb;border-radius:8px;display:inline-block}}
+.cta a{{color:#58a6ff;text-decoration:none;font-weight:600}}
+</style>
+</head>
+<body>
+<h1>🔥 Companies Actively Hiring Right Now</h1>
+<p class="sub">Live data from {count} companies in our index. Updated automatically. Powered by <a href="/" style="color:#58a6ff">StackSight API</a>.</p>
+<table>
+<thead><tr><th>Company</th><th>Status</th><th>Open Roles (sample)</th><th>Tech Stack</th></tr></thead>
+<tbody>{rows}</tbody>
+</table>
+<div class="cta"><a href="/">Get API Access → Scrape any company's hiring data in 1 line of code</a></div>
+</body></html>"""
+    return HTMLResponse(content=html)
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
