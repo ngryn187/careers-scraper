@@ -380,6 +380,18 @@ def init_db():
             )
         """)
         conn.commit()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS webhook_subscriptions (
+                id SERIAL PRIMARY KEY,
+                api_key VARCHAR(64) REFERENCES api_keys(key),
+                domain VARCHAR(255) NOT NULL,
+                webhook_url TEXT NOT NULL,
+                last_known_status BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(api_key, domain)
+            )
+        """)
+        conn.commit()
         cur.close()
         conn.close()
     except Exception as e:
@@ -829,7 +841,7 @@ async def health():
     if DATABASE_URL:
         try: conn = get_db(); conn.close(); db_ok = True
         except: pass
-    return {"status": "ok", "version": "8.4.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
+    return {"status": "ok", "version": "8.5.0", "openai_key_set": bool(openai.api_key), "redis_connected": redis_ok, "db_connected": db_ok}
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
@@ -1001,6 +1013,39 @@ async def warm_cache(
         "queued_for_scrape": queued_count,
     }
 
+
+
+class WebhookPayload(BaseModel):
+    domain: str
+    webhook_url: str
+
+
+@app.post("/webhooks/subscribe")
+async def subscribe_webhook(payload: WebhookPayload, request: Request, api_key: str = Security(verify_api_key)):
+    plan = getattr(request.state, "plan", "free")
+    if plan == "free":
+        raise HTTPException(status_code=403, detail="Webhooks are a Pro/Business tier feature.")
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO webhook_subscriptions (api_key, domain, webhook_url)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (api_key, domain)
+            DO UPDATE SET webhook_url = EXCLUDED.webhook_url
+        """, (api_key, payload.domain, payload.webhook_url))
+        conn.commit()
+        cur.close()
+    return {"status": "success", "message": f"Subscribed to changes for {payload.domain}"}
+
+
+@app.get("/webhooks/subscriptions")
+async def get_subscriptions(api_key: str = Security(verify_api_key)):
+    with get_db_connection() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("SELECT domain, webhook_url, last_known_status FROM webhook_subscriptions WHERE api_key = %s", (api_key,))
+        results = cur.fetchall()
+        cur.close()
+    return {"subscriptions": [{"domain": r["domain"], "webhook_url": r["webhook_url"], "last_known_status": r["last_known_status"]} for r in results]}
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
