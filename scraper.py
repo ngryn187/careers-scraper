@@ -24,7 +24,7 @@ from typing import List
 import uvicorn
 from playwright.async_api import async_playwright, Playwright
 
-# Global Playwright singleton Ã¢ÂÂ launched once at startup, reused for all requests
+# Global Playwright singleton — launched once at startup, reused for all requests
 _playwright: Playwright = None
 _browser = None
 _browser_context = None
@@ -279,7 +279,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>Redis-cached responses</li>
 <li>Priority support</li>
 </ul>
-<button class="plan-btn" onclick="window.location.href='mailto:ngrynai@gmail.com?subject=StackSight%20Pro%20Subscription'">Get Access</button>
+<button class="plan-btn" onclick="(async()=>{const r=await fetch('/create-checkout-session',{method:'POST'});const d=await r.json();if(d.url)window.location.href=d.url;else alert('Checkout unavailable: '+JSON.stringify(d));})()" id="pro-checkout-btn">Get Access</button>
 </div>
 <div class="price-box">
 <h3>Business</h3>
@@ -316,8 +316,8 @@ async function generateKey() {
         if (data.api_key) {
             const box = document.getElementById('keyResult');
             box.style.display = 'block';
-            box.innerHTML = '<strong style="color:#2ea043">Ã¢ÂÂ Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
-            document.getElementById('curlExample').textContent = 'curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \\\\n -H "X-API-Key: ' + data.api_key + '"';
+            box.innerHTML = '<strong style="color:#2ea043">✓ Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
+            document.getElementById('curlExample').textContent = 'curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \\n -H "X-API-Key: ' + data.api_key + '"';
         } else {
             alert(data.detail || 'Error generating key. Please try again.');
         }
@@ -334,7 +334,7 @@ async function generateKey() {
 class FreeKeyRequest(BaseModel):
     email: str
 
-# Connection pool ÃÂ¢ÃÂÃÂ initialized once at startup, shared across all requests
+# Connection pool — initialized once at startup, shared across all requests
 postgre_pool = None
 
 def init_pool():
@@ -569,7 +569,7 @@ async def stripe_webhook(request: Request):
         except stripe.error.SignatureVerificationError:
             raise HTTPException(status_code=400, detail="Invalid signature")
     else:
-        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured ÃÂ¢ÃÂÃÂ rejecting request")
+        raise HTTPException(status_code=500, detail="STRIPE_WEBHOOK_SECRET not configured — rejecting request")
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         email = session.get("customer_details", {}).get("email", "").lower()
@@ -787,7 +787,7 @@ async def scrape(domain: str, request: Request, response: Response, background_t
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo_endpoint(domain: str, request: Request):
-    """Public interactive demo ÃÂ¢ÃÂÃÂ no API key required. Rate-limited to 5/hour per IP."""
+    """Public interactive demo — no API key required. Rate-limited to 5/hour per IP."""
     client_ip = request.client.host if request.client else "unknown"
     demo_limit_key = f"demo_limit:{client_ip}"
     count = redis_client.incr(demo_limit_key)
@@ -851,7 +851,7 @@ async def demo_endpoint(domain: str, request: Request):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StackSight Demo ÃÂ¢ÃÂÃÂ {data.get('company_name', domain)}</title>
+<title>StackSight Demo — {data.get('company_name', domain)}</title>
 <style>
 body {{ font-family: -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; max-width: 800px; margin: 40px auto; padding: 20px; }}
 h1 {{ color: #58a6ff; }} h2 {{ color: #e6edf3; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin: 24px 0 12px; }}
@@ -893,7 +893,7 @@ code {{ color: #79c0ff; font-family: monospace; font-size: 0.9em; }}
 <pre><code>{json.dumps(data, indent=2)}</code></pre>
 </div>
 
-<a href="/" class="cta">Get Your Free API Key ÃÂ¢ÃÂÃÂ 5 Requests/Month</a>
+<a href="/" class="cta">Get Your Free API Key — 5 Requests/Month</a>
 </body>
 </html>"""
     return HTMLResponse(content=html)
@@ -1177,13 +1177,14 @@ async def trending_companies():
             if cached_data:
                 data = json.loads(cached_data)
                 domain = key.split(":", 1)[1] if isinstance(key, str) else key.decode().split(":", 1)[1]
-                job_count = len(data.get("sample_job_titles", []))
+                all_roles = data.get("engineering_roles", []) + data.get("sales_roles", [])
+                job_count = len(all_roles)
                 dept_count = len(data.get("departments", []))
                 companies.append({
                     "domain": domain,
                     "name": data.get("company_name", domain.capitalize()),
                     "is_hiring": data.get("is_hiring", False),
-                    "jobs": data.get("sample_job_titles", [])[:3],
+                    "jobs": all_roles[:3],
                     "departments": data.get("departments", []),
                     "tech": data.get("detected_tech_stack", [])[:4],
                     "score": job_count + dept_count,
@@ -1194,7 +1195,7 @@ async def trending_companies():
     companies = companies[:20]
     rows = ""
     for c in companies:
-        badge = '<span style="color:#2ea043;font-weight:bold">â Hiring</span>' if c["is_hiring"] else '<span style="color:#888">â No Roles</span>'
+        badge = '<span style="color:#2ea043;font-weight:bold">✓ Hiring</span>' if c["is_hiring"] else '<span style="color:#888">✗ No Roles</span>'
         jobs = ", ".join(c["jobs"]) if c["jobs"] else "N/A"
         tech = ", ".join(c["tech"]) if c["tech"] else "N/A"
         rows += f'<tr><td><a href="/demo/{c["domain"]}" style="color:#58a6ff">{c["name"]}</a></td><td>{badge}</td><td style="color:#ccc">{jobs}</td><td style="color:#aaa">{tech}</td></tr>'
@@ -1220,13 +1221,13 @@ tr:hover td{{background:#1c2128}}
 </style>
 </head>
 <body>
-<h1>ð¥ Companies Actively Hiring Right Now</h1>
+<h1>🔥 Companies Actively Hiring Right Now</h1>
 <p class="sub">Live data from {count} companies in our index. Updated automatically. Powered by <a href="/" style="color:#58a6ff">StackSight API</a>.</p>
 <table>
 <thead><tr><th>Company</th><th>Status</th><th>Open Roles (sample)</th><th>Tech Stack</th></tr></thead>
 <tbody>{rows}</tbody>
 </table>
-<div class="cta"><a href="/">Get API Access â Scrape any company's hiring data in 1 line of code</a></div>
+<div class="cta"><a href="/">Get API Access → Scrape any company's hiring data in 1 line of code</a></div>
 </body></html>"""
     return HTMLResponse(content=html)
 
@@ -1260,8 +1261,9 @@ async def send_newsletter_cron(secret: str = Query(None)):
             if cached_data:
                 data = json.loads(cached_data)
                 domain = key.split(":", 1)[1] if isinstance(key, str) else key.decode().split(":", 1)[1]
-                score = len(data.get("sample_job_titles", [])) + len(data.get("departments", []))
-                companies.append({"name": data.get("company_name", domain), "domain": domain, "jobs": data.get("sample_job_titles", [])[:3], "score": score})
+                cron_roles = data.get("engineering_roles", []) + data.get("sales_roles", [])
+                score = len(cron_roles) + len(data.get("departments", []))
+                companies.append({"name": data.get("company_name", domain), "domain": domain, "jobs": cron_roles[:3], "score": score})
         except Exception:
             continue
     companies.sort(key=lambda x: x["score"], reverse=True)
@@ -1269,12 +1271,12 @@ async def send_newsletter_cron(secret: str = Query(None)):
     rows = ""
     for c in top_5:
         jobs = ", ".join(c["jobs"]) if c["jobs"] else "N/A"
-        rows += f'<li><strong>{c["name"]}</strong> is hiring: {jobs}. <a href="https://stacksight.org/demo/{c["domain"]}">View full data â</a></li>'
+        rows += f'<li><strong>{c["name"]}</strong> is hiring: {jobs}. <a href="https://stacksight.org/demo/{c["domain"]}">View full data →</a></li>'
     html_body = f"""<html><body style="font-family:sans-serif;background:#0d1117;color:#e6edf3;padding:2rem">
-<h2 style="color:#f0f6fc">ð¥ Weekly Hiring Update from StackSight</h2>
+<h2 style="color:#f0f6fc">🔥 Weekly Hiring Update from StackSight</h2>
 <p>Here are the top companies actively hiring this week:</p>
 <ul style="line-height:2">{rows}</ul>
-<p>Want to scrape any company in 1 line? <a href="https://stacksight.org" style="color:#58a6ff">Get API access â</a></p>
+<p>Want to scrape any company in 1 line? <a href="https://stacksight.org" style="color:#58a6ff">Get API access →</a></p>
 <p style="color:#666;font-size:.8rem">Unsubscribe: reply to this email with "unsubscribe"</p>
 </body></html>"""
     with get_db_connection() as conn:
@@ -1364,6 +1366,14 @@ async def sitemap():
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls_str + "\n</urlset>"
     return PlainTextResponse(content=xml_content, media_type="application/xml")
 
+
+@app.delete("/admin/flush-domain")
+async def flush_domain_cache(domain: str, secret: str = Query(None)):
+    if secret != os.getenv("CRON_SECRET", ""):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    key = f"domain:{domain}"
+    deleted = redis_client.delete(key)
+    return {"deleted": deleted, "domain": domain}
 
 if __name__ == "__main__":
     uvicorn.run("scraper:app", host="0.0.0.0", port=8000, reload=True)
