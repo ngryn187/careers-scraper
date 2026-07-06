@@ -66,7 +66,7 @@ redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID", "")
-BASE_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "careers-scraper-production.up.railway.app")
+BASE_URL = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "stacksight.org")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 # SMTP Email Config
@@ -88,9 +88,9 @@ def send_api_key_email(user_email: str, api_key: str, tier: str = "Free"):
 <p>Thanks for signing up! Here is your API key:</p>
 <pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">{api_key}</pre>
 <h3>Quick Start</h3>
-<pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\
+<pre style="background:#161b22;padding:15px;border-radius:6px;color:#79c0ff">curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \\
 -H "x-api-key: {api_key}"</pre>
-<p>Read the <a href="https://careers-scraper-production.up.railway.app/docs" style="color:#58a6ff">full API docs</a>.</p>
+<p>Read the <a href="https://stacksight.org/docs" style="color:#58a6ff">full API docs</a>.</p>
 <p>Thank you for your business!</p>
 </body></html>
 """
@@ -209,7 +209,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <h2 class="section-title">Try It Now</h2>
 <div class="card">
 <h3>Example Request</h3>
-<pre><code id="curlExample">curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
+<pre><code id="curlExample">curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
 -H "X-API-Key: YOUR_API_KEY"</code></pre>
 <h3 style="margin-top:20px;">Example Response</h3>
 <pre><code>{
@@ -317,7 +317,7 @@ async function generateKey() {
             const box = document.getElementById('keyResult');
             box.style.display = 'block';
             box.innerHTML = '<strong style="color:#2ea043">Ã¢ÂÂ Your API Key:</strong><br>' + data.api_key + '<br><br><small style="color:#8b949e">Use header: X-API-Key: ' + data.api_key + '</small>';
-            document.getElementById('curlExample').textContent = 'curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \\\\n -H "X-API-Key: ' + data.api_key + '"';
+            document.getElementById('curlExample').textContent = 'curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \\\\n -H "X-API-Key: ' + data.api_key + '"';
         } else {
             alert(data.detail || 'Error generating key. Please try again.');
         }
@@ -369,11 +369,11 @@ def send_usage_alert_email(user_email: str, plan: str, usage: int, limit: int):
     if usage >= limit:
         subject = f"Action Required: StackSight API Limit Reached ({limit}/{limit})"
         body = (f"You have reached your monthly limit of {limit} requests on the {plan} tier. "
-                f"Upgrade to continue: https://careers-scraper-production.up.railway.app")
+                f"Upgrade to continue: https://stacksight.org")
     else:
         subject = f"Heads Up: StackSight API Usage at 80% ({usage}/{limit})"
         body = (f"You've used {usage} of {limit} requests on the {plan} tier. "
-                f"Upgrade to avoid interruptions: https://careers-scraper-production.up.railway.app")
+                f"Upgrade to avoid interruptions: https://stacksight.org")
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
     msg['From'] = from_email
@@ -405,7 +405,7 @@ def init_db():
                 email VARCHAR(255) NOT NULL,
                 stripe_customer_id VARCHAR(255),
                 plan VARCHAR(50) DEFAULT 'free',
-                monthly_limit INTEGER DEFAULT 50,
+                monthly_limit INTEGER DEFAULT 5,
                 usage_count INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -457,11 +457,11 @@ async def generate_free_key(body: FreeKeyRequest):
             cur.close(); conn.close()
             return {"api_key": row["key"], "plan": row["plan"], "existing": True}
         new_key = "sk_free_" + secrets.token_urlsafe(32)
-        cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 50))
+        cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 5))
         send_api_key_email(email, new_key, "Free")
         conn.commit()
         cur.close(); conn.close()
-        return {"api_key": new_key, "plan": "free", "monthly_limit": 50}
+        return {"api_key": new_key, "plan": "free", "monthly_limit": 5}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -893,7 +893,7 @@ code {{ color: #79c0ff; font-family: monospace; font-size: 0.9em; }}
 <pre><code>{json.dumps(data, indent=2)}</code></pre>
 </div>
 
-<a href="/" class="cta">Get Your Free API Key ÃÂ¢ÃÂÃÂ 50 Requests/Month</a>
+<a href="/" class="cta">Get Your Free API Key ÃÂ¢ÃÂÃÂ 5 Requests/Month</a>
 </body>
 </html>"""
     return HTMLResponse(content=html)
@@ -1269,12 +1269,12 @@ async def send_newsletter_cron(secret: str = Query(None)):
     rows = ""
     for c in top_5:
         jobs = ", ".join(c["jobs"]) if c["jobs"] else "N/A"
-        rows += f'<li><strong>{c["name"]}</strong> is hiring: {jobs}. <a href="https://careers-scraper-production.up.railway.app/demo/{c["domain"]}">View full data â</a></li>'
+        rows += f'<li><strong>{c["name"]}</strong> is hiring: {jobs}. <a href="https://stacksight.org/demo/{c["domain"]}">View full data â</a></li>'
     html_body = f"""<html><body style="font-family:sans-serif;background:#0d1117;color:#e6edf3;padding:2rem">
 <h2 style="color:#f0f6fc">ð¥ Weekly Hiring Update from StackSight</h2>
 <p>Here are the top companies actively hiring this week:</p>
 <ul style="line-height:2">{rows}</ul>
-<p>Want to scrape any company in 1 line? <a href="https://careers-scraper-production.up.railway.app" style="color:#58a6ff">Get API access â</a></p>
+<p>Want to scrape any company in 1 line? <a href="https://stacksight.org" style="color:#58a6ff">Get API access â</a></p>
 <p style="color:#666;font-size:.8rem">Unsubscribe: reply to this email with "unsubscribe"</p>
 </body></html>"""
     with get_db_connection() as conn:
@@ -1341,7 +1341,7 @@ Allow: /
 Disallow: /scrape
 Disallow: /me
 Disallow: /admin
-Sitemap: https://careers-scraper-production.up.railway.app/sitemap.xml
+Sitemap: https://stacksight.org/sitemap.xml
 """
 
 
@@ -1355,7 +1355,7 @@ async def sitemap():
         "hubspot.com", "salesforce.com", "zendesk.com", "intercom.com", "mixpanel.com",
         "datadog.com", "newrelic.com", "pagerduty.com", "amplitude.com", "segment.com",
     ]
-    base_url = "https://careers-scraper-production.up.railway.app"
+    base_url = "https://stacksight.org"
     today = datetime.now().strftime("%Y-%m-%d")
     urls = [f"<url><loc>{base_url}/</loc><lastmod>{today}</lastmod><priority>1.0</priority></url>"]
     for domain in top_domains:
