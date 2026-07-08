@@ -200,7 +200,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 
 <div class="card" id="get-key">
 <h3>&#x26A1; Get Started Free</h3>
-<p>5 requests/month, no credit card required:</p>
+<p>10 requests/month, no credit card required:</p>
 <input type="email" id="email" placeholder="you@company.com">
 <button class="gen-btn" onclick="generateKey()">Get My Free API Key</button>
 <div class="key-display" id="keyResult"></div>
@@ -262,7 +262,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <h3>Free</h3>
 <div class="price">$0<span style="font-size:0.4em;color:#8b949e">/mo</span></div>
 <ul>
-<li>5 requests/month</li>
+<li>10 requests/month</li>
 <li>1 request/second</li>
 <li>JSON responses</li>
 <li>Community support</li>
@@ -346,7 +346,7 @@ def init_pool():
         except Exception as e:
             print(f"Failed to initialize connection pool: {e}")
 
-init_pool()  # Called after function is defined
+init_pool()
 
 @contextmanager
 def get_db_connection():
@@ -405,7 +405,7 @@ def init_db():
                 email VARCHAR(255) NOT NULL,
                 stripe_customer_id VARCHAR(255),
                 plan VARCHAR(50) DEFAULT 'free',
-                monthly_limit INTEGER DEFAULT 5,
+                monthly_limit INTEGER DEFAULT 10,
                 usage_count INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -457,11 +457,11 @@ async def generate_free_key(body: FreeKeyRequest):
             cur.close(); conn.close()
             return {"api_key": row["key"], "plan": row["plan"], "existing": True}
         new_key = "sk_free_" + secrets.token_urlsafe(32)
-        cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 5))
+        cur.execute("INSERT INTO api_keys (key, email, plan, monthly_limit) VALUES (%s, %s, %s, %s)", (new_key, email, "free", 10))
         send_api_key_email(email, new_key, "Free")
         conn.commit()
         cur.close(); conn.close()
-        return {"api_key": new_key, "plan": "free", "monthly_limit": 5}
+        return {"api_key": new_key, "plan": "free", "monthly_limit": 10}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -516,7 +516,6 @@ async def verify_api_key(
     x_api_key: str = Header(None),
     x_rapidapi_proxy_secret: str = Header(None, alias="X-RapidAPI-Proxy-Secret"),
 ):
-    # Allow RapidAPI proxy requests through with their secret
     rapidapi_secret = os.environ.get("RAPIDAPI_PROXY_SECRET", "")
     if rapidapi_secret and x_rapidapi_proxy_secret == rapidapi_secret:
         request.state.rate_limit = "Unlimited (RapidAPI)"
@@ -539,7 +538,6 @@ async def verify_api_key(
                 raise HTTPException(status_code=401, detail="Invalid API key")
             monthly_limit = row["monthly_limit"]
             plan = row["plan"]
-
             current_month = time.strftime("%Y-%m")
             redis_key = f"usage:{x_api_key}:{current_month}"
             current_count = int(redis_client.get(redis_key) or 0)
@@ -595,10 +593,8 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
-    """Detects tech stack via regex on HTML/Scripts. Free and fast."""
     combined = html_source + " " + " ".join(scripts)
     tech = set()
-    # Frontend
     if "react" in combined.lower() or "react-dom" in combined.lower():
         tech.add("React")
     if "vue" in combined.lower() or "vue.js" in combined.lower():
@@ -607,7 +603,6 @@ def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
         tech.add("Angular")
     if "next.js" in combined.lower() or "_next/" in combined.lower():
         tech.add("Next.js")
-    # Backend/Infra
     if "aws" in combined.lower() or "amazonaws" in combined.lower():
         tech.add("AWS")
     if "cloudflare" in combined.lower():
@@ -616,7 +611,6 @@ def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
         tech.add("Vercel")
     if "docker" in combined.lower():
         tech.add("Docker")
-    # Analytics/Tools
     if "google-analytics" in combined.lower() or "gtag" in combined.lower():
         tech.add("Google Analytics")
     if "sentry" in combined.lower():
@@ -626,7 +620,6 @@ def detect_tech_stack_locally(html_source: str, scripts: list) -> list:
     return list(tech)
 
 async def find_careers_url(page, base_domain: str) -> str:
-    """Load homepage and follow links containing careers/jobs/team keywords."""
     keywords = ["career", "careers", "jobs", "job", "team", "work", "hiring", "join"]
     try:
         await page.goto(base_domain, wait_until="domcontentloaded", timeout=15000)
@@ -646,7 +639,6 @@ async def find_careers_url(page, base_domain: str) -> str:
                     return href
     except Exception:
         pass
-    # Fallback: guess common paths
     return base_domain.rstrip('/') + "/careers"
 
 async def scrape_page(domain: str):
@@ -666,7 +658,6 @@ async def scrape_page(domain: str):
             if scripts:
                 text += "\n\nDETECTED SCRIPTS:\n" + "\n".join(scripts[:50])
             return text, careers_url, resp.status
-        # Fallback: try common direct paths
         fallback_paths = [
             "/about/careers", "/company/careers", "/company/jobs",
             "/open-positions", "/open-roles", "/join-us", "/join",
@@ -681,7 +672,6 @@ async def scrape_page(domain: str):
                         return domain.rstrip("/") + path
             except Exception:
                 continue
-        # Try careers subdomain
         try:
             dom_root = domain.replace("https://", "").replace("http://", "").split("/")[0]
             sub = "https://careers." + dom_root
@@ -719,7 +709,6 @@ def extract_with_openai(raw_text: str):
 
 @app.get("/me")
 async def me(request: Request, api_key: str = Security(verify_api_key)):
-    """Return the current user's plan, monthly limit, and Redis usage count."""
     current_month = time.strftime("%Y-%m")
     redis_key = f"usage:{api_key}:{current_month}"
     current_count = int(redis_client.get(redis_key) or 0)
@@ -746,19 +735,16 @@ async def scrape(domain: str, request: Request, response: Response, background_t
     try:
         raw_text, url, status = await scrape_page(domain)
         local_tech_stack = detect_tech_stack_locally(raw_text, [])
-        # Early exit: skip OpenAI if page has no job content (saves cost)
         job_keywords = ["job", "career", "position", "role", "hiring", "opening", "apply", "vacancy"]
         if len(raw_text) < 500 or not any(kw in raw_text.lower() for kw in job_keywords):
             print(f"[EARLY EXIT] No job content for {domain}. Skipping OpenAI.")
             return {"source": "live", "domain": domain, "detected_tech_stack": local_tech_stack, "job_listings": [], "note": "No job content found"}
         extracted = extract_with_openai(raw_text)
         extracted["detected_tech_stack"] = local_tech_stack
-        # Cache ONLY on success
         if extracted and extracted.get("company_name"):
             redis_client.setex(cache_key, 604800, json.dumps(extracted))
         else:
             print(f"[WARN] Extracted data empty or missing company_name for {domain}. Not caching.")
-        # Increment usage only for live scrapes (cache hits are free)
         redis_key = getattr(request.state, "redis_key", None)
         if redis_key:
             new_count = redis_client.incr(redis_key)
@@ -766,8 +752,6 @@ async def scrape(domain: str, request: Request, response: Response, background_t
                 redis_client.expire(redis_key, 35 * 24 * 3600)
             monthly_limit = getattr(request.state, "monthly_limit", 0)
             request.state.rate_remaining = max(0, monthly_limit - new_count)
-
-            # Email alert at 80% and 100% usage
             if monthly_limit > 0 and (new_count == int(monthly_limit * 0.8) or new_count == monthly_limit):
                 with get_db_connection() as conn:
                     _ac = conn.cursor()
@@ -787,7 +771,6 @@ async def scrape(domain: str, request: Request, response: Response, background_t
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo_endpoint(domain: str, request: Request):
-    """Public interactive demo — no API key required. Rate-limited to 5/hour per IP."""
     client_ip = request.client.host if request.client else "unknown"
     demo_limit_key = f"demo_limit:{client_ip}"
     count = redis_client.incr(demo_limit_key)
@@ -801,8 +784,6 @@ async def demo_endpoint(domain: str, request: Request):
             "</body></html>",
             status_code=429
         )
-
-    # Check cache first
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
     if cached:
@@ -867,33 +848,27 @@ code {{ color: #79c0ff; font-family: monospace; font-size: 0.9em; }}
 <body>
 <h1>StackSight Demo: {data.get('company_name', domain)}</h1>
 <p class="meta">Domain: <strong>{domain}</strong> &nbsp;|&nbsp; Source: <strong>{source}</strong></p>
-
 <div class="card">
 <h2>Hiring Status</h2>
 {hiring_badge}
 </div>
-
 <div class="card">
 <h2>Engineering Roles</h2>
 <ul>{fmt_list(data.get('engineering_roles', []))}</ul>
 </div>
-
 <div class="card">
 <h2>Sales Roles</h2>
 <ul>{fmt_list(data.get('sales_roles', []))}</ul>
 </div>
-
 <div class="card">
 <h2>Detected Tech Stack</h2>
 <ul>{fmt_list(data.get('detected_tech_stack', []))}</ul>
 </div>
-
 <div class="card">
 <h2>Raw JSON</h2>
 <pre><code>{json.dumps(data, indent=2)}</code></pre>
 </div>
-
-<a href="/" class="cta">Get Your Free API Key — 5 Requests/Month</a>
+<a href="/" class="cta">Get Your Free API Key — 10 Requests/Month</a>
 </body>
 </html>"""
     return HTMLResponse(content=html)
@@ -916,32 +891,26 @@ async def health():
 
 @app.get("/admin/stats")
 async def admin_stats(admin_password: str = Query(None)):
-    """Password-protected admin analytics dashboard."""
     if admin_password != os.getenv("ADMIN_PASSWORD"):
         raise HTTPException(status_code=403, detail="Forbidden")
-
     stats = {}
-
     with get_db_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT plan, COUNT(*) FROM api_keys GROUP BY plan")
             plan_counts = dict(cur.fetchall())
             stats["users_by_plan"] = plan_counts
             stats["total_users"] = sum(plan_counts.values())
-
             mrr = 0
             for plan, count in plan_counts.items():
                 if plan == "pro": mrr += count * 49
                 elif plan == "business": mrr += count * 199
             stats["estimated_mrr"] = mrr
-
             try:
                 cur.execute("SELECT email, plan, created_at FROM api_keys ORDER BY created_at DESC LIMIT 5")
                 recent = cur.fetchall()
                 stats["recent_signups"] = [{"email": r[0], "plan": r[1], "created_at": str(r[2])} for r in recent]
             except Exception:
                 stats["recent_signups"] = []
-
     try:
         redis_info = redis_client.info()
         stats["redis"] = {
@@ -951,12 +920,10 @@ async def admin_stats(admin_password: str = Query(None)):
         }
     except Exception:
         stats["redis"] = "unavailable"
-
     current_month = time.strftime("%Y-%m")
     usage_keys = redis_client.keys(f"usage:*:{current_month}")
     total_usage = sum(int(redis_client.get(k) or 0) for k in usage_keys)
     stats["total_api_calls_this_month"] = total_usage
-
     return stats
 
 
@@ -965,7 +932,6 @@ class BulkDomainPayload(BaseModel):
 
 
 async def background_scrape(domain: str):
-    """Runs the full scrape pipeline for a domain and caches the result."""
     print(f"[BACKGROUND] Starting scrape for {domain}")
     cache_key = f"domain:{domain}"
     try:
@@ -997,7 +963,6 @@ async def bulk_scrape(
     request: Request,
     api_key: str = Security(verify_api_key),
 ):
-    """Bulk enrichment: returns cached data instantly, queues uncached domains in background."""
     plan = getattr(request.state, "plan", "free")
     max_domains = 5 if plan == "free" else 50
     if len(payload.domains) > max_domains:
@@ -1005,7 +970,6 @@ async def bulk_scrape(
             status_code=403,
             detail=f"{'Free' if plan == 'free' else 'Pro'} tier limited to {max_domains} domains per bulk request."
         )
-
     results = []
     for domain in payload.domains:
         domain = domain.strip().lower().rstrip("/")
@@ -1023,14 +987,12 @@ async def bulk_scrape(
                 "data": None,
                 "message": f"Scraping in background. Poll GET /scrape?domain={domain_key} in 30-60s."
             })
-
     return {
         "results": results,
         "total": len(results),
         "cached": sum(1 for r in results if r["source"] == "cache"),
         "queued": sum(1 for r in results if r["source"] == "background"),
     }
-
 
 
 TOP_SAAS_DOMAINS = [
@@ -1057,15 +1019,10 @@ TOP_SAAS_DOMAINS = [
 
 
 @app.post("/cron/warm-cache")
-async def warm_cache(
-    background_tasks: BackgroundTasks,
-    secret: str = Query(None),
-):
-    """Secret-protected endpoint to pre-scrape top SaaS domains and warm Redis cache."""
+async def warm_cache(background_tasks: BackgroundTasks, secret: str = Query(None)):
     cron_secret = os.getenv("CRON_SECRET")
     if not cron_secret or secret != cron_secret:
         raise HTTPException(status_code=403, detail="Forbidden")
-
     queued_count = 0
     already_cached = 0
     for domain in TOP_SAAS_DOMAINS:
@@ -1075,7 +1032,6 @@ async def warm_cache(
         else:
             background_tasks.add_task(background_scrape, domain)
             queued_count += 1
-
     return {
         "status": "success",
         "message": f"Queued {queued_count} domains for cache warming.",
@@ -1083,7 +1039,6 @@ async def warm_cache(
         "already_cached": already_cached,
         "queued_for_scrape": queued_count,
     }
-
 
 
 class WebhookPayload(BaseModel):
@@ -1137,10 +1092,7 @@ async def check_webhooks(background_tasks: BackgroundTasks, secret: str = Query(
             data = json.loads(cached_data)
             current_status = data.get("is_hiring", False)
             if current_status != last_known_status:
-                background_tasks.add_task(
-                    dispatch_webhook,
-                    sub_id, api_key, domain, webhook_url, current_status, data
-                )
+                background_tasks.add_task(dispatch_webhook, sub_id, api_key, domain, webhook_url, current_status, data)
                 queued_count += 1
     return {"status": "success", "total_subscriptions": len(subscriptions), "webhooks_queued": queued_count}
 
@@ -1205,7 +1157,6 @@ async def trending_companies():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Live list of companies actively hiring engineers right now. Updated automatically via StackSight API.">
 <title>Trending Hiring Companies | StackSight API</title>
 <style>
 body{{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:0;padding:2rem}}
@@ -1240,10 +1191,7 @@ class EmailPayload(BaseModel):
 async def newsletter_subscribe(payload: EmailPayload):
     with get_db_connection() as conn:
         cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO newsletter_subs (email) VALUES (%s)
-            ON CONFLICT (email) DO NOTHING
-        """, (payload.email,))
+        cur.execute("INSERT INTO newsletter_subs (email) VALUES (%s) ON CONFLICT (email) DO NOTHING", (payload.email,))
         conn.commit()
         cur.close()
     return {"status": "success", "message": "Subscribed! You'll get weekly hiring updates."}
@@ -1303,8 +1251,6 @@ async def send_newsletter_cron(secret: str = Query(None)):
     return {"status": "success", "emails_sent": sent_count}
 
 
-
-
 @app.get("/badge/{domain}.svg", response_class=Response)
 async def hiring_badge(domain: str):
     cache_key = "domain:" + domain
@@ -1318,34 +1264,19 @@ async def hiring_badge(domain: str):
     text_len = "370" if is_hiring else "600"
     svg = (
         '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="20" role="img">'
-        '<linearGradient id="s" x2="0" y2="100%">'
-        '<stop offset="0" stop-color="#bbb" stop-opacity=".1"/>'
-        '<stop offset="1" stop-opacity=".1"/>'
-        '</linearGradient>'
+        '<linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>'
         '<clipPath id="r"><rect width="120" height="20" rx="3" fill="#fff"/></clipPath>'
-        '<g clip-path="url(#r)">'
-        '<rect width="65" height="20" fill="#555"/>'
-        '<rect x="65" width="55" height="20" fill="' + color + '"/>'
-        '<rect width="120" height="20" fill="url(#s)"/>'
-        '</g>'
+        '<g clip-path="url(#r)"><rect width="65" height="20" fill="#555"/><rect x="65" width="55" height="20" fill="' + color + '"/><rect width="120" height="20" fill="url(#s)"/></g>'
         '<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,sans-serif" font-size="110">'
         '<text x="325" y="140" transform="scale(.1)" textLength="550">StackSight</text>'
         '<text x="925" y="140" transform="scale(.1)" textLength="' + text_len + '">' + label + '</text>'
-        '</g>'
-        '</svg>'
+        '</g></svg>'
     )
     return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": "no-cache, max-age=0"})
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
-    return """User-agent: *
-Allow: /
-Disallow: /scrape
-Disallow: /me
-Disallow: /admin
-Sitemap: https://stacksight.org/sitemap.xml
-"""
-
+    return """User-agent: *\nAllow: /\nDisallow: /scrape\nDisallow: /me\nDisallow: /admin\nSitemap: https://stacksight.org/sitemap.xml\n"""
 
 @app.get("/sitemap.xml")
 async def sitemap():
@@ -1362,8 +1293,7 @@ async def sitemap():
     urls = [f"<url><loc>{base_url}/</loc><lastmod>{today}</lastmod><priority>1.0</priority></url>"]
     for domain in top_domains:
         urls.append(f'<url><loc>{base_url}/demo/{domain}</loc><lastmod>{today}</lastmod><priority>0.8</priority></url>')
-    urls_str = "".join(urls)
-    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls_str + "\n</urlset>"
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "".join(urls) + "\n</urlset>"
     return PlainTextResponse(content=xml_content, media_type="application/xml")
 
 
