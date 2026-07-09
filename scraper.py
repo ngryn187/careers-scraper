@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):
     await _browser.close()
     await _playwright.stop()
 
-app = FastAPI(title="Careers Scraper API", version="8.2.0", lifespan=lifespan)
+app = FastAPI(title="StackSight API", version="8.13.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -242,11 +242,12 @@ footer a { color: #58a6ff; text-decoration: none; }
 </head>
 <body>
 <div class="container">
-<div class="badge">&#x1F680; Now on RapidAPI &middot; v8.3.0</div>
+<div class="badge">&#x1F680; Live API &middot; v8.13.0</div>
 <h1>StackSight API</h1>
-<p class="subtitle">Turn any company domain into actionable B2B sales intelligence. Real-time hiring intent, deterministic tech stack detection, and bulk enrichment &mdash; before your competitors know what hit them.</p>
+<p class="subtitle">Turn any company domain into B2B sales intelligence in seconds. Detect hiring intent, tech stack, and open roles &mdash; via a single API call.</p>
 <div class="cta-group">
 <a href="/demo/stripe.com" class="btn btn-secondary">&#x1F50D; Live Demo</a>
+<a href="/trending" class="btn" style="background:#6e40c9;color:white">&#x1F525; Trending Companies</a>
 <a href="#get-key" class="btn btn-primary">Get Free API Key</a>
 </div>
 
@@ -257,7 +258,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 </div>
 <div class="feature">
 <h3>&#x1F9EC; Deterministic Tech Stack</h3>
-<p>We parse actual script tags to detect React, AWS, Stripe, and 20+ technologies with 100% accuracy. No guessing.</p>
+<p>We parse actual script tags to detect React, Next.js, AWS, Cloudflare, Stripe, and 15+ more technologies with 100% accuracy. No guessing.</p>
 </div>
 <div class="feature">
 <h3>&#x1F4E6; Bulk Enrichment API</h3>
@@ -265,7 +266,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 </div>
 <div class="feature">
 <h3>&#x26A1; Lightning Fast Cache</h3>
-<p>All scrapes cached in Redis for 7 days. Top 80 SaaS domains pre-warmed nightly. Most requests return instantly.</p>
+<p>All scrapes cached in Redis for 7 days. Top domains pre-warmed automatically. Most requests return instantly.</p>
 </div>
 </div>
 
@@ -284,13 +285,13 @@ footer a { color: #58a6ff; text-decoration: none; }
 -H "X-API-Key: YOUR_API_KEY"</code></pre>
 <h3 style="margin-top:20px;">Example Response</h3>
 <pre><code>{
-  "source": "cache",
+  "source": "demo",
   "data": {
     "company_name": "Stripe",
     "is_hiring": true,
     "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"],
     "sales_roles": ["Account Executive", "Solutions Engineer"],
-    "detected_tech_stack": ["React", "AWS", "Stripe", "Cloudflare", "Sentry"]
+    "detected_tech_stack": ["React", "Ruby", "Go", "AWS", "Cloudflare", "Sentry"]
   }
 }</code></pre>
 </div>
@@ -313,8 +314,28 @@ footer a { color: #58a6ff; text-decoration: none; }
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
+<span class="path">/trending</span>
+<span class="desc">Live leaderboard of companies actively hiring</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
 <span class="path">/me</span>
 <span class="desc">Your plan, usage and remaining requests</span>
+</div>
+<div class="endpoint-row">
+<span class="method post">POST</span>
+<span class="path">/webhooks/subscribe</span>
+<span class="desc">Get notified when a company's hiring status changes (Pro)</span>
+</div>
+<div class="endpoint-row">
+<span class="method">GET</span>
+<span class="path">/badge/{domain}.svg</span>
+<span class="desc">Embeddable SVG hiring status badge for any domain</span>
+</div>
+<div class="endpoint-row">
+<span class="method post">POST</span>
+<span class="path">/newsletter/subscribe</span>
+<span class="desc">Weekly digest of trending hiring companies</span>
 </div>
 <div class="endpoint-row">
 <span class="method">GET</span>
@@ -347,7 +368,7 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>2,500 requests/month</li>
 <li>10 requests/second</li>
 <li>Bulk API (50 domains)</li>
-<li>Redis-cached responses</li>
+<li>Webhook notifications</li>
 <li>Priority support</li>
 </ul>
 <button class="plan-btn" onclick="(async()=>{const r=await fetch('/create-checkout-session',{method:'POST'});const d=await r.json();if(d.url)window.location.href=d.url;else alert('Checkout unavailable: '+JSON.stringify(d));})()" id="pro-checkout-btn">Get Access</button>
@@ -361,12 +382,12 @@ footer a { color: #58a6ff; text-decoration: none; }
 <li>Webhook support</li>
 <li>Dedicated support</li>
 </ul>
-<button class="plan-btn" onclick="window.open('https://rapidapi.com/search/stacksight','_blank')">Contact Sales</button>
+<button class="plan-btn" onclick="window.location.href='mailto:ngrynai@gmail.com?subject=StackSight%20Business%20Tier'">Contact Sales</button>
 </div>
 </div>
 
 <footer>
-<p>StackSight API &mdash; <a href="/docs">API Docs</a> &middot; <a href="https://rapidapi.com" target="_blank">RapidAPI</a> &middot; <a href="https://github.com/ngryn187/careers-scraper" target="_blank">GitHub</a> &middot; Built with FastAPI</p>
+<p>StackSight API &mdash; <a href="/docs">API Docs</a> &middot; <a href="/trending">Trending</a> &middot; <a href="https://github.com/ngryn187/careers-scraper" target="_blank">GitHub</a> &middot; Built with FastAPI</p>
 <p style="margin-top:8px;">Questions? Email <a href="mailto:ngrynai@gmail.com">ngrynai@gmail.com</a></p>
 </footer>
 </div>
