@@ -14,7 +14,7 @@ import redis as redis_lib
 import stripe
 import uvicorn
 from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
 VERSION = "9.1.0"
@@ -320,6 +320,26 @@ async def startup():
 # ROUTES — PUBLIC
 # ─────────────────────────────────────────────────────────────────────────────
 
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots():
+    return """User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /logout
+Sitemap: https://stacksight.org/sitemap.xml"""
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://stacksight.org/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://stacksight.org/docs</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://stacksight.org/demo/stripe.com</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://stacksight.org/login</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+</urlset>"""
+    return Response(content=xml, media_type="application/xml")
+
 @app.get("/", response_class=HTMLResponse)
 async def landing():
     return HTMLResponse(f"""<!DOCTYPE html>
@@ -327,6 +347,27 @@ async def landing():
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>StackSight API - B2B Hiring Intent & Tech Stack Data</title>
+<meta name="description" content="StackSight gives B2B sales teams real-time hiring intent signals, tech stack detection, and bulk domain enrichment via a simple REST API. Free tier available.">
+<meta name="keywords" content="hiring intent API, B2B sales intelligence, tech stack detection, domain enrichment, sales signals, job posting data, B2B prospecting API">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://stacksight.org/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://stacksight.org/">
+<meta property="og:title" content="StackSight API - B2B Hiring Intent & Tech Stack Data">
+<meta property="og:description" content="Know which companies are growing before your competitors. Real-time hiring signals, tech stack detection, and bulk enrichment via REST API. Free tier available.">
+<meta property="og:image" content="https://stacksight.org/og-image.png">
+<meta property="og:site_name" content="StackSight">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@StackSightOrg">
+<meta name="twitter:title" content="StackSight API - B2B Hiring Intent & Tech Stack Data">
+<meta name="twitter:description" content="Know which companies are growing before your competitors. Real-time hiring signals, tech stack detection, and bulk enrichment via REST API.">
+<meta name="twitter:image" content="https://stacksight.org/og-image.png">
+<!-- Schema.org -->
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"SoftwareApplication","name":"StackSight","url":"https://stacksight.org","description":"Real-time B2B hiring intent API. Know which companies are actively growing before your competitors do.","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":[{{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"}},{{"@type":"Offer","name":"Pro","price":"49","priceCurrency":"USD","billingIncrement":"P1M"}},{{"@type":"Offer","name":"Business","price":"199","priceCurrency":"USD","billingIncrement":"P1M"}}]}}
+</script>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
