@@ -557,6 +557,70 @@ document.getElementById('email').addEventListener('keypress', e => { if(e.key===
 </body></html>""")
 
 
+@app.post("/signup")
+async def signup_post(request: Request, background_tasks: BackgroundTasks):
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND plan='free' LIMIT 1", (email,))
+    existing = cur.fetchone()
+    if existing:
+        return JSONResponse({"ok": True, "msg": "Check your inbox — we sent your API key again."})
+    token = secrets.token_urlsafe(32)
+    cur.execute("""
+        INSERT INTO pending_signups (email, token)
+        VALUES (%s, %s)
+        ON CONFLICT (email) DO UPDATE SET token=EXCLUDED.token, created_at=NOW(), used=FALSE
+    """, (email, token))
+    conn.commit()
+    cur.close()
+    conn.close()
+    background_tasks.add_task(send_verification_email, email, token)
+    return JSONResponse({"ok": True, "msg": "Check your inbox to get your free API key!"})
+
+@app.get("/verify-email")
+async def verify_email(token: str, background_tasks: BackgroundTasks):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT email, used, created_at FROM pending_signups WHERE token=%s LIMIT 1", (token,))
+    row = cur.fetchone()
+    if not row:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2>Invalid or expired link.</h2>", status_code=400)
+    email, used, created_at = row
+    if used:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2>This link has already been used. Check your inbox for your API key.</h2>")
+    from datetime import timezone
+    age = (datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)).total_seconds()
+    if age > 86400:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2>This link has expired. Please sign up again at stacksight.org.</h2>", status_code=400)
+    cur.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
+    conn.commit()
+    cur.close(); conn.close()
+    api_key = provision_api_key(email, "free")
+    background_tasks.add_task(send_api_key_email, email, api_key, "free")
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Welcome to StackSight!</title>
+<style>body{{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}}
+.card{{background:#111;border:1px solid #222;border-radius:16px;padding:48px;max-width:480px;text-align:center}}
+h1{{color:#a855f7;margin-bottom:8px}}p{{color:#999}}
+.key{{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;font-family:monospace;font-size:14px;color:#a855f7;word-break:break-all;margin:24px 0}}
+.btn{{display:inline-block;background:#a855f7;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:8px}}</style>
+</head><body><div class="card">
+<h1>You are in!</h1>
+<p>Your free StackSight API key:</p>
+<div class="key">{{api_key}}</div>
+<p style="font-size:13px;color:#666">We also emailed this to <strong style="color:#ccc">{{email}}</strong></p>
+<a href="/docs" class="btn">View API Docs</a>
+<a href="/dashboard" class="btn" style="background:#222;margin-left:8px">Dashboard</a>
+</div></body></html>""")
+
 @app.post("/login")
 async def login_post(request: Request, background_tasks: BackgroundTasks):
     body = await request.json()
