@@ -371,58 +371,95 @@ async def landing():
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
-nav{{padding:20px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;max-width:1200px;margin:0 auto}}
-.logo{{font-size:22px;font-weight:700;color:#a855f7}}
-.nav-links a{{color:#999;text-decoration:none;margin-left:20px;font-size:14px}}
+nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}}
+.logo{{font-size:22px;font-weight:700;color:#a855f7;text-decoration:none}}
+.nav-links a{{color:#999;text-decoration:none;margin-left:24px;font-size:14px;transition:color .2s}}
 .nav-links a:hover{{color:#fff}}
-.nav-links .btn-login{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:6px 14px;border-radius:6px}}
-.hero{{text-align:center;padding:80px 20px 60px;max-width:800px;margin:0 auto}}
-.badge{{display:inline-block;background:#1a0a2e;color:#a855f7;border:1px solid #a855f7;padding:4px 12px;border-radius:20px;font-size:12px;margin-bottom:20px}}
-h1{{font-size:52px;font-weight:800;line-height:1.1;margin-bottom:20px}}
+.nav-links .btn-login{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500}}
+.hero{{text-align:center;padding:90px 20px 60px;max-width:860px;margin:0 auto}}
+.badge{{display:inline-flex;align-items:center;gap:6px;background:#1a0a2e;color:#a855f7;border:1px solid #3b1a6e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:28px}}
+h1{{font-size:56px;font-weight:800;line-height:1.08;margin-bottom:22px;letter-spacing:-1px}}
 h1 span{{color:#a855f7}}
-.hero p{{font-size:18px;color:#999;max-width:600px;margin:0 auto 40px}}
-.cta-group{{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}}
-.btn-primary{{background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px}}
-.btn-secondary{{background:transparent;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;border:1px solid #333}}
-.features{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;max-width:1100px;margin:60px auto;padding:0 20px}}
-.feature{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px}}
-.feature h3{{font-size:17px;font-weight:600;margin-bottom:8px}}
-.feature p{{color:#888;font-size:14px}}
-.signup-section{{max-width:520px;margin:0 auto 80px;padding:0 20px;text-align:center}}
-.signup-section h2{{font-size:28px;font-weight:700;margin-bottom:8px}}
-.signup-section p{{color:#888;margin-bottom:24px}}
-.form-row{{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}}
-.form-row input{{flex:1;min-width:240px;background:#111;border:1px solid #333;color:#fff;padding:12px 16px;border-radius:8px;font-size:15px}}
+.hero p{{font-size:19px;color:#888;max-width:620px;margin:0 auto 40px;line-height:1.7}}
+.cta-group{{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}}
+.btn-primary{{background:#a855f7;color:#fff;padding:14px 32px;border-radius:9px;text-decoration:none;font-weight:700;font-size:16px;transition:background .2s;display:inline-flex;align-items:center;gap:8px}}
+.btn-primary:hover{{background:#9333ea}}
+.btn-secondary{{background:transparent;color:#ccc;padding:14px 28px;border-radius:9px;text-decoration:none;font-weight:600;font-size:16px;border:1px solid #2a2a2a;transition:border-color .2s,color .2s}}
+.btn-secondary:hover{{border-color:#555;color:#fff}}
+.stats-bar{{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;padding:40px 20px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;margin:0 0 60px}}
+.stat{{text-align:center}}
+.stat-num{{font-size:28px;font-weight:800;color:#a855f7}}
+.stat-label{{font-size:13px;color:#666;margin-top:2px}}
+.use-cases{{max-width:1100px;margin:0 auto 80px;padding:0 20px}}
+.use-cases h2,.how h2,.code-section h2,.pricing h2,.faq h2{{text-align:center;font-size:34px;font-weight:700;margin-bottom:12px}}
+.sub{{text-align:center;color:#666;margin-bottom:44px;font-size:16px}}
+.use-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}}
+.use-card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;transition:border-color .2s}}
+.use-card:hover{{border-color:#3b1a6e}}
+.use-icon{{font-size:28px;margin-bottom:14px}}
+.use-card h3{{font-size:16px;font-weight:600;margin-bottom:8px}}
+.use-card p{{color:#666;font-size:14px;line-height:1.6}}
+.how{{max-width:860px;margin:0 auto 80px;padding:0 20px;text-align:center}}
+.steps{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}}
+.step{{padding:24px}}
+.step-num{{width:40px;height:40px;border-radius:50%;background:#1a0a2e;border:2px solid #a855f7;color:#a855f7;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}}
+.step h4{{font-size:15px;font-weight:600;margin-bottom:6px}}
+.step p{{color:#666;font-size:13px}}
+.code-section{{max-width:900px;margin:0 auto 80px;padding:0 20px}}
+.code-tabs{{display:flex;gap:8px;margin-bottom:0;border-bottom:1px solid #1f1f1f}}
+.tab{{padding:10px 18px;font-size:13px;color:#666;border-bottom:2px solid transparent}}
+.tab.active{{color:#a855f7;border-bottom-color:#a855f7}}
+pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0 0 10px 10px;padding:28px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.8;margin:0 0 80px}}
+.k{{color:#a855f7}}.s{{color:#22d3ee}}.n{{color:#fb923c}}
+.signup-section{{max-width:540px;margin:0 auto 80px;padding:0 20px;text-align:center}}
+.signup-section h2{{font-size:32px;font-weight:700;margin-bottom:10px;text-align:center}}
+.signup-section p{{color:#777;margin-bottom:28px;font-size:15px}}
+.form-row{{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}}
+.form-row input{{flex:1;min-width:240px;background:#111;border:1px solid #2a2a2a;color:#fff;padding:13px 16px;border-radius:9px;font-size:15px;transition:border-color .2s}}
 .form-row input:focus{{outline:none;border-color:#a855f7}}
-.form-row button{{background:#a855f7;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}}
+.form-row button{{background:#a855f7;color:#fff;border:none;padding:13px 24px;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s}}
 .form-row button:hover{{background:#9333ea}}
-.msg{{margin-top:16px;padding:12px;border-radius:8px;font-size:14px;display:none}}
-.msg.success{{background:#0f2a0f;border:1px solid #22c55e;color:#22c55e}}
-.msg.error{{background:#2a0f0f;border:1px solid #ef4444;color:#ef4444}}
-.pricing{{max-width:1000px;margin:0 auto 80px;padding:0 20px}}
-.pricing h2{{text-align:center;font-size:32px;font-weight:700;margin-bottom:40px}}
-.plans{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}}
-.plan{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:32px;position:relative}}
-.plan.featured{{border-color:#a855f7}}
-.plan-badge{{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#a855f7;color:#fff;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}}
-.plan-name{{font-size:18px;font-weight:700;margin-bottom:4px}}
-.plan-price{{font-size:36px;font-weight:800;color:#a855f7;margin:12px 0 4px}}
-.plan-price span{{font-size:16px;color:#666;font-weight:400}}
-.plan-limit{{color:#888;font-size:14px;margin-bottom:20px}}
-.plan ul{{list-style:none;margin-bottom:24px}}
-.plan ul li{{padding:6px 0;font-size:14px;color:#ccc}}
-.plan ul li::before{{content:"✓ ";color:#a855f7}}
-.plan a{{display:block;text-align:center;padding:12px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none}}
+.msg{{margin-top:16px;padding:12px 16px;border-radius:8px;font-size:14px;display:none}}
+.msg.success{{background:#0a1f0a;border:1px solid #22c55e;color:#22c55e}}
+.msg.error{{background:#1f0a0a;border:1px solid #ef4444;color:#ef4444}}
+.trust-badges{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:20px}}
+.trust-badge{{font-size:12px;color:#555;display:flex;align-items:center;gap:5px}}
+.pricing{{max-width:1020px;margin:0 auto 80px;padding:0 20px}}
+.plans{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}}
+.plan{{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:32px;position:relative;transition:border-color .2s}}
+.plan:hover{{border-color:#3b1a6e}}
+.plan.featured{{border-color:#a855f7;background:#130a20}}
+.plan-badge{{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#a855f7;color:#fff;padding:4px 18px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}}
+.plan-name{{font-size:17px;font-weight:700;margin-bottom:4px;color:#ccc}}
+.plan-price{{font-size:40px;font-weight:800;color:#fff;margin:14px 0 4px;letter-spacing:-1px}}
+.plan-price span{{font-size:16px;color:#555;font-weight:400}}
+.plan-limit{{color:#666;font-size:13px;margin-bottom:24px}}
+.plan ul{{list-style:none;margin-bottom:28px}}
+.plan ul li{{padding:7px 0;font-size:14px;color:#aaa;display:flex;align-items:center;gap:8px}}
+.plan ul li::before{{content:"✓";color:#a855f7;font-weight:700;flex-shrink:0}}
+.plan a{{display:block;text-align:center;padding:13px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none;transition:all .2s}}
 .btn-pp{{background:#a855f7;color:#fff}}
-.btn-ps{{border:1px solid #333;color:#fff}}
-pre{{background:#111;border:1px solid #1f1f1f;border-radius:10px;padding:24px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.6;max-width:900px;margin:0 auto 80px}}
-footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#555;font-size:13px}}
-footer a{{color:#777;text-decoration:none}}
+.btn-pp:hover{{background:#9333ea}}
+.btn-ps{{border:1px solid #2a2a2a;color:#ccc}}
+.btn-ps:hover{{border-color:#555;color:#fff}}
+.faq{{max-width:720px;margin:0 auto 80px;padding:0 20px}}
+.faq-item{{border-bottom:1px solid #1a1a1a;padding:20px 0}}
+.faq-q{{font-size:16px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#ddd}}
+.faq-q:hover{{color:#a855f7}}
+.faq-a{{color:#666;font-size:14px;line-height:1.7;margin-top:12px;display:none}}
+.faq-a.open{{display:block}}
+.final-cta{{text-align:center;padding:80px 20px;background:linear-gradient(180deg,transparent,#0f0520 50%,transparent)}}
+.final-cta h2{{font-size:40px;font-weight:800;margin-bottom:16px;text-align:center}}
+.final-cta p{{color:#777;font-size:17px;margin-bottom:36px}}
+footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#444;font-size:13px}}
+footer a{{color:#666;text-decoration:none}}
+footer a:hover{{color:#fff}}
+@media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}}}
 </style>
 </head>
 <body>
 <nav>
-  <span class="logo">StackSight</span>
+  <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
@@ -431,73 +468,135 @@ footer a{{color:#777;text-decoration:none}}
   </div>
 </nav>
 <div class="hero">
-  <div class="badge">v{VERSION} - Live API</div>
+  <div class="badge">🚀 v{VERSION} &nbsp;·&nbsp; Live API</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
-  <p>Real-time hiring intent, deterministic tech stack detection, and bulk enrichment.</p>
+  <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment — all in one REST API.</p>
   <div class="cta-group">
-    <a href="#signup" class="btn-primary">Get Free API Key</a>
-    <a href="/demo/stripe.com" class="btn-secondary">Live Demo</a>
+    <a href="#signup" class="btn-primary">🔑 Get Free API Key</a>
+    <a href="/demo/stripe.com" class="btn-secondary">Live Demo →</a>
   </div>
 </div>
-<div class="features">
-  <div class="feature"><h3>Real-Time Hiring Intent</h3><p>Know exactly which companies are actively hiring engineers, sales reps, or executives.</p></div>
-  <div class="feature"><h3>Deterministic Tech Stack</h3><p>Parse actual script tags to detect React, AWS, Stripe, and 20+ technologies with 100% accuracy.</p></div>
-  <div class="feature"><h3>Bulk Enrichment API</h3><p>Process up to 50 domains in one request. Cached results return in under 50ms.</p></div>
-  <div class="feature"><h3>Lightning Fast Cache</h3><p>All scrapes cached in Redis for 7 days. Most requests return instantly.</p></div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">50M+</div><div class="stat-label">Job postings tracked</div></div>
+  <div class="stat"><div class="stat-num">50ms</div><div class="stat-label">Avg response (cached)</div></div>
+  <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Tech signals detected</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Lines to integrate</div></div>
+</div>
+<div class="use-cases">
+  <h2>Built for revenue teams</h2>
+  <p class="sub">Know who's ready to buy before they raise their hand.</p>
+  <div class="use-grid">
+    <div class="use-card"><div class="use-icon">🎯</div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
+    <div class="use-card"><div class="use-icon">🧬</div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
+    <div class="use-card"><div class="use-icon">📦</div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
+    <div class="use-card"><div class="use-icon">⚡</div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
+  </div>
+</div>
+<div class="how">
+  <h2>Up and running in minutes</h2>
+  <p class="sub">No complex setup. No sales call required.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h4>Get your API key</h4><p>Sign up with your email. Instant delivery, no credit card.</p></div>
+    <div class="step"><div class="step-num">2</div><h4>Make your first call</h4><p>Pass any domain to our REST endpoint. Get structured JSON back.</p></div>
+    <div class="step"><div class="step-num">3</div><h4>Pipe it into your stack</h4><p>Connect to your CRM, Slack, or data warehouse in minutes.</p></div>
+  </div>
+</div>
+<div class="code-section">
+  <h2>Simple REST API</h2>
+  <p class="sub">One endpoint. Structured JSON. Works with any language.</p>
+  <div class="code-tabs"><div class="tab active">cURL</div></div>
+  <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
+     -H "X-API-Key: YOUR_API_KEY"
+
+<span class="k">"domain"</span>: <span class="s">"stripe.com"</span>,
+<span class="k">"active_jobs"</span>: <span class="n">142</span>,
+<span class="k">"growth_30d"</span>: <span class="s">"+18%"</span>,
+<span class="k">"tech_stack"</span>: [<span class="s">"React"</span>, <span class="s">"AWS"</span>, <span class="s">"Stripe"</span>],
+<span class="k">"hiring_signal"</span>: <span class="s">"high"</span></pre>
 </div>
 <div class="signup-section" id="signup">
-  <h2>Get Started Free</h2>
-  <p>10 requests - no credit card required - instant delivery</p>
+  <h2>Start for free</h2>
+  <p>10 lookups · no credit card · instant delivery</p>
   <div class="form-row">
-    <input type="email" id="email-input" placeholder="you@company.com">
+    <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
     <button onclick="signup()">Get My Free Key</button>
   </div>
   <div class="msg" id="signup-msg"></div>
+  <div class="trust-badges">
+    <span class="trust-badge">🔒 No credit card</span>
+    <span class="trust-badge">⚡ Instant delivery</span>
+    <span class="trust-badge">🚫 No spam ever</span>
+  </div>
 </div>
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
+  <p class="sub">Scale as you grow. Cancel any time.</p>
   <div class="plans">
     <div class="plan">
       <div class="plan-name">Free</div>
       <div class="plan-price">$0<span>/mo</span></div>
       <div class="plan-limit">10 requests total</div>
-      <ul><li>10 API requests</li><li>JSON responses</li><li>Community support</li></ul>
-      <a href="#signup" class="btn-ps">Get Started</a>
+      <ul><li>10 API requests</li><li>JSON responses</li><li>Tech stack detection</li><li>Community support</li></ul>
+      <a href="#signup" class="btn-ps">Get Started Free</a>
     </div>
     <div class="plan featured">
-      <div class="plan-badge">Most Popular</div>
+      <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
       <div class="plan-price">$49<span>/mo</span></div>
       <div class="plan-limit">5,000 requests/month</div>
-      <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro" class="btn-pp">Get Pro</a>
+      <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
+      <a href="/checkout/pro" class="btn-pp">Get Pro →</a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
       <div class="plan-price">$199<span>/mo</span></div>
       <div class="plan-limit">50,000 requests/month</div>
-      <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business" class="btn-pp">Get Business</a>
+      <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
+      <a href="/checkout/business" class="btn-pp">Get Business →</a>
     </div>
   </div>
 </div>
-<pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
-     -H "X-API-Key: YOUR_API_KEY"</pre>
-<footer>StackSight API - <a href="/docs">Docs</a> - <a href="/login">Sign In</a> - <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a></footer>
+<div class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What is hiring intent data?</span><span>+</span></div><div class="faq-a">Hiring intent data tells you when a company is actively growing by tracking their job postings. When a company posts multiple new roles it is a strong signal they have budget and momentum. StackSight captures this in real time.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the tech stack detection?</span><span>+</span></div><div class="faq-a">Very accurate. We parse actual HTML script tags and headers, not guesses. If a company uses React, we see the React bundle in their page source. 100% deterministic.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How fresh is the data?</span><span>+</span></div><div class="faq-a">Results are cached for 7 days in Redis. For most use cases this is ideal. Cache misses trigger a live scrape that returns in seconds.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I use this in my CRM?</span><span>+</span></div><div class="faq-a">Yes. Our REST API returns structured JSON that integrates with any CRM, data warehouse, or automation tool. Many customers pipe signals directly into Salesforce, HubSpot, or Clay.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What happens when I hit my limit?</span><span>+</span></div><div class="faq-a">You will get a 429 response with a clear error message. Upgrade any time from your dashboard. Your API key stays the same.</div></div>
+</div>
+<div class="final-cta">
+  <h2>Know who is growing.<br>Before your competitors do.</h2>
+  <p>Free tier available. No credit card required.</p>
+  <a href="#signup" class="btn-primary" style="font-size:18px;padding:16px 40px">🔑 Get Free API Key</a>
+</div>
+<footer>
+  <div style="margin-bottom:12px">
+    <a href="/docs">Docs</a> &nbsp;·&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;·&nbsp; <a href="#pricing">Pricing</a> &nbsp;·&nbsp; <a href="/login">Sign In</a> &nbsp;·&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+  </div>
+  <div>© 2025 StackSight · <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
+</footer>
 <script>
 async function signup() {{
   const email = document.getElementById('email-input').value.trim();
   const msg = document.getElementById('signup-msg');
   if (!email || !email.includes('@')) {{ msg.className='msg error'; msg.style.display='block'; msg.textContent='Please enter a valid email.'; return; }}
-  msg.className='msg'; msg.style.display='block'; msg.textContent='Sending verification email...';
+  const btn = document.querySelector('.form-row button');
+  btn.textContent='Sending...'; btn.disabled=true;
+  msg.className='msg'; msg.style.display='block'; msg.textContent='Sending...';
   try {{
     const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email}})}});
     const d = await r.json();
-    if (r.ok) {{ msg.className='msg success'; msg.textContent='Check your email! Click the link to get your API key.'; }}
-    else {{ msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; }}
-  }} catch(e) {{ msg.className='msg error'; msg.textContent='Network error. Please try again.'; }}
+    if (r.ok) {{ msg.className='msg success'; msg.textContent='Check your inbox! Click the link to get your API key.'; btn.textContent='Sent!'; }}
+    else {{ msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
+  }} catch(e) {{ msg.className='msg error'; msg.textContent='Network error. Please try again.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
 }}
 document.getElementById('email-input').addEventListener('keypress', e => {{ if(e.key==='Enter') signup(); }});
+function toggleFaq(el) {{
+  const a = el.nextElementSibling;
+  const icon = el.querySelector('span:last-child');
+  const open = a.classList.toggle('open');
+  icon.textContent = open ? '-' : '+';
+}}
 </script>
 </body></html>""")
 
