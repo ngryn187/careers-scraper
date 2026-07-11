@@ -43,7 +43,7 @@ RATE_LIMIT_WINDOW = 60
 
 # ── Redis / App ───────────────────────────────────────────────────────────────
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
-app = FastAPI(title="StackSight API", version=VERSION)
+app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None)
 
 # ── Demo data ─────────────────────────────────────────────────────────────────
 DEMO_DATA = {
@@ -339,6 +339,130 @@ async def sitemap():
   <url><loc>https://stacksight.org/login</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
 </urlset>"""
     return Response(content=xml, media_type="application/xml")
+
+@app.get("/docs", response_class=HTMLResponse)
+async def docs_page():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>API Docs - StackSight</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6;display:flex;min-height:100vh}
+nav{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:fixed;top:0;left:0;right:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}
+.logo{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}
+.nav-links a{color:#999;text-decoration:none;margin-left:24px;font-size:14px}.nav-links a:hover{color:#fff}
+.nav-links .btn-login{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px}
+.sidebar{width:240px;flex-shrink:0;position:fixed;top:61px;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1a1a1a;padding:24px 0}
+.sidebar-section{padding:8px 20px;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.8px;margin-top:16px}
+.sidebar a{display:block;padding:8px 20px;font-size:13px;color:#777;text-decoration:none;border-left:2px solid transparent}
+.sidebar a:hover{color:#ccc;background:#111}.sidebar a.active{color:#a855f7;border-left-color:#a855f7;background:#0f0518}
+.main{margin-left:240px;margin-top:61px;flex:1;padding:48px 60px;max-width:900px}
+h1{font-size:36px;font-weight:800;margin-bottom:8px}
+h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-top:48px;border-top:1px solid #1a1a1a}
+p{color:#888;margin-bottom:16px;font-size:15px}
+.endpoint{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;margin-bottom:24px;overflow:hidden}
+.endpoint-header{display:flex;align-items:center;gap:12px;padding:16px 20px;background:#111;border-bottom:1px solid #1f1f1f}
+.method{font-size:12px;font-weight:700;padding:3px 10px;border-radius:5px}
+.get{background:#0a2a1a;color:#22c55e;border:1px solid #166534}
+.post{background:#1a1a0a;color:#eab308;border:1px solid #713f12}
+.path{font-family:monospace;font-size:15px;color:#e5e5e5;font-weight:600}
+.endpoint-body{padding:20px}
+table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
+th{text-align:left;padding:10px 12px;background:#111;color:#555;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1f1f1f}
+td{padding:10px 12px;border-bottom:1px solid #0f0f0f;color:#aaa}
+td:first-child{font-family:monospace;color:#a855f7;font-size:13px}
+pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0}
+.auth-box{background:#0f0518;border:1px solid #3b1a6e;border-radius:10px;padding:20px;margin-bottom:24px}
+.auth-box h4{color:#a855f7;font-size:14px;font-weight:600;margin-bottom:8px}
+.limits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.limit-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:16px;text-align:center}
+.limit-name{font-size:12px;color:#555;margin-bottom:4px}
+.limit-val{font-size:20px;font-weight:700;color:#a855f7}
+</style>
+</head>
+<body>
+<nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/demo/stripe.com">Demo</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login">Sign In</a></div></nav>
+<div class="sidebar">
+  <div class="sidebar-section">Getting Started</div>
+  <a href="#quickstart" class="active">Quick Start</a><a href="#auth">Authentication</a><a href="#limits">Rate Limits</a>
+  <div class="sidebar-section">Endpoints</div>
+  <a href="#scrape">GET /scrape</a><a href="#bulk">POST /bulk</a><a href="#status">GET /status</a>
+  <div class="sidebar-section">Reference</div>
+  <a href="#response">Response Schema</a><a href="#errors">Error Codes</a><a href="#sdks">Code Examples</a>
+</div>
+<div class="main">
+  <h1>API Documentation</h1>
+  <p style="font-size:17px;color:#999;margin-bottom:32px">Real-time hiring intent signals, tech stack detection, and bulk domain enrichment.</p>
+  <h2 id="quickstart" style="border-top:none;margin-top:0;padding-top:0">Quick Start</h2>
+  <p>Get your free API key at <a href="/#signup" style="color:#a855f7">stacksight.org</a>, then:</p>
+  <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" -H "X-API-Key: ss_your_key"</pre>
+  <h2 id="auth">Authentication</h2>
+  <div class="auth-box"><h4>X-API-Key Header</h4><p style="color:#666;margin:0">Pass your key in the <code style="color:#a855f7">X-API-Key</code> header. Keys look like <code style="color:#22d3ee">ss_...</code></p></div>
+  <h2 id="limits">Rate Limits</h2>
+  <div class="limits">
+    <div class="limit-card"><div class="limit-name">Free</div><div class="limit-val">10</div><div style="font-size:11px;color:#444">total requests</div></div>
+    <div class="limit-card"><div class="limit-name">Pro</div><div class="limit-val">5,000</div><div style="font-size:11px;color:#444">per month</div></div>
+    <div class="limit-card"><div class="limit-name">Business</div><div class="limit-val">50,000</div><div style="font-size:11px;color:#444">per month</div></div>
+  </div>
+  <h2 id="scrape">GET /scrape</h2>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/scrape</span></div>
+    <div class="endpoint-body">
+      <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td>domain</td><td>string</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>Domain to enrich, e.g. stripe.com</td></tr></table>
+      <pre>curl "https://stacksight.org/scrape?domain=notion.so" -H "X-API-Key: ss_your_key"</pre>
+    </div>
+  </div>
+  <h2 id="bulk">POST /bulk</h2>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="path">/bulk</span></div>
+    <div class="endpoint-body">
+      <pre>curl -X POST "https://stacksight.org/bulk" -H "X-API-Key: ss_your_key" -H "Content-Type: application/json" -d '{"domains":["stripe.com","notion.so"]}'</pre>
+    </div>
+  </div>
+  <h2 id="status">GET /status</h2>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/status</span></div>
+    <div class="endpoint-body"><pre>curl "https://stacksight.org/status" -H "X-API-Key: ss_your_key"</pre></div>
+  </div>
+  <h2 id="response">Response Schema</h2>
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td>domain</td><td>string</td><td>Queried domain</td></tr>
+    <tr><td>active_jobs</td><td>integer</td><td>Active job postings found</td></tr>
+    <tr><td>growth_30d</td><td>string</td><td>Job count change over 30 days</td></tr>
+    <tr><td>tech_stack</td><td>array</td><td>Technologies detected</td></tr>
+    <tr><td>hiring_signal</td><td>string</td><td>high / medium / low</td></tr>
+    <tr><td>cached</td><td>boolean</td><td>Whether result is from cache</td></tr>
+  </table>
+  <h2 id="errors">Error Codes</h2>
+  <table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td style="color:#fb923c">400</td><td>Missing or invalid domain</td></tr>
+    <tr><td style="color:#fb923c">401</td><td>Missing or invalid API key</td></tr>
+    <tr><td style="color:#fb923c">429</td><td>Rate limit exceeded</td></tr>
+    <tr><td style="color:#fb923c">500</td><td>Scrape failed — retry</td></tr>
+  </table>
+  <h2 id="sdks">Code Examples</h2>
+  <pre># Python
+import requests
+r = requests.get("https://stacksight.org/scrape", params={"domain":"stripe.com"}, headers={"X-API-Key":"ss_your_key"})
+print(r.json())</pre>
+  <pre>// JavaScript
+const res = await fetch('https://stacksight.org/scrape?domain=stripe.com', { headers: {'X-API-Key':'ss_your_key'} });
+console.log(await res.json());</pre>
+</div>
+<script>
+const links = document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  document.querySelectorAll('[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});
+  links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
+});
+</script>
+</body></html>""")
 
 @app.get("/", response_class=HTMLResponse)
 async def landing():
