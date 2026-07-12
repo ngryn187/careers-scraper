@@ -211,10 +211,13 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str):
     msg["To"] = to_email
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
-    with smtplib.SMTP("smtp.zoho.com", 587) as server:
-        server.starttls()
-        server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
-        server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
+    try:
+        with smtplib.SMTP("smtp.zoho.com", 587) as server:
+            server.starttls()
+            server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
+            server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send to {to_email}: {e}")
 
 def send_magic_link_email(to_email: str, token: str):
     url = f"{BASE_URL}/auth?token={token}"
