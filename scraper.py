@@ -128,6 +128,8 @@ def init_db():
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS token VARCHAR(64)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE")
+    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
+    cur.execute("ALTER TABLE api_keys ALTER COLUMN key DROP NOT NULL")
     conn.commit()
     cur.close()
     conn.close()
