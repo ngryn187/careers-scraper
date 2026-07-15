@@ -226,7 +226,7 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str):
     msg.attach(MIMEText(text_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
     try:
-        with smtplib.SMTP("smtp.zoho.com", 587) as server:
+        with smtplib.SMTP("smtp.zoho.com", 587, timeout=10) as server:
             server.starttls()
             server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
             server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
