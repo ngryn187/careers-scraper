@@ -412,14 +412,14 @@ pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;o
 <body>
 <nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/demo/stripe.com">Demo</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a></div></nav>
 <script>
-(function(){
-  fetch('/usage',{credentials:'include'}).then(r=>{
-    if(r.ok){r.json().then(d=>{
+(function(){{
+  fetch('/usage',{{'credentials':'include'}}).then(r=>{{
+    if(r.ok){{r.json().then(d=>{{
       var btn=document.getElementById('nav-auth-btn');
-      if(btn){btn.textContent='My Account';btn.href='/dashboard';}
-    });}
-  }).catch(function(){});
-})();
+      if(btn){{btn.textContent='My Account';btn.href='/dashboard';}}
+    }});}}  
+  }}).catch(function(){{}});
+}})();
 </script>
 <div class="sidebar">
   <div class="sidebar-section">Getting Started</div>
