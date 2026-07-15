@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.6.5"
+VERSION = "9.6.6"
 
 # ââ Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -274,20 +274,18 @@ def send_api_key_email(to_email: str, api_key: str, plan: str):
     text = f"Your StackSight API Key\n\nPlan: {plan.title()}\nLimit: {limit:,} requests\n\nAPI Key: {api_key}\n\nDashboard: {BASE_URL}/dashboard"
     send_email(to_email, subject, html, text)
 
-def send_verification_email(to_email: str, token: str):
-    verify_url = f"{BASE_URL}/verify-email?token={token}"
-    subject = "Verify your email - StackSight API"
-    html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#fff;padding:40px;border-radius:12px">
-      <h1 style="color:#a855f7">StackSight API</h1>
-      <h2>Confirm your email</h2>
-      <p>Click below to get your free API key (10 requests, no credit card required).</p>
-      <a href="{verify_url}" style="display:inline-block;background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0">Get My Free API Key</a>
-      <p style="color:#666;font-size:13px">Link: {verify_url}<br>Expires in 24 hours.</p>
-    </div>"""
-    text = f"Confirm your email to get your free StackSight API key.\n\nClick here: {verify_url}\n\nExpires in 24 hours."
-    send_email(to_email, subject, html, text)
-
-# ââ Provision key âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+def send_verification_email(email: str, token: str):
+    verify_url = f"https://stacksight.org/verify?token={token}"
+    subject = "Verify your email - StackSight"
+    html_body = f"""<html><body>
+<p>Hi,</p>
+<p>Thanks for signing up for StackSight! Click the link below to verify your email and get your free API key:</p>
+<p><a href="{verify_url}">{verify_url}</a></p>
+<p>This link expires in 24 hours.</p>
+<p>- The StackSight Team</p>
+</body></html>"""
+    text_body = f"Verify your email: {verify_url}"
+    _send_email_sync(email, subject, html_body, text_body)
 def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, stripe_session_id: str = None):
     api_key = "ss_" + secrets.token_urlsafe(32)
     limit = PLAN_LIMITS.get(plan, 10)
@@ -881,7 +879,7 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=400, detail="Invalid email address")
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     if not cur.fetchone():
         cur.close(); conn.close()
         raise HTTPException(status_code=404, detail="No account found for this email. Sign up first.")
