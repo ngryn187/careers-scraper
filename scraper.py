@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.6.9"
+VERSION = "9.7.0"
 
 # ââ Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -410,7 +410,17 @@ pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;o
 </style>
 </head>
 <body>
-<nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/demo/stripe.com">Demo</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login">Sign In</a></div></nav>
+<nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/demo/stripe.com">Demo</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a></div></nav>
+<script>
+(function(){
+  fetch('/usage',{credentials:'include'}).then(r=>{
+    if(r.ok){r.json().then(d=>{
+      var btn=document.getElementById('nav-auth-btn');
+      if(btn){btn.textContent='My Account';btn.href='/dashboard';}
+    });}
+  }).catch(function(){});
+})();
+</script>
 <div class="sidebar">
   <div class="sidebar-section">Getting Started</div>
   <a href="#quickstart" class="active">Quick Start</a><a href="#auth">Authentication</a><a href="#limits">Rate Limits</a>
@@ -921,122 +931,121 @@ async def logout(request: Request):
     token = request.cookies.get("ss_session")
     if token:
         conn = get_db()
-        cur = conn.cursor()
-        cur.execute("UPDATE sessions SET active=FALSE WHERE session_token=%s", (token,))
-        conn.commit()
-        cur.close(); conn.close()
-    response = RedirectResponse("/login", status_code=302)
-    response.delete_cookie("ss_session", path="/")
-    return response
-
-
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    email = get_session_email(request)
-    if not email:
-        return RedirectResponse("/login")
+        @app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request, session_token: str = Cookie(default=None)):
+    if not session_token:
+        return RedirectResponse(url="/login", status_code=302)
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(
-        "SELECT api_key, plan, requests_used, requests_limit, created_at FROM api_keys WHERE email=%s AND active=TRUE ORDER BY created_at DESC",
-        (email,)
-    )
-    keys = cur.fetchall()
-    cur.close(); conn.close()
-    if not keys:
-        return RedirectResponse("/login")
-    key_cards = ""
-    for api_key, plan, used, limit, created in keys:
-        pct = min(int((used / limit) * 100), 100) if limit > 0 else 0
-        bar_color = "#22c55e" if pct < 70 else "#f59e0b" if pct < 90 else "#ef4444"
-        upgrade_html = ""
-        if plan == "free":
-            upgrade_html = '<a href="/checkout/pro" style="display:inline-block;background:#a855f7;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">Upgrade to Pro</a>'
-        elif plan == "pro":
-            upgrade_html = '<a href="/checkout/business" style="display:inline-block;background:#a855f7;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">Upgrade to Business</a>'
-        if not api_key:
-            return RedirectResponse(url="/", status_code=302)
-        masked = api_key[:12] + ("*" * 20) + api_key[-6:]
-        key_cards += f"""
-        <div style="background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-            <div>
-              <span style="background:#1a0a2e;color:#a855f7;border:1px solid #a855f7;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;text-transform:uppercase">{plan}</span>
-              <span style="color:#555;font-size:12px;margin-left:12px">Since {created.strftime('%b %Y')}</span>
-            </div>
-            <span style="color:#888;font-size:13px">{used:,} / {limit:,} requests used</span>
-          </div>
-          <div style="background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:14px;color:#a855f7;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
-            <span style="word-break:break-all">{masked}</span>
-            <button onclick="copyKey('{api_key}', this)" style="background:#1f1f1f;border:1px solid #333;color:#ccc;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0">Copy Key</button>
-          </div>
-          <div style="margin-bottom:8px">
-            <div style="background:#1a1a1a;border-radius:6px;height:8px;overflow:hidden">
-              <div style="width:{pct}%;height:100%;background:{bar_color};border-radius:6px"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:6px">
-              <span style="color:#666;font-size:12px">{pct}% used</span>
-              <span style="color:#666;font-size:12px">{limit - used:,} remaining</span>
-            </div>
-          </div>
-          {upgrade_html}
-        </div>"""
-    return HTMLResponse(f"""<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Dashboard - StackSight</title>
+    cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (session_token,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return RedirectResponse(url="/login", status_code=302)
+    email = row[0]
+    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    key_row = cur.fetchone()
+    conn.close()
+    if not key_row:
+        return RedirectResponse(url="/", status_code=302)
+    api_key, plan, used, limit_val, created_at = key_row
+    masked = api_key[:8] + ("*" * 24) + api_key[-4:]
+    pct = round((used / limit_val) * 100) if limit_val else 0
+    created_str = created_at.strftime("%B %d, %Y") if created_at else "N/A"
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Account - StackSight</title>
 <style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
-nav{{padding:16px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a}}
-.logo{{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}}
-.nav-right{{display:flex;align-items:center;gap:16px}}
-.nav-right span{{color:#666;font-size:14px}}
-.nav-right a{{color:#999;text-decoration:none;font-size:14px}}
-.nav-right a:hover{{color:#fff}}
-.logout{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:6px 14px;border-radius:6px;font-size:13px}}
-main{{max-width:800px;margin:0 auto;padding:40px 20px}}
-h1{{font-size:26px;font-weight:700;margin-bottom:6px}}
-.subtitle{{color:#666;font-size:14px;margin-bottom:32px}}
-.quick-start{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:24px;margin-top:32px}}
-.quick-start h2{{font-size:15px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}}
-pre{{background:#0a0a0a;border:1px solid #222;border-radius:8px;padding:16px;font-size:13px;color:#ccc;overflow-x:auto}}
-a.docs-link{{display:inline-block;margin-top:12px;color:#a855f7;text-decoration:none;font-size:14px}}
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;min-height:100vh}}
+nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid #1f1f1f;background:#0d0d0d}}
+.logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#6366f1}}
+.nav-links{{display:flex;gap:12px;align-items:center}}
+.btn-logout{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;text-decoration:none;font-size:14px}}
+.btn-logout:hover{{border-color:#555}}
+.container{{max-width:800px;margin:48px auto;padding:0 24px}}
+h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
+.subtitle{{color:#888;margin-bottom:40px;font-size:15px}}
+.card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px}}
+.card h2{{font-size:14px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px}}
+.field{{margin-bottom:20px}}
+.field label{{display:block;font-size:13px;color:#888;margin-bottom:6px}}
+.field .value{{font-size:15px;color:#e5e5e5;font-family:monospace;background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
+.field .value span{{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+.copy-btn{{background:#6366f1;border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0}}
+.copy-btn:hover{{background:#4f46e5}}
+.badge{{display:inline-block;background:#1a1a2e;color:#6366f1;border:1px solid #2d2d5e;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;text-transform:capitalize}}
+.usage-bar{{background:#1a1a1a;border-radius:6px;height:8px;margin-top:8px;overflow:hidden}}
+.usage-fill{{background:#6366f1;height:100%;border-radius:6px;transition:width .3s}}
+.usage-label{{display:flex;justify-content:space-between;font-size:13px;color:#888;margin-top:6px}}
+.upgrade-btn{{display:inline-block;background:#6366f1;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-top:16px}}
+.upgrade-btn:hover{{background:#4f46e5}}
 </style>
 </head>
 <body>
 <nav>
-  <a href="/" class="logo">StackSight</a>
-  <div class="nav-right">
-    <span>{email}</span>
-    <a href="/docs">Docs</a>
-    <a href="/logout" class="logout">Sign Out</a>
+  <a href="/" class="logo">Stack<span>Sight</span></a>
+  <div class="nav-links">
+    <a href="/dashboard" style="color:#6366f1;text-decoration:none;font-size:14px;font-weight:500">My Account</a>
+    <a href="/logout" class="btn-logout">Sign Out</a>
   </div>
 </nav>
-<main>
-  <h1>Your API Keys</h1>
-  <p class="subtitle">Manage your keys and monitor usage</p>
-  {key_cards}
-  <div class="quick-start">
-    <h2>Quick Start</h2>
-    <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
-     -H "X-API-Key: YOUR_API_KEY"</pre>
-    <a href="/docs" class="docs-link">View full documentation</a>
+<div class="container">
+  <h1>My Account</h1>
+  <p class="subtitle">Signed in as {email}</p>
+
+  <div class="card">
+    <h2>API Key</h2>
+    <div class="field">
+      <label>Your API Key</label>
+      <div class="value">
+        <span id="api-key-display">{masked}</span>
+        <button class="copy-btn" onclick="copyKey('{api_key}')">Copy</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Member Since</label>
+      <div style="font-size:15px;color:#e5e5e5">{created_str}</div>
+    </div>
   </div>
-</main>
+
+  <div class="card">
+    <h2>Plan & Usage</h2>
+    <div class="field">
+      <label>Current Plan</label>
+      <span class="badge">{plan}</span>
+    </div>
+    <div class="field">
+      <label>API Requests This Month</label>
+      <div class="usage-bar"><div class="usage-fill" style="width:{pct}%"></div></div>
+      <div class="usage-label"><span>{used} used</span><span>{limit_val} limit</span></div>
+    </div>
+    {"" if plan != "free" else '<a href="/checkout/pro" class="upgrade-btn">Upgrade to Pro</a>'}
+  </div>
+
+  <div class="card">
+    <h2>Quick Start</h2>
+    <div class="field">
+      <label>Example API Call</label>
+      <div class="value" style="font-size:13px">
+        <span>curl https://stacksight.org/scrape?domain=stripe.com -H "X-API-Key: YOUR_KEY"</span>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
-function copyKey(key, btn) {{
-  navigator.clipboard.writeText(key).then(() => {{
+function copyKey(key) {{
+  navigator.clipboard.writeText(key).then(function(){{
+    var btn = event.target;
     btn.textContent = 'Copied!';
-    btn.style.color = '#22c55e';
-    setTimeout(() => {{ btn.textContent = 'Copy Key'; btn.style.color = '#ccc'; }}, 2000);
+    setTimeout(function(){{btn.textContent='Copy';}}, 2000);
   }});
 }}
 </script>
-</body></html>""")
-
-
-# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+</body></html>"""
+    return HTMLResponse(content=html)ââââââââââââ
 # ROUTES â FREE SIGNUP
 # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
