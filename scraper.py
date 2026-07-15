@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.6.8"
+VERSION = "9.6.9"
 
 # ââ Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -955,7 +955,7 @@ async def dashboard(request: Request):
         elif plan == "pro":
             upgrade_html = '<a href="/checkout/business" style="display:inline-block;background:#a855f7;color:#fff;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600;margin-top:12px">Upgrade to Business</a>'
         if not api_key:
-            return RedirectResponse(url="/get-free-key", status_code=302)
+            return RedirectResponse(url="/", status_code=302)
         masked = api_key[:12] + ("*" * 20) + api_key[-6:]
         key_cards += f"""
         <div style="background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px">
