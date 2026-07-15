@@ -931,7 +931,16 @@ async def logout(request: Request):
     token = request.cookies.get("ss_session")
     if token:
         conn = get_db()
-        @app.get("/dashboard", response_class=HTMLResponse)
+        cur = conn.cursor()
+        cur.execute("UPDATE sessions SET active=FALSE WHERE session_token=%s", (token,))
+        conn.commit()
+        conn.close()
+    response = RedirectResponse(url="/", status_code=302)
+    response.delete_cookie("ss_session")
+    return response
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request, session_token: str = Cookie(default=None)):
     if not session_token:
         return RedirectResponse(url="/login", status_code=302)
