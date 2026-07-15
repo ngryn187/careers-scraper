@@ -17,9 +17,9 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.6.1"
+VERSION = "9.6.4"
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# ââ Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
@@ -36,16 +36,16 @@ STRIPE_PRICES = {
 }
 PLAN_LIMITS = {"free": 10, "pro": 5000, "business": 50000}
 
-# ── Rate limiting ─────────────────────────────────────────────────────────────
+# ââ Rate limiting âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 _rate_limit: dict = {}
 RATE_LIMIT_MAX = 20
 RATE_LIMIT_WINDOW = 60
 
-# ── Redis / App ───────────────────────────────────────────────────────────────
+# ââ Redis / App âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None)
 
-# ── Demo data ─────────────────────────────────────────────────────────────────
+# ââ Demo data âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 DEMO_DATA = {
     "stripe.com": {"company_name": "Stripe", "is_hiring": True, "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"], "sales_roles": ["Account Executive", "Solutions Engineer"], "detected_tech_stack": ["React", "AWS", "Stripe", "Cloudflare", "Sentry"]},
     "openai.com": {"company_name": "OpenAI", "is_hiring": True, "engineering_roles": ["Research Engineer", "Infrastructure Engineer", "Safety Engineer"], "sales_roles": ["Enterprise Account Executive"], "detected_tech_stack": ["Python", "Kubernetes", "Azure", "React", "PostgreSQL"]},
@@ -65,7 +65,7 @@ EXTRACTION_PROMPT = (
     "sales_roles: [string], detected_tech_stack: [string]}"
 )
 
-# ── Database ──────────────────────────────────────────────────────────────────
+# ââ Database ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def get_db():
     return psycopg2.connect(DATABASE_URL)
 
@@ -115,7 +115,7 @@ def init_db():
             used BOOLEAN DEFAULT FALSE
         )
     """)
-    # ── Migrations (safe to re-run) ─────────────────────────────────────────
+    # ââ Migrations (safe to re-run) âââââââââââââââââââââââââââââââââââââââââ
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS api_key VARCHAR(64)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS plan VARCHAR(20) DEFAULT 'free'")
@@ -133,7 +133,7 @@ def init_db():
     cur.close()
     conn.close()
 
-# ── Session auth ──────────────────────────────────────────────────────────────
+# ââ Session auth ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def get_session_email(request: Request) -> str | None:
     token = request.cookies.get("ss_session")
     if not token:
@@ -178,7 +178,7 @@ def create_session(email: str, response: Response) -> str:
     )
     return token
 
-# ── Rate limiting ─────────────────────────────────────────────────────────────
+# ââ Rate limiting âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def check_rate_limit(api_key: str):
     now = time.time()
     window_start = now - RATE_LIMIT_WINDOW
@@ -189,7 +189,7 @@ def check_rate_limit(api_key: str):
         raise HTTPException(status_code=429, detail="Rate limit exceeded. Max 20 requests/minute.")
     _rate_limit[api_key].append(now)
 
-# ── API key auth ──────────────────────────────────────────────────────────────
+# ââ API key auth ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def verify_api_key(x_api_key: str):
     if not x_api_key:
         raise HTTPException(status_code=401, detail="Missing X-API-Key header")
@@ -217,10 +217,10 @@ def increment_usage(api_key: str):
     cur.close()
     conn.close()
 
-# ── Email ─────────────────────────────────────────────────────────────────────
+# ââ Email âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str):
     import urllib.request, json as _json
-    RESEND_KEY = "re_f4dLZJSH_CGxTkNZppRtxonSwV2pJZPrG"
+    RESEND_KEY = os.environ.get("RESEND_API_KEY", "")
     payload = _json.dumps({
         "from": "StackSight <noreply@stacksight.org>",
         "to": [to_email],
@@ -287,7 +287,7 @@ def send_verification_email(to_email: str, token: str):
     text = f"Confirm your email to get your free StackSight API key.\n\nClick here: {verify_url}\n\nExpires in 24 hours."
     send_email(to_email, subject, html, text)
 
-# ── Provision key ─────────────────────────────────────────────────────────────
+# ââ Provision key âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, stripe_session_id: str = None):
     api_key = "ss_" + secrets.token_urlsafe(32)
     limit = PLAN_LIMITS.get(plan, 10)
@@ -303,7 +303,7 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
     send_api_key_email(email, api_key, plan)
     return api_key
 
-# ── Scraper ───────────────────────────────────────────────────────────────────
+# ââ Scraper âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async def scrape_page(domain: str):
     domain = domain.strip().lower().rstrip("/")
     if not domain.startswith("http"):
@@ -340,14 +340,14 @@ def extract_with_openai(raw_text: str):
     )
     return json.loads(response.choices[0].message.content)
 
-# ── Startup ───────────────────────────────────────────────────────────────────
+# ââ Startup âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 @app.on_event("startup")
 async def startup():
     init_db()
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES — PUBLIC
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ROUTES â PUBLIC
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
@@ -472,7 +472,7 @@ pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;o
     <tr><td style="color:#fb923c">400</td><td>Missing or invalid domain</td></tr>
     <tr><td style="color:#fb923c">401</td><td>Missing or invalid API key</td></tr>
     <tr><td style="color:#fb923c">429</td><td>Rate limit exceeded</td></tr>
-    <tr><td style="color:#fb923c">500</td><td>Scrape failed — retry</td></tr>
+    <tr><td style="color:#fb923c">500</td><td>Scrape failed â retry</td></tr>
   </table>
   <h2 id="sdks">Code Examples</h2>
   <pre># Python
@@ -589,7 +589,7 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .plan-limit{{color:#666;font-size:13px;margin-bottom:24px}}
 .plan ul{{list-style:none;margin-bottom:28px}}
 .plan ul li{{padding:7px 0;font-size:14px;color:#aaa;display:flex;align-items:center;gap:8px}}
-.plan ul li::before{{content:"✓";color:#a855f7;font-weight:700;flex-shrink:0}}
+.plan ul li::before{{content:"â";color:#a855f7;font-weight:700;flex-shrink:0}}
 .plan a{{display:block;text-align:center;padding:13px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none;transition:all .2s}}
 .btn-pp{{background:#a855f7;color:#fff}}
 .btn-pp:hover{{background:#9333ea}}
@@ -621,12 +621,12 @@ footer a:hover{{color:#fff}}
   </div>
 </nav>
 <div class="hero">
-  <div class="badge">🚀 v{VERSION} &nbsp;·&nbsp; Live API</div>
+  <div class="badge">ð v{VERSION} &nbsp;Â·&nbsp; Live API</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
-  <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment — all in one REST API.</p>
+  <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment â all in one REST API.</p>
   <div class="cta-group">
-    <a href="#signup" class="btn-primary">🔑 Get Free API Key</a>
-    <a href="/demo/stripe.com" class="btn-secondary">Live Demo →</a>
+    <a href="#signup" class="btn-primary">ð Get Free API Key</a>
+    <a href="/demo/stripe.com" class="btn-secondary">Live Demo â</a>
   </div>
 </div>
 <div class="stats-bar">
@@ -639,10 +639,10 @@ footer a:hover{{color:#fff}}
   <h2>Built for revenue teams</h2>
   <p class="sub">Know who's ready to buy before they raise their hand.</p>
   <div class="use-grid">
-    <div class="use-card"><div class="use-icon">🎯</div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
-    <div class="use-card"><div class="use-icon">🧬</div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
-    <div class="use-card"><div class="use-icon">📦</div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
-    <div class="use-card"><div class="use-icon">⚡</div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
+    <div class="use-card"><div class="use-icon">ð¯</div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
+    <div class="use-card"><div class="use-icon">ð§¬</div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
+    <div class="use-card"><div class="use-icon">ð¦</div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
+    <div class="use-card"><div class="use-icon">â¡</div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
   </div>
 </div>
 <div class="how">
@@ -669,16 +669,16 @@ footer a:hover{{color:#fff}}
 </div>
 <div class="signup-section" id="signup">
   <h2>Start for free</h2>
-  <p>10 lookups · no credit card · instant delivery</p>
+  <p>10 lookups Â· no credit card Â· instant delivery</p>
   <div class="form-row">
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
     <button onclick="signup()">Get My Free Key</button>
   </div>
   <div class="msg" id="signup-msg"></div>
   <div class="trust-badges">
-    <span class="trust-badge">🔒 No credit card</span>
-    <span class="trust-badge">⚡ Instant delivery</span>
-    <span class="trust-badge">🚫 No spam ever</span>
+    <span class="trust-badge">ð No credit card</span>
+    <span class="trust-badge">â¡ Instant delivery</span>
+    <span class="trust-badge">ð« No spam ever</span>
   </div>
 </div>
 <div class="pricing" id="pricing">
@@ -698,14 +698,14 @@ footer a:hover{{color:#fff}}
       <div class="plan-price">$49<span>/mo</span></div>
       <div class="plan-limit">5,000 requests/month</div>
       <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro" class="btn-pp">Get Pro →</a>
+      <a href="/checkout/pro" class="btn-pp">Get Pro â</a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
       <div class="plan-price">$199<span>/mo</span></div>
       <div class="plan-limit">50,000 requests/month</div>
       <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business" class="btn-pp">Get Business →</a>
+      <a href="/checkout/business" class="btn-pp">Get Business â</a>
     </div>
   </div>
 </div>
@@ -720,13 +720,13 @@ footer a:hover{{color:#fff}}
 <div class="final-cta">
   <h2>Know who is growing.<br>Before your competitors do.</h2>
   <p>Free tier available. No credit card required.</p>
-  <a href="#signup" class="btn-primary" style="font-size:18px;padding:16px 40px">🔑 Get Free API Key</a>
+  <a href="#signup" class="btn-primary" style="font-size:18px;padding:16px 40px">ð Get Free API Key</a>
 </div>
 <footer>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;·&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;·&nbsp; <a href="#pricing">Pricing</a> &nbsp;·&nbsp; <a href="/login">Sign In</a> &nbsp;·&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;Â·&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;Â·&nbsp; <a href="#pricing">Pricing</a> &nbsp;Â·&nbsp; <a href="/login">Sign In</a> &nbsp;Â·&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
   </div>
-  <div>© 2025 StackSight · <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
+  <div>Â© 2025 StackSight Â· <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
 </footer>
 <script>
 async function signup() {{
@@ -820,7 +820,7 @@ async def signup_post(request: Request, background_tasks: BackgroundTasks):
     cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND plan='free' LIMIT 1", (email,))
     existing = cur.fetchone()
     if existing:
-        return JSONResponse({"ok": True, "msg": "Check your inbox — we sent your API key again."})
+        return JSONResponse({"ok": True, "msg": "Check your inbox â we sent your API key again."})
     token = secrets.token_urlsafe(32)
     cur.execute("""
         INSERT INTO pending_signups (email, token)
@@ -1036,9 +1036,9 @@ function copyKey(key, btn) {{
 </body></html>""")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES — FREE SIGNUP
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ROUTES â FREE SIGNUP
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.post("/signup")
 async def signup(request: Request, background_tasks: BackgroundTasks):
@@ -1099,9 +1099,9 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
 </div></body></html>""")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ROUTES — API
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# ROUTES â API
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo(domain: str):
