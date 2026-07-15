@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.6.6"
+VERSION = "9.6.7"
 
 # ââ Config ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -275,7 +275,7 @@ def send_api_key_email(to_email: str, api_key: str, plan: str):
     send_email(to_email, subject, html, text)
 
 def send_verification_email(email: str, token: str):
-    verify_url = f"https://stacksight.org/verify?token={token}"
+    verify_url = f"https://stacksight.org/verify-email?token={token}"
     subject = "Verify your email - StackSight"
     html_body = f"""<html><body>
 <p>Hi,</p>
@@ -1046,11 +1046,11 @@ async def signup(request: Request, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=400, detail="Invalid email address")
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT id FROM api_keys WHERE email=%s AND plan='free'", (email,))
+    cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND plan='free'", (email,))
     if cur.fetchone():
         cur.close(); conn.close()
         raise HTTPException(status_code=400, detail="An API key already exists for this email. Sign in to view it.")
-    cur.execute("SELECT id FROM pending_signups WHERE email=%s AND used=FALSE", (email,))
+    cur.execute("SELECT 1 FROM pending_signups WHERE email=%s AND used=FALSE", (email,))
     if cur.fetchone():
         cur.close(); conn.close()
         raise HTTPException(status_code=400, detail="Verification email already sent. Please check your inbox.")
