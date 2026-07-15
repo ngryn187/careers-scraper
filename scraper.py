@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.1.0"
+VERSION = "9.6.1"
 
 # ── Config ────────────────────────────────────────────────────────────────────
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -218,7 +218,7 @@ def increment_usage(api_key: str):
     conn.close()
 
 # ── Email ─────────────────────────────────────────────────────────────────────
-def send_email(to_email: str, subject: str, html_body: str, text_body: str):
+def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = ZOHO_EMAIL
@@ -231,7 +231,12 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str):
             server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
             server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send to {to_email}: {e}")
+        print(f"[EMAIL ERROR] Failed to send to {to_email}: 
+def send_email(to_email: str, subject: str, html_body: str, text_body: str):
+    import threading
+    t = threading.Thread(target=_send_email_sync, args=(to_email, subject, html_body, text_body), daemon=True)
+    t.start()
+{e}")
 
 def send_magic_link_email(to_email: str, token: str):
     url = f"{BASE_URL}/auth?token={token}"
