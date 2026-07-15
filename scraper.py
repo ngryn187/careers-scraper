@@ -129,7 +129,6 @@ def init_db():
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS token VARCHAR(64)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
-    cur.execute("ALTER TABLE api_keys ALTER COLUMN key DROP NOT NULL")
     conn.commit()
     cur.close()
     conn.close()
@@ -283,9 +282,9 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO api_keys (api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id)
-        VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
-    """, (api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
+        INSERT INTO api_keys (key, api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
+    """, (api_key, api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
     conn.commit()
     cur.close()
     conn.close()
