@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.7.0"
+VERSION = "9.7.1"
 
 #  Config 
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -625,7 +625,7 @@ footer a:hover{{color:#fff}}
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
     <a href="#pricing">Pricing</a>
-    <a href="/login" class="btn-login">Sign In</a>
+    <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
   </div>
 </nav>
 <div class="hero">
