@@ -231,12 +231,13 @@ def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str
             server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
             server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
     except Exception as e:
-        print(f"[EMAIL ERROR] Failed to send to {to_email}: 
+        print(f"[EMAIL ERROR] Failed to send to {to_email}: {e}")
+
+
 def send_email(to_email: str, subject: str, html_body: str, text_body: str):
     import threading
     t = threading.Thread(target=_send_email_sync, args=(to_email, subject, html_body, text_body), daemon=True)
     t.start()
-{e}")
 
 def send_magic_link_email(to_email: str, token: str):
     url = f"{BASE_URL}/auth?token={token}"
