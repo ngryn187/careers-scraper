@@ -125,7 +125,6 @@ def init_db():
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(100)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS last_used TIMESTAMP")
-    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS token VARCHAR(64)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE")
@@ -1138,7 +1137,7 @@ async def usage(x_api_key: str = Header(None), key: str = None):
     row = cur.fetchone()
     cur.close(); conn.close()
     if not row:
-        raise HTTPException(status_code=404, detail="API key not found")
+        raise HTTPException(status_code=401, detail="Invalid API key")
     plan, used, limit, created = row
     return {"plan": plan, "requests_used": used, "requests_limit": limit, "requests_remaining": limit - used, "created_at": str(created)}
 
