@@ -219,21 +219,27 @@ def increment_usage(api_key: str):
 
 # ── Email ─────────────────────────────────────────────────────────────────────
 def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = ZOHO_EMAIL
-    msg["To"] = to_email
-    msg.attach(MIMEText(text_body, "plain"))
-    msg.attach(MIMEText(html_body, "html"))
+    import urllib.request, json as _json
+    RESEND_KEY = "re_f4dLZJSH_CGxTkNZppRtxonSwV2pJZPrG"
+    payload = _json.dumps({
+        "from": "StackSight <noreply@stacksight.org>",
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+        "text": text_body
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={"Authorization": f"Bearer {RESEND_KEY}", "Content-Type": "application/json"},
+        method="POST"
+    )
     try:
-        with smtplib.SMTP("smtp.zoho.com", 587, timeout=10) as server:
-            server.starttls()
-            server.login(ZOHO_EMAIL, ZOHO_PASSWORD)
-            server.sendmail(ZOHO_EMAIL, to_email, msg.as_string())
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = resp.read()
+            print(f"[EMAIL OK] Sent to {to_email}: {result[:100]}")
     except Exception as e:
         print(f"[EMAIL ERROR] Failed to send to {to_email}: {e}")
-
-
 def send_email(to_email: str, subject: str, html_body: str, text_body: str):
     import threading
     t = threading.Thread(target=_send_email_sync, args=(to_email, subject, html_body, text_body), daemon=True)
