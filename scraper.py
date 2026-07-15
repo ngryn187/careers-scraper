@@ -640,16 +640,6 @@ footer a:hover{{color:#fff}}
 </script>
 <script>
 (function(){
-  fetch("/usage",{credentials:"include"}).then(r=>{
-    if(r.ok){r.json().then(d=>{
-      var btn=document.getElementById("nav-auth-btn");
-      if(btn){btn.textContent="My Account";btn.href="/dashboard";}
-    });}
-  }).catch(function(){});
-})();
-</script>
-<script>
-(function(){
   fetch('/usage',{credentials:'include'}).then(r=>{
     if(r.ok){r.json().then(d=>{
       var btn=document.getElementById('nav-auth-btn');
