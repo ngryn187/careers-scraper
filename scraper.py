@@ -17,7 +17,7 @@ from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Req
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from playwright.async_api import async_playwright
 
-VERSION = "9.7.1"
+VERSION = "9.7.3"
 
 #  Config 
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -628,6 +628,16 @@ footer a:hover{{color:#fff}}
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
   </div>
 </nav>
+<script>
+(function(){
+  fetch("/usage",{credentials:"include"}).then(r=>{
+    if(r.ok){r.json().then(d=>{
+      var btn=document.getElementById("nav-auth-btn");
+      if(btn){btn.textContent="My Account";btn.href="/dashboard";}
+    });}
+  }).catch(function(){});
+})();
+</script>
 <script>
 (function(){
   fetch('/usage',{credentials:'include'}).then(r=>{
