@@ -638,16 +638,6 @@ footer a:hover{{color:#fff}}
   }}).catch(function(){{}});
 }})();
 </script>
-<script>
-(function(){
-  fetch('/usage',{credentials:'include'}).then(r=>{
-    if(r.ok){r.json().then(d=>{
-      var btn=document.getElementById('nav-auth-btn');
-      if(btn){btn.textContent='My Account';btn.href='/dashboard';}
-    });}
-  }).catch(function(){});
-})();
-</script>
 <div class="hero">
   <div class="badge"> v{VERSION} &nbsp;&nbsp; Live API</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
