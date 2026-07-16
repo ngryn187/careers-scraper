@@ -343,25 +343,7 @@ def extract_with_openai(raw_text: str):
 @app.on_event("startup")
 async def startup():
     init_db()
-    # One-time fix: provision key for owner account if missing
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("SELECT api_key FROM api_keys WHERE email='ngrynai@gmail.com' AND active=TRUE AND api_key IS NOT NULL LIMIT 1")
-        row = cur.fetchone()
-        if not row:
-            key = 'ss_7ccd32b3a5c5df2bffeda489573eab03b82d0946c4e3036b3b2ce4c7'
-            # Delete any broken rows first
-            cur.execute("DELETE FROM api_keys WHERE email='ngrynai@gmail.com'")
-            cur.execute(
-                "INSERT INTO api_keys (key, api_key, email, plan, requests_limit) VALUES (%s, %s, %s, %s, %s)",
-                (key, key, 'ngrynai@gmail.com', 'pro', 100000)
-            )
-            conn.commit()
-            print('Owner API key provisioned successfully')
-        cur.close(); conn.close()
-    except Exception as e:
-        print(f'Startup key fix error: {e}')
+
 
 # 
 # ROUTES  PUBLIC
@@ -1409,23 +1391,6 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
   <tbody>{rows}</tbody>
 </table>
 </body></html>""")
-
-@app.get("/admin/fix-owner-key-766a51c")
-async def fix_owner_key():
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        key = 'ss_7ccd32b3a5c5df2bffeda489573eab03b82d0946c4e3036b3b2ce4c7'
-        cur.execute("DELETE FROM api_keys WHERE email='ngrynai@gmail.com'")
-        cur.execute(
-            "INSERT INTO api_keys (key, api_key, email, plan, requests_limit) VALUES (%s, %s, %s, %s, %s)",
-            (key, key, 'ngrynai@gmail.com', 'pro', 100000)
-        )
-        conn.commit()
-        cur.close(); conn.close()
-        return {"ok": True, "message": "Owner key provisioned"}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
 
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
