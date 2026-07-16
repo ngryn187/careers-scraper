@@ -1173,7 +1173,7 @@ pre{{background:#111;border:1px solid #1f1f1f;border-radius:10px;padding:24px;ov
 a{{color:#a855f7}}</style></head>
 <body><div class="box"><h1>StackSight Demo: {clean}</h1>
 <p style="margin-bottom:20px"><a href="/">Home</a> | <a href="/#signup">Get free API key</a> | <a href="/login">Sign in</a></p>
-<pre>{json.dumps({{"source":"demo","data":data}},indent=2)}</pre>
+<pre>{json.dumps({"source": "demo", "data": data}, indent=2)}</pre>
 <p style="margin-top:16px;color:#666">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
 </div></body></html>""")
 
