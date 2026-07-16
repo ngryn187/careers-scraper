@@ -44,7 +44,7 @@ RATE_LIMIT_WINDOW = 60
 
 #  Redis / App 
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
-app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None)
+app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
 #  Demo data 
 DEMO_DATA = {
