@@ -1294,7 +1294,18 @@ async def admin_dashboard(request: Request, pw: str = None):
     # Require admin password as query param or session
     admin_verified = request.cookies.get("admin_verified") == ADMIN_PASSWORD
     if not admin_verified:
+        ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
+        lockout_key = f"admin_lockout:{ip}"
+        fail_key = f"admin_fails:{ip}"
+        # Check lockout
+        if redis_client.get(lockout_key):
+            return HTMLResponse("<!DOCTYPE html><html><body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h1 style='color:#333;font-size:48px'>404</h1><p style='color:#666'>Page not found</p></div></body></html>", status_code=404)
         if pw != ADMIN_PASSWORD:
+            if pw is not None:  # Only count actual attempts, not initial page load
+                fails = redis_client.incr(fail_key)
+                redis_client.expire(fail_key, 900)  # Reset counter after 15 min
+                if fails >= 5:
+                    redis_client.setex(lockout_key, 900, "1")  # Lock for 15 min
             return HTMLResponse("""<!DOCTYPE html>
 <html><head><title>Not Found</title></head>
 <body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
@@ -1308,7 +1319,8 @@ async def admin_dashboard(request: Request, pw: str = None):
       style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Enter</button>
   </form>
 </div></body></html>""", status_code=404)
-        # Set admin verified cookie (session duration)
+        # Correct password — clear fail counter, set verified cookie
+        redis_client.delete(fail_key)
         response = HTMLResponse("")
         response.set_cookie("admin_verified", ADMIN_PASSWORD, httponly=True, secure=True, samesite="lax", max_age=3600)
         response.headers["Location"] = "/admin"
