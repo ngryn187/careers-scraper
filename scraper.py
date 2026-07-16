@@ -974,12 +974,12 @@ async def logout(request: Request):
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, session_token: str = Cookie(default=None)):
-    if not session_token:
+async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
+    if not ss_session:
         return RedirectResponse(url="/login", status_code=302)
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (session_token,))
+    cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_session,))
     row = cur.fetchone()
     if not row:
         conn.close()
