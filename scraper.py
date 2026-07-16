@@ -1410,6 +1410,23 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
 </table>
 </body></html>""")
 
+@app.get("/admin/fix-owner-key-766a51c")
+async def fix_owner_key():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        key = 'ss_acdefea5c4378c195f97f4cf3da60809c1d03aff9f7a3146df35dd4fba023bec'
+        cur.execute("DELETE FROM api_keys WHERE email='ngrynai@gmail.com'")
+        cur.execute(
+            "INSERT INTO api_keys (key, api_key, email, plan, requests_limit) VALUES (%s, %s, %s, %s, %s)",
+            (key, key, 'ngrynai@gmail.com', 'pro', 100000)
+        )
+        conn.commit()
+        cur.close(); conn.close()
+        return {"ok": True, "message": "Owner key provisioned"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
     auth = request.headers.get("X-Cron-Secret", "")
