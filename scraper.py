@@ -350,7 +350,7 @@ async def startup():
         cur.execute("SELECT api_key FROM api_keys WHERE email='ngrynai@gmail.com' AND active=TRUE AND api_key IS NOT NULL LIMIT 1")
         row = cur.fetchone()
         if not row:
-            key = 'ss_acdefea5c4378c195f97f4cf3da60809c1d03aff9f7a3146df35dd4fba023bec'
+            key = 'ss_7ccd32b3a5c5df2bffeda489573eab03b82d0946c4e3036b3b2ce4c7'
             # Delete any broken rows first
             cur.execute("DELETE FROM api_keys WHERE email='ngrynai@gmail.com'")
             cur.execute(
@@ -1415,7 +1415,7 @@ async def fix_owner_key():
     try:
         conn = get_db()
         cur = conn.cursor()
-        key = 'ss_acdefea5c4378c195f97f4cf3da60809c1d03aff9f7a3146df35dd4fba023bec'
+        key = 'ss_7ccd32b3a5c5df2bffeda489573eab03b82d0946c4e3036b3b2ce4c7'
         cur.execute("DELETE FROM api_keys WHERE email='ngrynai@gmail.com'")
         cur.execute(
             "INSERT INTO api_keys (key, api_key, email, plan, requests_limit) VALUES (%s, %s, %s, %s, %s)",
