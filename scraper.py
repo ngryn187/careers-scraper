@@ -1273,6 +1273,92 @@ async def health():
     return {"status": "ok", "version": VERSION, "redis": redis_ok}
 
 
+
+ADMIN_EMAIL = "ngrynai@gmail.com"
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    email = get_session_email(request)
+    if email != ADMIN_EMAIL:
+        return RedirectResponse("/login", status_code=302)
+    conn = get_db()
+    cur = conn.cursor()
+    # Stats
+    cur.execute("SELECT COUNT(*) FROM api_keys")
+    total_users = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM api_keys WHERE active=TRUE")
+    active_keys = cur.fetchone()[0]
+    cur.execute("SELECT COALESCE(SUM(requests_used),0) FROM api_keys")
+    total_requests = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM sessions WHERE active=TRUE AND expires_at > NOW()")
+    active_sessions = cur.fetchone()[0]
+    # All users with keys
+    cur.execute("""
+        SELECT email, api_key, plan, requests_used, requests_limit, active, created_at
+        FROM api_keys ORDER BY created_at DESC
+    """)
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    rows = ""
+    for u in users:
+        em, key, plan, used, limit, act, created = u
+        pct = int((used/limit)*100) if limit else 0
+        status = '<span style="color:#22c55e">Active</span>' if act else '<span style="color:#ef4444">Inactive</span>'
+        rows += f"""<tr>
+            <td>{em}</td>
+            <td><code>{key}</code></td>
+            <td><span class="badge badge-{plan}">{plan.upper()}</span></td>
+            <td>{used} / {limit} <div class="bar"><div class="bar-fill" style="width:{pct}%"></div></div></td>
+            <td>{status}</td>
+            <td>{str(created)[:10]}</td>
+        </tr>"""
+
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StackSight Admin</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;padding:32px}}
+h1{{font-size:28px;font-weight:700;color:#a855f7;margin-bottom:8px}}
+.sub{{color:#666;margin-bottom:32px;font-size:14px}}
+.stats{{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}}
+.stat{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:20px}}
+.stat-value{{font-size:32px;font-weight:700;color:#a855f7}}
+.stat-label{{color:#666;font-size:13px;margin-top:4px}}
+table{{width:100%;border-collapse:collapse;background:#111;border-radius:12px;overflow:hidden}}
+th{{background:#1a1a1a;padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:500;border-bottom:1px solid #1f1f1f}}
+td{{padding:12px 16px;font-size:14px;border-bottom:1px solid #1a1a1a}}
+tr:last-child td{{border-bottom:none}}
+tr:hover td{{background:#141414}}
+code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-radius:4px}}
+.badge{{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}}
+.badge-free{{background:#1a1a1a;color:#888}}
+.badge-pro{{background:#1a0a2e;color:#a855f7}}
+.badge-business{{background:#0a1a2e;color:#3b82f6}}
+.bar{{background:#1f1f1f;border-radius:4px;height:4px;margin-top:6px;width:120px}}
+.bar-fill{{background:#a855f7;height:4px;border-radius:4px}}
+.back{{color:#666;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:24px}}
+.back:hover{{color:#fff}}
+</style></head>
+<body>
+<a href="/" class="back">← Back to site</a>
+<h1>Admin Dashboard</h1>
+<p class="sub">Logged in as {email}</p>
+<div class="stats">
+  <div class="stat"><div class="stat-value">{total_users}</div><div class="stat-label">Total Users</div></div>
+  <div class="stat"><div class="stat-value">{active_keys}</div><div class="stat-label">Active API Keys</div></div>
+  <div class="stat"><div class="stat-value">{total_requests}</div><div class="stat-label">Total API Calls</div></div>
+  <div class="stat"><div class="stat-value">{active_sessions}</div><div class="stat-label">Active Sessions</div></div>
+</div>
+<table>
+  <thead><tr><th>Email</th><th>API Key</th><th>Plan</th><th>Usage</th><th>Status</th><th>Joined</th></tr></thead>
+  <tbody>{rows}</tbody>
+</table>
+</body></html>""")
+
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
     auth = request.headers.get("X-Cron-Secret", "")
