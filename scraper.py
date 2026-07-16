@@ -501,6 +501,21 @@ window.addEventListener('scroll',()=>{
   links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
 });
 </script>
+<script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
 </body></html>""")
 
 @app.get("/", response_class=HTMLResponse)
@@ -793,6 +808,21 @@ function toggleFaq(el) {{
   icon.textContent = open ? '-' : '+';
 }}
 </script>
+<script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
 </body></html>""")
 
 
@@ -847,6 +877,21 @@ async function sendLink() {
   } catch(e) { msg.className='msg error'; msg.textContent='Network error. Please try again.'; }
 }
 document.getElementById('email').addEventListener('keypress', e => { if(e.key==='Enter') sendLink(); });
+</script>
+<script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
 </script>
 </body></html>""")
 
@@ -913,7 +958,22 @@ h1{{color:#a855f7;margin-bottom:8px}}p{{color:#999}}
 <p style="font-size:13px;color:#666">We also emailed this to <strong style="color:#ccc">{{email}}</strong></p>
 <a href="/docs" class="btn">View API Docs</a>
 <a href="/dashboard" class="btn" style="background:#222;margin-left:8px">Dashboard</a>
-</div></body></html>""")
+</div><script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
+</body></html>""")
 
 @app.post("/login")
 async def login_post(request: Request, background_tasks: BackgroundTasks):
@@ -997,7 +1057,22 @@ h2{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
 .btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
 <body><div class="box"><h2>No API Key Found</h2>
 <p>Your account doesn't have an active API key yet. Please sign up to get one.</p>
-<a href="/#signup" class="btn">Get Your Free API Key</a></div></body></html>""")
+<a href="/#signup" class="btn">Get Your Free API Key</a></div><script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
+</body></html>""")
     api_key, plan, used, limit_val, created_at = key_row
     masked = api_key[:8] + ("*" * 24) + api_key[-4:]
     pct = round((used / limit_val) * 100) if limit_val else 0
@@ -1155,7 +1230,22 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
 <p>Your free API key is on its way. Check your inbox - it should arrive within a minute.</p>
 <a href="/login" class="btn">Sign In to Dashboard</a>
 <a href="/" class="btn2">Back to Home</a>
-</div></body></html>""")
+</div><script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
+</body></html>""")
 
 
 # 
@@ -1175,7 +1265,22 @@ a{{color:#a855f7}}</style></head>
 <p style="margin-bottom:20px"><a href="/">Home</a> | <a href="/#signup">Get free API key</a> | <a href="/login">Sign in</a></p>
 <pre>{json.dumps({{"source":"demo","data":data}},indent=2)}</pre>
 <p style="margin-top:16px;color:#666">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
-</div></body></html>""")
+</div><script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
+</body></html>""")
 
 
 @app.get("/scrape")
@@ -1246,7 +1351,22 @@ a{background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decorat
 <h1>Payment Successful!</h1>
 <p>Your API key is being generated and will arrive in your inbox within a minute.</p>
 <a href="/login">Sign In to Dashboard</a>
-</div></body></html>""")
+</div><script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
+</body></html>""")
 
 
 @app.post("/webhooks/stripe")
@@ -1338,14 +1458,22 @@ async def admin_dashboard(request: Request, pw: str = None):
     for u in users:
         em, key, plan, used, limit, act, created = u
         pct = int((used/limit)*100) if limit else 0
-        status = '<span style="color:#22c55e">Active</span>' if act else '<span style="color:#ef4444">Inactive</span>'
+        status_color = "#22c55e" if act else "#ef4444"
+        status_text = "Active" if act else "Disabled"
+        toggle_label = "Disable" if act else "Enable"
+        toggle_color = "#ef4444" if act else "#22c55e"
+        safe_key = key or ""
         rows += f"""<tr>
             <td>{em}</td>
-            <td><code>{key}</code></td>
+            <td><code style="font-size:11px">{safe_key[:20] + "..." if safe_key else "None"}</code></td>
             <td><span class="badge badge-{plan}">{plan.upper()}</span></td>
             <td>{used} / {limit} <div class="bar"><div class="bar-fill" style="width:{pct}%"></div></div></td>
-            <td>{status}</td>
+            <td><span style="color:{status_color}">{status_text}</span></td>
             <td>{str(created)[:10]}</td>
+            <td style="white-space:nowrap">
+              <button onclick="toggleKey(this, '{em}', {str(act).lower()})" style="background:{toggle_color};color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px">{toggle_label}</button>
+              <button onclick="deleteUser(this, '{em}')" style="background:#333;color:#ef4444;border:1px solid #ef4444;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">Delete</button>
+            </td>
         </tr>"""
 
     return HTMLResponse(f"""<!DOCTYPE html>
@@ -1387,10 +1515,58 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
   <div class="stat"><div class="stat-value">{active_sessions}</div><div class="stat-label">Active Sessions</div></div>
 </div>
 <table>
-  <thead><tr><th>Email</th><th>API Key</th><th>Plan</th><th>Usage</th><th>Status</th><th>Joined</th></tr></thead>
+  <thead><tr><th>Email</th><th>API Key</th><th>Plan</th><th>Usage</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
   <tbody>{rows}</tbody>
 </table>
+<script>
+async function toggleKey(btn, email, currentlyActive) {
+  btn.disabled = true;
+  const r = await fetch('/admin/toggle-key', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, active: !currentlyActive})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+async function deleteUser(btn, email) {
+  if (!confirm('Delete all data for ' + email + '?')) return;
+  btn.disabled = true;
+  const r = await fetch('/admin/delete-user', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+  if (r.ok) location.reload();
+  else { alert('Error'); btn.disabled = false; }
+}
+</script>
 </body></html>""")
+
+@app.post("/admin/toggle-key")
+async def admin_toggle_key(request: Request):
+    if get_session_email(request) != ADMIN_EMAIL:
+        raise HTTPException(status_code=404)
+    if request.cookies.get("admin_verified") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403)
+    body = await request.json()
+    email = body.get("email")
+    active = body.get("active", True)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("UPDATE api_keys SET active=%s WHERE email=%s", (active, email))
+    conn.commit()
+    cur.close(); conn.close()
+    return {"ok": True}
+
+@app.post("/admin/delete-user")
+async def admin_delete_user(request: Request):
+    if get_session_email(request) != ADMIN_EMAIL:
+        raise HTTPException(status_code=404)
+    if request.cookies.get("admin_verified") != ADMIN_PASSWORD:
+        raise HTTPException(status_code=403)
+    body = await request.json()
+    email = body.get("email")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM api_keys WHERE email=%s", (email,))
+    cur.execute("DELETE FROM sessions WHERE email=%s", (email,))
+    cur.execute("DELETE FROM magic_links WHERE email=%s", (email,))
+    conn.commit()
+    cur.close(); conn.close()
+    return {"ok": True}
 
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
