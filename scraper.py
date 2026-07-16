@@ -585,6 +585,16 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .msg.error{{background:#1f0a0a;border:1px solid #ef4444;color:#ef4444}}
 .trust-badges{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:20px}}
 .trust-badge{{font-size:12px;color:#555;display:flex;align-items:center;gap:5px}}
+
+.why-section{{max-width:860px;margin:0 auto 80px;padding:0 20px;text-align:center}}
+.why-section h2{{font-size:34px;font-weight:700;margin-bottom:12px}}
+.why-grid{{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:40px 0;text-align:left}}
+.why-item{{display:flex;gap:16px;background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:24px}}
+.why-check{{color:#a855f7;font-size:22px;font-weight:700;flex-shrink:0;margin-top:2px}}
+.why-item strong{{display:block;font-size:16px;margin-bottom:6px;color:#fff}}
+.why-item p{{color:#888;font-size:14px;line-height:1.6;margin:0}}
+.why-footer{{color:#666;font-size:15px;line-height:1.7;margin-top:8px;font-style:italic}}
+@media(max-width:600px){{.why-grid{{grid-template-columns:1fr}}}}
 .pricing{{max-width:1020px;margin:0 auto 80px;padding:0 20px}}
 .plans{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}}
 .plan{{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:32px;position:relative;transition:border-color .2s}}
@@ -698,6 +708,18 @@ footer a:hover{{color:#fff}}
     <span class="trust-badge"> Instant delivery</span>
     <span class="trust-badge"> No spam ever</span>
   </div>
+</div>
+
+<div class="why-section" id="why">
+  <h2>Why developers choose StackSight</h2>
+  <p class="sub">We're not the biggest. We're the fastest, cheapest, and simplest.</p>
+  <div class="why-grid">
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Real-time data</strong><p>We scrape live — not from a database that's months old. What you get is what's on their site today.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>10x cheaper</strong><p>No enterprise pricing. No annual contracts. No minimum seats. Pay for what you use.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Zero friction</strong><p>Sign up, get a key, make a call. No sales calls, no demos, no approval process.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Simple API</strong><p>One endpoint, clean JSON, works in minutes. No SDKs required, no complex setup.</p></div></div>
+  </div>
+  <p class="why-footer">Our competitors have broader data — contact info, firmographics, CRM integrations. If you need all that, use them. If you need fast, fresh, affordable hiring signals and tech stack data — that's us.</p>
 </div>
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
