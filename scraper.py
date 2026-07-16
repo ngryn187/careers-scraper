@@ -988,8 +988,15 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
     cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     key_row = cur.fetchone()
     conn.close()
-    if not key_row:
-        return RedirectResponse(url="/", status_code=302)
+    if not key_row or not key_row[0]:
+        return HTMLResponse("""<!DOCTYPE html><html><head><title>StackSight</title>
+<style>body{font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.box{background:#111;border:1px solid #222;border-radius:12px;padding:48px;text-align:center;max-width:400px}
+h2{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
+.btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
+<body><div class="box"><h2>No API Key Found</h2>
+<p>Your account doesn't have an active API key yet. Please sign up to get one.</p>
+<a href="/#signup" class="btn">Get Your Free API Key</a></div></body></html>""")
     api_key, plan, used, limit_val, created_at = key_row
     masked = api_key[:8] + ("*" * 24) + api_key[-4:]
     pct = round((used / limit_val) * 100) if limit_val else 0
