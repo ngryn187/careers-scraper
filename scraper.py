@@ -28,6 +28,7 @@ ZOHO_PASSWORD = os.environ.get("ZOHO_PASSWORD", "")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
 CRON_SECRET = os.environ.get("CRON_SECRET", "stacksight-cron-2024")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 BASE_URL = os.environ.get("BASE_URL", "https://stacksight.org")
 
 STRIPE_PRICES = {
@@ -1277,10 +1278,34 @@ async def health():
 ADMIN_EMAIL = "ngrynai@gmail.com"
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
+async def admin_dashboard(request: Request, pw: str = None):
     email = get_session_email(request)
+    # 404 for anyone not logged in as owner
     if email != ADMIN_EMAIL:
-        return RedirectResponse("/login", status_code=302)
+        raise HTTPException(status_code=404)
+    # Require admin password as query param or session
+    admin_verified = request.cookies.get("admin_verified") == ADMIN_PASSWORD
+    if not admin_verified:
+        if pw != ADMIN_PASSWORD:
+            return HTMLResponse("""<!DOCTYPE html>
+<html><head><title>Not Found</title></head>
+<body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
+<div style='text-align:center'>
+  <h1 style='font-size:48px;color:#333'>404</h1>
+  <p style='color:#666'>Page not found</p>
+  <form method='get' style='margin-top:24px'>
+    <input name='pw' type='password' placeholder='Password' autofocus
+      style='background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;margin-right:8px'>
+    <button type='submit'
+      style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Enter</button>
+  </form>
+</div></body></html>""", status_code=404)
+        # Set admin verified cookie (session duration)
+        response = HTMLResponse("")
+        response.set_cookie("admin_verified", ADMIN_PASSWORD, httponly=True, secure=True, samesite="lax", max_age=3600)
+        response.headers["Location"] = "/admin"
+        response.status_code = 302
+        return response
     conn = get_db()
     cur = conn.cursor()
     # Stats
