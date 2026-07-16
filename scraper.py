@@ -343,6 +343,23 @@ def extract_with_openai(raw_text: str):
 @app.on_event("startup")
 async def startup():
     init_db()
+    # One-time fix: provision key for owner account if missing
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT api_key FROM api_keys WHERE email='ngrynai@gmail.com' AND active=TRUE LIMIT 1")
+        row = cur.fetchone()
+        if not row or not row[0]:
+            key = 'ss_acdefea5c4378c195f97f4cf3da60809c1d03aff9f7a3146df35dd4fba023bec'
+            cur.execute("""
+                INSERT INTO api_keys (key, api_key, email, plan, requests_limit)
+                VALUES (%s, %s, 'ngrynai@gmail.com', 'pro', 100000)
+                ON CONFLICT (email) DO UPDATE SET api_key=%s, key=%s, plan='pro', requests_limit=100000, active=TRUE
+            """, (key, key, key, key))
+            conn.commit()
+        cur.close(); conn.close()
+    except Exception as e:
+        print(f'Startup key fix error: {e}')
 
 # 
 # ROUTES  PUBLIC
