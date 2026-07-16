@@ -172,7 +172,7 @@ def create_session(email: str, response: Response) -> str:
         value=token,
         httponly=True,
         secure=True,
-        samesite="strict",
+        samesite="lax",
         max_age=60 * 60 * 24 * 7,
         path="/"
     )
