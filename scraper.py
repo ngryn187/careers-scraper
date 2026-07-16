@@ -1163,8 +1163,8 @@ async def scrape(domain: str, x_api_key: str = Header(None)):
 
 
 @app.get("/analyze/{domain}")
-async def analyze(domain: str, x_api_key: str = Header(None)):
-    return await scrape(domain=domain, x_api_key=x_api_key)
+async def analyze(domain: str, x_api_key: str = Header(None), api_key: str = None):
+    return await scrape(domain=domain, x_api_key=x_api_key or api_key)
 
 
 @app.get("/usage")
