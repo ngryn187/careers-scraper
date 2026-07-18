@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 
 import openai
 import psycopg2
+import pyotp
 import redis as redis_lib
 import stripe
 import uvicorn
@@ -29,6 +30,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
 CRON_SECRET = os.environ.get("CRON_SECRET", "stacksight-cron-2024")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+TOTP_SECRET = os.environ.get("TOTP_SECRET", "")
 BASE_URL = os.environ.get("BASE_URL", "https://stacksight.org")
 
 STRIPE_PRICES = {
@@ -1291,22 +1293,48 @@ async def admin_dashboard(request: Request, pw: str = None):
     # 404 for anyone not logged in as owner
     if email != ADMIN_EMAIL:
         raise HTTPException(status_code=404)
-    # Require admin password as query param or session
+    # Require admin password + TOTP as two factors
     admin_verified = request.cookies.get("admin_verified") == ADMIN_PASSWORD
     if not admin_verified:
         ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
         lockout_key = f"admin_lockout:{ip}"
         fail_key = f"admin_fails:{ip}"
-        # Check lockout
         if redis_client.get(lockout_key):
             return HTMLResponse("<!DOCTYPE html><html><body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h1 style='color:#333;font-size:48px'>404</h1><p style='color:#666'>Page not found</p></div></body></html>", status_code=404)
-        if pw != ADMIN_PASSWORD:
-            if pw is not None:  # Only count actual attempts, not initial page load
+        pw_ok = pw is not None and pw.startswith(ADMIN_PASSWORD + ":")
+        if pw_ok:
+            parts = pw.split(":", 1)
+            totp_code = parts[1] if len(parts) > 1 else ""
+            totp_ok = TOTP_SECRET and pyotp.TOTP(TOTP_SECRET).verify(totp_code, valid_window=1)
+        else:
+            totp_ok = False
+        if not (pw_ok and totp_ok):
+            if pw is not None:
                 fails = redis_client.incr(fail_key)
-                redis_client.expire(fail_key, 900)  # Reset counter after 15 min
+                redis_client.expire(fail_key, 900)
                 if fails >= 5:
-                    redis_client.setex(lockout_key, 900, "1")  # Lock for 15 min
-            return HTMLResponse("""<!DOCTYPE html>
+                    redis_client.setex(lockout_key, 900, "1")
+            # Determine which step to show
+            pw_entered = pw is not None and not pw.startswith(ADMIN_PASSWORD + ":")
+            pw_correct = pw is not None and (pw == ADMIN_PASSWORD or pw.startswith(ADMIN_PASSWORD + ":"))
+            if pw_correct or pw_ok:
+                # Password was correct, show TOTP form
+                return HTMLResponse("""<!DOCTYPE html>
+<html><head><title>Not Found</title></head>
+<body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
+<div style='text-align:center'>
+  <h1 style='font-size:48px;color:#333'>404</h1>
+  <p style='color:#666'>Page not found</p>
+  <form method='get' style='margin-top:24px'>
+    <input type='hidden' name='pw' value='" + ADMIN_PASSWORD + ":'>
+    <input name='totp' type='text' placeholder='Authenticator code' autofocus maxlength='6' inputmode='numeric'
+      style='background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;margin-right:8px;width:160px'>
+    <button type='submit' onclick="this.form.pw.value=this.form.pw.value+this.form.totp.value"
+      style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Verify</button>
+  </form>
+</div></body></html>""", status_code=404)
+            else:
+                return HTMLResponse("""<!DOCTYPE html>
 <html><head><title>Not Found</title></head>
 <body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
 <div style='text-align:center'>
@@ -1319,7 +1347,7 @@ async def admin_dashboard(request: Request, pw: str = None):
       style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Enter</button>
   </form>
 </div></body></html>""", status_code=404)
-        # Correct password — clear fail counter, set verified cookie
+        # Both factors correct — clear fail counter, set verified cookie
         redis_client.delete(fail_key)
         response = HTMLResponse("")
         response.set_cookie("admin_verified", ADMIN_PASSWORD, httponly=True, secure=True, samesite="lax", max_age=3600)
