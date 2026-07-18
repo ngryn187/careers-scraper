@@ -11,3 +11,4 @@ python-multipart
 httpx
 pytest
 pytest-asyncio
+pyotp
