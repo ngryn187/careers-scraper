@@ -1292,7 +1292,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
     email = get_session_email(request)
     # 404 for anyone not logged in as owner
     if email != ADMIN_EMAIL:
-        raise HTTPException(status_code=404)
+        return HTMLResponse(f'<h2 style="font-family:sans-serif;padding:40px">Debug: session email = [{email}], expected [{ADMIN_EMAIL}]</h2>')
     # Require admin password + TOTP as two factors
     admin_verified = request.cookies.get("admin_verified") == ADMIN_PASSWORD
     if not admin_verified:
