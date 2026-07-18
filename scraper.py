@@ -429,7 +429,7 @@ pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;o
   <div class="sidebar-section">Getting Started</div>
   <a href="#quickstart" class="active">Quick Start</a><a href="#auth">Authentication</a><a href="#limits">Rate Limits</a>
   <div class="sidebar-section">Endpoints</div>
-  <a href="#scrape">GET /scrape</a><a href="#bulk">POST /bulk</a><a href="#status">GET /status</a>
+  <a href="#scrape">GET /scrape</a><a href="#usage">GET /usage</a>
   <div class="sidebar-section">Reference</div>
   <a href="#response">Response Schema</a><a href="#errors">Error Codes</a><a href="#sdks">Code Examples</a>
 </div>
@@ -456,27 +456,41 @@ pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;o
       <pre>curl "https://stacksight.org/scrape?domain=notion.so" -H "X-API-Key: ss_your_key"</pre>
     </div>
   </div>
-  <h2 id="bulk">POST /bulk</h2>
+  <h2 id="usage">GET /usage</h2>
   <div class="endpoint">
-    <div class="endpoint-header"><span class="method post">POST</span><span class="path">/bulk</span></div>
+    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/usage</span></div>
     <div class="endpoint-body">
-      <pre>curl -X POST "https://stacksight.org/bulk" -H "X-API-Key: ss_your_key" -H "Content-Type: application/json" -d '{"domains":["stripe.com","notion.so"]}'</pre>
+      <p style="color:#666;font-size:14px;margin-bottom:12px">Returns your current plan and usage stats.</p>
+      <pre>curl "https://stacksight.org/usage" -H "X-API-Key: ss_your_key"</pre>
+      <pre>{
+  "plan": "pro",
+  "requests_used": 142,
+  "requests_limit": 5000,
+  "requests_remaining": 4858,
+  "created_at": "2026-07-01T12:00:00"
+}</pre>
     </div>
   </div>
-  <h2 id="status">GET /status</h2>
-  <div class="endpoint">
-    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/status</span></div>
-    <div class="endpoint-body"><pre>curl "https://stacksight.org/status" -H "X-API-Key: ss_your_key"</pre></div>
-  </div>
   <h2 id="response">Response Schema</h2>
+  <p>All responses wrap the result in a <code style="color:#a855f7">data</code> object:</p>
+  <pre>{
+  "source": "cache",  // or "live" for fresh scrape
+  "data": {
+    "company_name": "Stripe",
+    "is_hiring": true,
+    "engineering_roles": ["Backend Engineer", "ML Engineer"],
+    "sales_roles": ["Account Executive", "Solutions Engineer"],
+    "detected_tech_stack": ["React", "AWS", "Cloudflare"]
+  }
+}</pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>domain</td><td>string</td><td>Queried domain</td></tr>
-    <tr><td>active_jobs</td><td>integer</td><td>Active job postings found</td></tr>
-    <tr><td>growth_30d</td><td>string</td><td>Job count change over 30 days</td></tr>
-    <tr><td>tech_stack</td><td>array</td><td>Technologies detected</td></tr>
-    <tr><td>hiring_signal</td><td>string</td><td>high / medium / low</td></tr>
-    <tr><td>cached</td><td>boolean</td><td>Whether result is from cache</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" — whether data was cached or freshly scraped</td></tr>
+    <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
+    <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
+    <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
+    <tr><td>data.sales_roles</td><td>array</td><td>Sales job titles detected</td></tr>
+    <tr><td>data.detected_tech_stack</td><td>array</td><td>Technologies found on careers/jobs pages</td></tr>
   </table>
   <h2 id="errors">Error Codes</h2>
   <table>
@@ -1275,7 +1289,20 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
 
 @app.get("/trending")
 async def trending():
-    return {"domains": list(DEMO_DATA.keys())}
+    results = []
+    for domain, data in DEMO_DATA.items():
+        results.append({
+            "domain": domain,
+            "company_name": data.get("company_name", domain.split(".")[0].title()),
+            "is_hiring": data.get("is_hiring", False),
+            "engineering_roles": data.get("engineering_roles", []),
+            "sales_roles": data.get("sales_roles", []),
+            "detected_tech_stack": data.get("detected_tech_stack", []),
+            "open_roles": len(data.get("engineering_roles", [])) + len(data.get("sales_roles", []))
+        })
+    # Sort by open roles descending
+    results.sort(key=lambda x: x["open_roles"], reverse=True)
+    return {"trending": results, "count": len(results)}
 
 
 @app.get("/terms", response_class=HTMLResponse)
