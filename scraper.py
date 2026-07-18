@@ -770,7 +770,10 @@ footer a:hover{{color:#fff}}
   <div style="margin-bottom:12px">
     <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
   </div>
-  <div> 2025 StackSight  <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
+  <div style="margin-bottom:8px">
+    <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
+  </div>
+  <div>&copy; 2026 StackSight &nbsp;&nbsp; <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
 </footer>
 <script>
 async function signup() {{
@@ -1274,6 +1277,159 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
 async def trending():
     return {"domains": list(DEMO_DATA.keys())}
 
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of Service - StackSight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.7}}
+nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid #1a1a1a}}
+.logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#a855f7}}
+.container{{max-width:760px;margin:60px auto;padding:0 24px 80px}}
+h1{{font-size:32px;font-weight:700;margin-bottom:8px}}
+.updated{{color:#666;font-size:14px;margin-bottom:40px}}
+h2{{font-size:18px;font-weight:600;margin:36px 0 12px;color:#e5e5e5}}
+p{{color:#aaa;margin-bottom:16px}}
+ul{{color:#aaa;padding-left:20px;margin-bottom:16px}}
+ul li{{margin-bottom:8px}}
+a{{color:#a855f7}}
+footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#444;font-size:13px}}
+footer a{{color:#666;text-decoration:none}}
+</style></head>
+<body>
+<nav><a href="/" class="logo">Stack<span>Sight</span></a></nav>
+<div class="container">
+<h1>Terms of Service</h1>
+<p class="updated">Last updated: July 18, 2026</p>
+
+<h2>1. Acceptance of Terms</h2>
+<p>By accessing or using StackSight (stacksight.org), you agree to be bound by these Terms of Service. If you do not agree, do not use the service.</p>
+
+<h2>2. Description of Service</h2>
+<p>StackSight provides a B2B hiring intelligence API that extracts publicly available information from company websites, including hiring activity, job roles, and technology stack signals. The service is intended for legitimate business intelligence and sales prospecting purposes.</p>
+
+<h2>3. API Usage</h2>
+<ul>
+<li>Your API key is personal and may not be shared or resold.</li>
+<li>You may not use the API to scrape data for redistribution or to build a competing service.</li>
+<li>Usage is subject to the rate limits of your plan. Exceeding limits will result in 429 responses.</li>
+<li>Automated abuse, credential stuffing, or attempts to circumvent limits are prohibited and will result in immediate termination.</li>
+</ul>
+
+<h2>4. Acceptable Use</h2>
+<p>You agree not to use StackSight to:</p>
+<ul>
+<li>Violate any applicable law or regulation</li>
+<li>Harass, stalk, or harm any individual or organization</li>
+<li>Collect personal data beyond what is necessary for legitimate B2B prospecting</li>
+<li>Attempt to gain unauthorized access to our systems or other users' data</li>
+</ul>
+
+<h2>5. Payment and Refunds</h2>
+<p>Paid plans are billed monthly via Stripe. All payments are non-refundable except where required by law. You may cancel at any time; cancellation takes effect at the end of the current billing period.</p>
+
+<h2>6. Data Accuracy</h2>
+<p>StackSight provides data extracted from publicly available sources. We do not guarantee the accuracy, completeness, or timeliness of the data. Use it as a signal, not as a definitive source of truth.</p>
+
+<h2>7. Service Availability</h2>
+<p>We aim for high availability but do not guarantee uptime. We reserve the right to modify, suspend, or discontinue the service at any time with reasonable notice.</p>
+
+<h2>8. Termination</h2>
+<p>We reserve the right to suspend or terminate your account for violations of these terms, fraudulent activity, or abuse of the service, without prior notice.</p>
+
+<h2>9. Limitation of Liability</h2>
+<p>StackSight is provided "as is" without warranties of any kind. To the maximum extent permitted by law, we are not liable for any indirect, incidental, or consequential damages arising from your use of the service.</p>
+
+<h2>10. Changes to Terms</h2>
+<p>We may update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+
+<h2>11. Contact</h2>
+<p>Questions? Email us at <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a></p>
+</div>
+<footer><a href="/">Home</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a></footer>
+</body></html>""")
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy - StackSight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.7}}
+nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid #1a1a1a}}
+.logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#a855f7}}
+.container{{max-width:760px;margin:60px auto;padding:0 24px 80px}}
+h1{{font-size:32px;font-weight:700;margin-bottom:8px}}
+.updated{{color:#666;font-size:14px;margin-bottom:40px}}
+h2{{font-size:18px;font-weight:600;margin:36px 0 12px;color:#e5e5e5}}
+p{{color:#aaa;margin-bottom:16px}}
+ul{{color:#aaa;padding-left:20px;margin-bottom:16px}}
+ul li{{margin-bottom:8px}}
+a{{color:#a855f7}}
+footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#444;font-size:13px}}
+footer a{{color:#666;text-decoration:none}}
+</style></head>
+<body>
+<nav><a href="/" class="logo">Stack<span>Sight</span></a></nav>
+<div class="container">
+<h1>Privacy Policy</h1>
+<p class="updated">Last updated: July 18, 2026</p>
+
+<h2>1. Information We Collect</h2>
+<p>When you use StackSight, we collect:</p>
+<ul>
+<li><strong>Email address</strong> — used for account creation, magic link login, and transactional emails</li>
+<li><strong>API usage data</strong> — domains queried, request counts, timestamps</li>
+<li><strong>Payment information</strong> — processed securely by Stripe; we never store card details</li>
+<li><strong>Session data</strong> — secure cookies to keep you logged in</li>
+</ul>
+
+<h2>2. How We Use Your Information</h2>
+<ul>
+<li>To provide and operate the StackSight API service</li>
+<li>To send your API key and transactional emails (login links, usage alerts)</li>
+<li>To process payments via Stripe</li>
+<li>To monitor for abuse and enforce usage limits</li>
+<li>To improve the service</li>
+</ul>
+
+<h2>3. Data We Do Not Collect</h2>
+<p>We do not collect passwords (we use passwordless magic link login), browsing history, or any personal data beyond what is listed above.</p>
+
+<h2>4. Data Sharing</h2>
+<p>We do not sell your personal data. We share data only with:</p>
+<ul>
+<li><strong>Stripe</strong> — for payment processing</li>
+<li><strong>Railway</strong> — our hosting provider, where your data is stored</li>
+<li><strong>OpenAI</strong> — domain content is sent to OpenAI for data extraction (no personal data is included)</li>
+</ul>
+
+<h2>5. Data Retention</h2>
+<p>We retain your account data for as long as your account is active. You may request deletion at any time by emailing us. API usage logs are retained for up to 90 days.</p>
+
+<h2>6. Cookies</h2>
+<p>We use a single secure session cookie (<code>ss_session</code>) to keep you logged in. We do not use tracking cookies or third-party analytics.</p>
+
+<h2>7. Security</h2>
+<p>We use HTTPS, secure HttpOnly cookies, and industry-standard practices to protect your data. API keys are hashed and session tokens are cryptographically random.</p>
+
+<h2>8. Your Rights</h2>
+<p>You have the right to access, correct, or delete your personal data. To exercise these rights, email <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a>.</p>
+
+<h2>9. Changes to This Policy</h2>
+<p>We may update this policy periodically. We will notify you of significant changes via email.</p>
+
+<h2>10. Contact</h2>
+<p>Questions about privacy? Email us at <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a></p>
+</div>
+<footer><a href="/">Home</a> &nbsp;&nbsp; <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a></footer>
+</body></html>""")
 
 @app.get("/health")
 async def health():
