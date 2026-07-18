@@ -1288,7 +1288,7 @@ async def health():
 ADMIN_EMAIL = "ngrynai@gmail.com"
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, pw: str = None):
+async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
     email = get_session_email(request)
     # 404 for anyone not logged in as owner
     if email != ADMIN_EMAIL:
@@ -1301,35 +1301,27 @@ async def admin_dashboard(request: Request, pw: str = None):
         fail_key = f"admin_fails:{ip}"
         if redis_client.get(lockout_key):
             return HTMLResponse("<!DOCTYPE html><html><body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h1 style='color:#333;font-size:48px'>404</h1><p style='color:#666'>Page not found</p></div></body></html>", status_code=404)
-        pw_ok = pw is not None and pw.startswith(ADMIN_PASSWORD + ":")
-        if pw_ok:
-            parts = pw.split(":", 1)
-            totp_code = parts[1] if len(parts) > 1 else ""
-            totp_ok = TOTP_SECRET and pyotp.TOTP(TOTP_SECRET).verify(totp_code, valid_window=1)
-        else:
-            totp_ok = False
-        if not (pw_ok and totp_ok):
-            if pw is not None:
+        pw_correct = pw == ADMIN_PASSWORD
+        totp_ok = totp is not None and TOTP_SECRET and pyotp.TOTP(TOTP_SECRET).verify(totp, valid_window=1)
+        if not (pw_correct and totp_ok):
+            if pw is not None or totp is not None:
                 fails = redis_client.incr(fail_key)
                 redis_client.expire(fail_key, 900)
                 if fails >= 5:
                     redis_client.setex(lockout_key, 900, "1")
-            # Determine which step to show
-            pw_entered = pw is not None and not pw.startswith(ADMIN_PASSWORD + ":")
-            pw_correct = pw is not None and (pw == ADMIN_PASSWORD or pw.startswith(ADMIN_PASSWORD + ":"))
-            if pw_correct or pw_ok:
-                # Password was correct, show TOTP form
-                return HTMLResponse("""<!DOCTYPE html>
+            if pw_correct:
+                # Password correct, ask for TOTP
+                return HTMLResponse(f"""<!DOCTYPE html>
 <html><head><title>Not Found</title></head>
 <body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
 <div style='text-align:center'>
   <h1 style='font-size:48px;color:#333'>404</h1>
   <p style='color:#666'>Page not found</p>
   <form method='get' style='margin-top:24px'>
-    <input type='hidden' name='pw' value='" + ADMIN_PASSWORD + ":'>
+    <input type='hidden' name='pw' value='{pw}'>
     <input name='totp' type='text' placeholder='Authenticator code' autofocus maxlength='6' inputmode='numeric'
       style='background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;margin-right:8px;width:160px'>
-    <button type='submit' onclick="this.form.pw.value=this.form.pw.value+this.form.totp.value"
+    <button type='submit'
       style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Verify</button>
   </form>
 </div></body></html>""", status_code=404)
