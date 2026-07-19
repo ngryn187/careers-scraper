@@ -378,6 +378,13 @@ async def docs_page():
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>API Docs - StackSight</title>
+<meta name="description" content="StackSight API documentation. Integrate real-time hiring intent signals and tech stack detection into your B2B workflows. Free tier available.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="StackSight API Documentation">
+<meta property="og:description" content="Full reference for the StackSight API — hiring intent signals, tech stack detection, and domain enrichment endpoints.">
+<meta property="og:url" content="https://stacksight.org/docs">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://stacksight.org/docs">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6;display:flex;min-height:100vh}
@@ -823,6 +830,12 @@ async def login_page(request: Request):
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Sign In - StackSight</title>
+<meta name="description" content="Sign in to your StackSight account to access real-time B2B hiring intent data and tech stack intelligence for any domain.">
+<meta name="robots" content="noindex,nofollow">
+<meta property="og:title" content="Sign In - StackSight">
+<meta property="og:description" content="Access your StackSight API dashboard for B2B hiring signals and tech stack data.">
+<meta property="og:url" content="https://stacksight.org/login">
+<meta property="og:type" content="website">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh}
@@ -1185,7 +1198,15 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
 async def demo(domain: str):
     clean = domain.lower().strip().rstrip("/").replace("https://", "").replace("http://", "")
     data = DEMO_DATA.get(clean, {"company_name": clean.split(".")[0].title(), "is_hiring": True, "engineering_roles": ["Software Engineer"], "sales_roles": ["Account Executive"], "detected_tech_stack": ["JavaScript", "AWS"]})
-    return HTMLResponse(f"""<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Demo: {clean} - StackSight</title>
+    return HTMLResponse(f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo: {clean} - StackSight</title>
+<meta name="description" content="See real-time hiring data and tech stack for {clean} via the StackSight API. Free demo — no signup required.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="StackSight Demo: {clean}">
+<meta property="og:description" content="Live hiring intent and tech stack data for {clean}. Powered by StackSight.">
+<meta property="og:url" content="https://stacksight.org/demo/{clean}">
+<meta property="og:type" content="website">
 <style>body{{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;padding:40px 20px}}
 .box{{max-width:700px;margin:0 auto}}h1{{color:#a855f7;margin-bottom:16px}}
 pre{{background:#111;border:1px solid #1f1f1f;border-radius:10px;padding:24px;overflow-x:auto;font-size:14px}}
