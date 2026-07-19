@@ -687,8 +687,8 @@ footer a:hover{{color:#fff}}
   </div>
 </div>
 <div class="stats-bar">
-  <div class="stat"><div class="stat-num">50M+</div><div class="stat-label">Job postings tracked</div></div>
-  <div class="stat"><div class="stat-num">50ms</div><div class="stat-label">Avg response (cached)</div></div>
+  <div class="stat"><div class="stat-num">Any</div><div class="stat-label">domain, analyzed live</div></div>
+  <div class="stat"><div class="stat-num">&lt;100ms</div><div class="stat-label">cached response time</div></div>
   <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Tech signals detected</div></div>
   <div class="stat"><div class="stat-num">3</div><div class="stat-label">Lines to integrate</div></div>
 </div>
