@@ -438,7 +438,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
   <div class="sidebar-section">Getting Started</div>
   <a href="#quickstart" class="active">Quick Start</a><a href="#auth">Authentication</a><a href="#limits">Rate Limits</a>
   <div class="sidebar-section">Endpoints</div>
-  <a href="#scrape">GET /scrape</a><a href="#usage">GET /usage</a>
+  <a href="#scrape">GET /scrape</a><a href="#bulk">POST /bulk</a><a href="#usage">GET /usage</a>
   <div class="sidebar-section">Reference</div>
   <a href="#response">Response Schema</a><a href="#errors">Error Codes</a><a href="#sdks">Code Examples</a>
 </div>
@@ -463,6 +463,27 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
       <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
       <tr><td>domain</td><td>string</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>Domain to enrich, e.g. stripe.com</td></tr></table>
       <pre>curl "https://stacksight.org/scrape?domain=notion.so" -H "X-API-Key: ss_your_key"</pre>
+    </div>
+  </div>
+  <h2 id="bulk">POST /bulk</h2>
+  <div class="endpoint">
+    <div class="endpoint-header"><span class="method post">POST</span><span class="path">/bulk</span><span style="font-size:11px;background:#1a1a0a;color:#eab308;border:1px solid #713f12;padding:2px 8px;border-radius:4px;margin-left:8px">Pro &amp; Business</span></div>
+    <div class="endpoint-body">
+      <p style="color:#888;font-size:14px;margin-bottom:12px">Enrich up to 50 domains in a single request. Runs concurrently — same speed as one. Each domain counts as 1 request against your quota.</p>
+      <table><tr><th>Body field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+      <tr><td>domains</td><td>array</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>List of domains to enrich. Max 50.</td></tr></table>
+      <pre>curl -X POST "https://stacksight.org/bulk" \
+  -H "X-API-Key: ss_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{"domains": ["stripe.com", "notion.so", "vercel.com"]}'</pre>
+      <pre>{
+  "results": [
+    {"domain": "stripe.com", "source": "cache", "data": {"company_name": "Stripe", "is_hiring": true, ...}},
+    {"domain": "notion.so",  "source": "live",  "data": {"company_name": "Notion", "is_hiring": true, ...}},
+    {"domain": "vercel.com", "source": "cache", "data": {"company_name": "Vercel", "is_hiring": true, ...}}
+  ],
+  "count": 3
+}</pre>
     </div>
   </div>
   <h2 id="usage">GET /usage</h2>
