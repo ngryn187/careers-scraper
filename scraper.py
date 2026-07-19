@@ -1483,6 +1483,42 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         session_id = session.get("id")
         if email:
             background_tasks.add_task(provision_api_key, email, plan, customer_id, session_id)
+
+    elif event["type"] == "invoice.payment_succeeded":
+        # Subscription renewed — reset usage for this customer
+        invoice = event["data"]["object"]
+        customer_id = invoice.get("customer")
+        billing_reason = invoice.get("billing_reason", "")
+        # Only reset on renewals, not the initial payment (that's handled by checkout.session.completed)
+        if customer_id and billing_reason == "subscription_cycle":
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE api_keys SET requests_used = 0, usage_reset_at = NOW() WHERE stripe_customer_id = %s AND active = TRUE",
+                (customer_id,)
+            )
+            conn.commit()
+            cur.close(); conn.close()
+
+    elif event["type"] == "customer.subscription.deleted":
+        # Subscription cancelled — downgrade to free
+        subscription = event["data"]["object"]
+        customer_id = subscription.get("customer")
+        if customer_id:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE api_keys SET plan = 'free', requests_limit = 10, requests_used = 0 WHERE stripe_customer_id = %s",
+                (customer_id,)
+            )
+            conn.commit()
+            cur.close(); conn.close()
+
+    elif event["type"] == "invoice.payment_failed":
+        # Payment failed — leave access for now but could notify user
+        # Stripe will retry; subscription.deleted fires if all retries fail
+        pass
+
     return {"status": "ok"}
 
 
