@@ -411,7 +411,9 @@ table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
 th{text-align:left;padding:10px 12px;background:#111;color:#555;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1f1f1f}
 td{padding:10px 12px;border-bottom:1px solid #0f0f0f;color:#aaa}
 td:first-child{font-family:monospace;color:#a855f7;font-size:13px}
-pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0}
+pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;padding-top:44px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0;position:relative}
+pre::before{content:"";position:absolute;top:0;left:0;right:0;height:30px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;border-radius:7px 7px 0 0}
+pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:14px 0 0 #eab308,28px 0 0 #22c55e}
 .auth-box{background:#0f0518;border:1px solid #3b1a6e;border-radius:10px;padding:20px;margin-bottom:24px}
 .auth-box h4{color:#a855f7;font-size:14px;font-weight:600;margin-bottom:8px}
 .limits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
@@ -565,6 +567,7 @@ nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-bet
 .hero{{text-align:center;padding:90px 20px 60px;max-width:860px;margin:0 auto}}
 .badge{{display:inline-flex;align-items:center;gap:6px;background:#1a0a2e;color:#a855f7;border:1px solid #3b1a6e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:28px}}
 h1{{font-size:56px;font-weight:800;line-height:1.08;margin-bottom:22px;letter-spacing:-1px}}
+h2{{letter-spacing:-0.5px}}
 h1 span{{color:#a855f7}}
 .hero p{{font-size:19px;color:#888;max-width:620px;margin:0 auto 40px;line-height:1.7}}
 .cta-group{{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}}
@@ -574,7 +577,7 @@ h1 span{{color:#a855f7}}
 .btn-secondary:hover{{border-color:#555;color:#fff}}
 .stats-bar{{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;padding:40px 20px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;margin:0 0 60px}}
 .stat{{text-align:center}}
-.stat-num{{font-size:28px;font-weight:800;color:#a855f7}}
+.stat-num{{font-size:28px;font-weight:800;background:linear-gradient(135deg,#c084fc,#a855f7 55%,#7c3aed);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#a855f7}}
 .stat-label{{font-size:13px;color:#666;margin-top:2px}}
 .use-cases{{max-width:1100px;margin:0 auto 80px;padding:0 20px}}
 .use-cases h2,.how h2,.code-section h2,.pricing h2,.faq h2{{text-align:center;font-size:34px;font-weight:700;margin-bottom:12px}}
@@ -582,12 +585,13 @@ h1 span{{color:#a855f7}}
 .use-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}}
 .use-card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;transition:border-color .2s}}
 .use-card:hover{{border-color:#3b1a6e}}
-.use-icon{{font-size:28px;margin-bottom:14px}}
+.use-icon{{width:44px;height:44px;border-radius:10px;background:#1a0a2e;border:1px solid #3b1a6e;display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:#a855f7}}
 .use-card h3{{font-size:16px;font-weight:600;margin-bottom:8px}}
 .use-card p{{color:#666;font-size:14px;line-height:1.6}}
 .how{{max-width:860px;margin:0 auto 80px;padding:0 20px;text-align:center}}
 .steps{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}}
-.step{{padding:24px}}
+.step{{padding:24px;position:relative}}
+.step:not(:last-child)::after{{content:"";position:absolute;top:44px;left:calc(50% + 34px);width:calc(100% - 68px);height:2px;background:linear-gradient(90deg,#3b1a6e,#1a0a2e)}}
 .step-num{{width:40px;height:40px;border-radius:50%;background:#1a0a2e;border:2px solid #a855f7;color:#a855f7;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}}
 .step h4{{font-size:15px;font-weight:600;margin-bottom:6px}}
 .step p{{color:#666;font-size:13px}}
@@ -650,7 +654,7 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#444;font-size:13px}}
 footer a{{color:#666;text-decoration:none}}
 footer a:hover{{color:#fff}}
-@media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}}}
+@media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}.step::after{{display:none}}}}
 </style>
 </head>
 <body>
@@ -692,10 +696,10 @@ footer a:hover{{color:#fff}}
   <h2>Built for revenue teams</h2>
   <p class="sub">Know who's ready to buy before they raise their hand.</p>
   <div class="use-grid">
-    <div class="use-card"><div class="use-icon"></div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
-    <div class="use-card"><div class="use-icon"></div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
-    <div class="use-card"><div class="use-icon"></div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
-    <div class="use-card"><div class="use-icon"></div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
   </div>
 </div>
 <div class="how">
@@ -714,11 +718,11 @@ footer a:hover{{color:#fff}}
   <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
      -H "X-API-Key: YOUR_API_KEY"
 
-<span class="k">"domain"</span>: <span class="s">"stripe.com"</span>,
-<span class="k">"active_jobs"</span>: <span class="n">142</span>,
-<span class="k">"growth_30d"</span>: <span class="s">"+18%"</span>,
-<span class="k">"tech_stack"</span>: [<span class="s">"React"</span>, <span class="s">"AWS"</span>, <span class="s">"Stripe"</span>],
-<span class="k">"hiring_signal"</span>: <span class="s">"high"</span></pre>
+<span class="k">"company_name"</span>: <span class="s">"Stripe"</span>,
+<span class="k">"is_hiring"</span>: <span class="n">true</span>,
+<span class="k">"engineering_roles"</span>: [<span class="s">"Backend Engineer"</span>, <span class="s">"ML Engineer"</span>],
+<span class="k">"sales_roles"</span>: [<span class="s">"Account Executive"</span>],
+<span class="k">"detected_tech_stack"</span>: [<span class="s">"React"</span>, <span class="s">"AWS"</span>, <span class="s">"Cloudflare"</span>]</pre>
 </div>
 <div class="signup-section" id="signup">
   <h2>Start for free</h2>
@@ -788,6 +792,7 @@ footer a:hover{{color:#fff}}
   <a href="#signup" class="btn-primary" style="font-size:18px;padding:16px 40px"> Get Free API Key</a>
 </div>
 <footer>
+  <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
     <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
   </div>
@@ -839,15 +844,16 @@ async def login_page(request: Request):
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:48px 40px;width:100%;max-width:420px;margin:20px}
+.card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:48px 40px;width:100%;max-width:420px;margin:20px;box-shadow:0 0 60px rgba(168,85,247,0.08)}
 .logo{font-size:24px;font-weight:700;color:#a855f7;text-align:center;margin-bottom:8px}
 .subtitle{text-align:center;color:#666;font-size:14px;margin-bottom:32px}
 h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
 p.desc{color:#888;font-size:14px;text-align:center;margin-bottom:24px}
 input{width:100%;background:#0a0a0a;border:1px solid #333;color:#fff;padding:12px 16px;border-radius:8px;font-size:15px;margin-bottom:12px}
 input:focus{outline:none;border-color:#a855f7}
-button{width:100%;background:#a855f7;color:#fff;border:none;padding:13px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer}
-button:hover{background:#9333ea}
+button{width:100%;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(168,85,247,0.3);transition:box-shadow .2s,transform .1s}
+button:hover{box-shadow:0 4px 28px rgba(168,85,247,0.45)}
+button:active{transform:translateY(1px)}
 .msg{margin-top:16px;padding:12px;border-radius:8px;font-size:14px;display:none;text-align:center}
 .msg.success{background:#0f2a0f;border:1px solid #22c55e;color:#22c55e}
 .msg.error{background:#2a0f0f;border:1px solid #ef4444;color:#ef4444}
@@ -1051,7 +1057,8 @@ nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 
 h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
 .subtitle{{color:#888;margin-bottom:40px;font-size:15px}}
 .card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px}}
-.card h2{{font-size:14px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px}}
+.card h2{{font-size:14px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1f1f1f}}
+.field + .field{{border-top:1px solid #161616;padding-top:18px}}
 .field{{margin-bottom:20px}}
 .field label{{display:block;font-size:13px;color:#888;margin-bottom:6px}}
 .field .value{{font-size:15px;color:#e5e5e5;font-family:monospace;background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
