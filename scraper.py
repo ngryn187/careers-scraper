@@ -1,7 +1,11 @@
 import asyncio
+import html
+import re
+import ipaddress
 import json
 import os
 import secrets
+import socket
 import smtplib
 import time
 from datetime import datetime, timedelta
@@ -28,7 +32,7 @@ ZOHO_EMAIL = os.environ.get("ZOHO_EMAIL", "")
 ZOHO_PASSWORD = os.environ.get("ZOHO_PASSWORD", "")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
-CRON_SECRET = os.environ.get("CRON_SECRET", "stacksight-cron-2024")
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 TOTP_SECRET = os.environ.get("TOTP_SECRET", "")
 BASE_URL = os.environ.get("BASE_URL", "https://stacksight.org")
@@ -132,6 +136,7 @@ def init_db():
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS token VARCHAR(64)")
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
+    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS usage_reset_at TIMESTAMP")
     conn.commit()
     cur.close()
     conn.close()
@@ -294,10 +299,36 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
     limit = PLAN_LIMITS.get(plan, 10)
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO api_keys (key, api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
-    """, (api_key, api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
+    if plan != "free":
+        # Paid provisioning: upgrade the existing row for this email if one exists.
+        cur.execute("""
+            UPDATE api_keys
+            SET plan=%s, requests_limit=%s, requests_used=0, usage_reset_at=NOW(), active=TRUE,
+                stripe_customer_id=COALESCE(%s, stripe_customer_id),
+                stripe_session_id=COALESCE(%s, stripe_session_id)
+            WHERE email=%s
+        """, (plan, limit, stripe_customer_id, stripe_session_id, email))
+        if cur.rowcount > 0:
+            cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (email,))
+            row = cur.fetchone()
+            if row and row[0]:
+                api_key = row[0]
+        else:
+            cur.execute("""
+                INSERT INTO api_keys (api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id, active)
+                VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+            """, (api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
+    else:
+        # Free signup: deduplicate on email — reuse the existing key if the user already has one.
+        cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (email,))
+        row = cur.fetchone()
+        if row and row[0]:
+            api_key = row[0]
+        else:
+            cur.execute("""
+                INSERT INTO api_keys (api_key, email, plan, requests_limit, active)
+                VALUES (%s, %s, %s, %s, TRUE)
+            """, (api_key, email, plan, limit))
     conn.commit()
     cur.close()
     conn.close()
@@ -305,6 +336,51 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
     return api_key
 
 #  Scraper 
+PRIVATE_NETWORKS = [
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("169.254.0.0/16"),
+    ipaddress.ip_network("0.0.0.0/8"),
+    ipaddress.ip_network("100.64.0.0/10"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+    ipaddress.ip_network("fe80::/10"),
+]
+DOMAIN_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$")
+
+def _ip_is_private(ip_str: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return True
+    return any(ip in net for net in PRIVATE_NETWORKS) or ip.is_private or ip.is_reserved or ip.is_loopback or ip.is_link_local or ip.is_multicast
+
+def validate_domain(domain: str) -> str:
+    """Validate a user-supplied domain to prevent SSRF. Returns the clean hostname or raises 400."""
+    if not domain or not isinstance(domain, str):
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    host = domain.strip().lower()
+    # Strip scheme, path, credentials, port
+    host = re.sub(r"^[a-z][a-z0-9+.\-]*://", "", host)
+    host = host.split("/")[0].split("?")[0].split("#")[0]
+    if "@" in host:
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    host = host.split(":")[0].rstrip(".")
+    # Must look like a real domain (rejects bare IPs and localhost too)
+    if not DOMAIN_RE.match(host):
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    # Resolve and check every resolved IP against private/reserved ranges
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    ips = {info[4][0] for info in infos}
+    if not ips or any(_ip_is_private(ip) for ip in ips):
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    return host
+
 async def scrape_page(domain: str):
     domain = domain.strip().lower().rstrip("/")
     if not domain.startswith("http"):
@@ -910,70 +986,6 @@ document.getElementById('email').addEventListener('keypress', e => { if(e.key===
 </body></html>""")
 
 
-@app.post("/signup")
-async def signup_post(request: Request, background_tasks: BackgroundTasks):
-    body = await request.json()
-    email = body.get("email", "").strip().lower()
-    if not email or "@" not in email:
-        raise HTTPException(status_code=400, detail="Invalid email address")
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND plan='free' LIMIT 1", (email,))
-    existing = cur.fetchone()
-    if existing:
-        return JSONResponse({"ok": True, "msg": "Check your inbox  we sent your API key again."})
-    token = secrets.token_urlsafe(32)
-    cur.execute("""
-        INSERT INTO pending_signups (email, token)
-        VALUES (%s, %s)
-        ON CONFLICT (email) DO UPDATE SET token=EXCLUDED.token, created_at=NOW(), used=FALSE
-    """, (email, token))
-    conn.commit()
-    cur.close()
-    conn.close()
-    background_tasks.add_task(send_verification_email, email, token)
-    return JSONResponse({"ok": True, "msg": "Check your inbox to get your free API key!"})
-
-@app.get("/verify-email")
-async def verify_email(token: str, background_tasks: BackgroundTasks):
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT email, used, created_at FROM pending_signups WHERE token=%s LIMIT 1", (token,))
-    row = cur.fetchone()
-    if not row:
-        cur.close(); conn.close()
-        return HTMLResponse("<h2>Invalid or expired link.</h2>", status_code=400)
-    email, used, created_at = row
-    if used:
-        cur.close(); conn.close()
-        return HTMLResponse("<h2>This link has already been used. Check your inbox for your API key.</h2>")
-    from datetime import timezone
-    age = (datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)).total_seconds()
-    if age > 86400:
-        cur.close(); conn.close()
-        return HTMLResponse("<h2>This link has expired. Please sign up again at stacksight.org.</h2>", status_code=400)
-    cur.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
-    conn.commit()
-    cur.close(); conn.close()
-    api_key = provision_api_key(email, "free")
-    background_tasks.add_task(send_api_key_email, email, api_key, "free")
-    return HTMLResponse(f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Welcome to StackSight!</title>
-<style>body{{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}}
-.card{{background:#111;border:1px solid #222;border-radius:16px;padding:48px;max-width:480px;text-align:center}}
-h1{{color:#a855f7;margin-bottom:8px}}p{{color:#bbb}}
-.key{{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;font-family:monospace;font-size:14px;color:#a855f7;word-break:break-all;margin:24px 0}}
-.btn{{display:inline-block;background:#a855f7;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:8px}}</style>
-</head><body><div class="card">
-<h1>You are in!</h1>
-<p>Your free StackSight API key:</p>
-<div class="key">{{api_key}}</div>
-<p style="font-size:13px;color:#888">We also emailed this to <strong style="color:#ccc">{{email}}</strong></p>
-<a href="/docs" class="btn">View API Docs</a>
-<a href="/dashboard" class="btn" style="background:#222;margin-left:8px">Dashboard</a>
-</div></body></html>""")
-
 @app.post("/login")
 async def login_post(request: Request, background_tasks: BackgroundTasks):
     body = await request.json()
@@ -1225,17 +1237,20 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo(domain: str):
     clean = domain.lower().strip().rstrip("/").replace("https://", "").replace("http://", "")
+    esc = html.escape(clean)
+    from urllib.parse import quote as _urlquote
+    url_clean = _urlquote(clean, safe="")
     data = DEMO_DATA.get(clean, {"company_name": clean.split(".")[0].title(), "is_hiring": True, "engineering_roles": ["Software Engineer"], "sales_roles": ["Account Executive"], "detected_tech_stack": ["JavaScript", "AWS"]})
     return HTMLResponse(f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Demo: {clean} - StackSight</title>
-<meta name="description" content="See real-time hiring data and tech stack for {clean} via the StackSight API. Free demo — no signup required.">
+<title>Demo: {esc} - StackSight</title>
+<meta name="description" content="See real-time hiring data and tech stack for {esc} via the StackSight API. Free demo — no signup required.">
 <meta name="robots" content="index,follow">
-<meta property="og:title" content="StackSight Demo: {clean}">
-<meta property="og:description" content="Live hiring intent and tech stack data for {clean}. Powered by StackSight.">
-<meta property="og:url" content="https://stacksight.org/demo/{clean}">
+<meta property="og:title" content="StackSight Demo: {esc}">
+<meta property="og:description" content="Live hiring intent and tech stack data for {esc}. Powered by StackSight.">
+<meta property="og:url" content="https://stacksight.org/demo/{url_clean}">
 <meta property="og:type" content="website">
-<link rel="canonical" href="https://stacksight.org/demo/{clean}">
+<link rel="canonical" href="https://stacksight.org/demo/{url_clean}">
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
@@ -1289,13 +1304,13 @@ footer a:hover{{color:#fff}}
 </script>
 <div class="wrap">
   <div class="hero">
-    <h1>Live Demo: <span>{clean}</span></h1>
+    <h1>Live Demo: <span>{esc}</span></h1>
     <p class="sub">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
   </div>
   <div class="card company-card">
     <div>
-      <div class="company-name">{data.get('company_name', clean)}</div>
-      <div class="company-domain">{clean}</div>
+      <div class="company-name">{html.escape(str(data.get('company_name', clean)))}</div>
+      <div class="company-domain">{esc}</div>
     </div>
     <div class="badge-hiring" style="color:{"#22c55e" if data.get('is_hiring') else "#ef4444"};background:{"#0a1f0a" if data.get('is_hiring') else "#1f0a0a"};border:1px solid {"#22c55e" if data.get('is_hiring') else "#ef4444"}">{"● Hiring" if data.get('is_hiring') else "● Not Hiring"}</div>
   </div>
@@ -1336,6 +1351,7 @@ footer a:hover{{color:#fff}}
 
 @app.get("/scrape")
 async def scrape(domain: str, x_api_key: str = Header(None)):
+    domain = validate_domain(domain)
     api_key, plan = verify_api_key(x_api_key)
     cache_key = f"domain:{domain}"
     cached = redis_client.get(cache_key)
@@ -1376,7 +1392,10 @@ async def bulk(request: Request, x_api_key: str = Header(None)):
         raise HTTPException(status_code=429, detail=f"Not enough quota: {remaining} requests remaining, {len(domains)} needed")
 
     async def process_domain(domain: str):
-        clean = domain.lower().strip().rstrip("/").replace("https://", "").replace("http://", "")
+        try:
+            clean = validate_domain(domain)
+        except HTTPException as e:
+            return {"domain": str(domain), "source": "error", "error": e.detail}
         cache_key = f"domain:{clean}"
         cached = redis_client.get(cache_key)
         if cached:
@@ -1681,7 +1700,7 @@ footer a:hover{color:#fff}
 <h2>1. What We Collect</h2>
 <ul>
 <li><strong>Email address</strong> — required to create an account. We use passwordless magic link authentication, so your email is your identity. There are no passwords for us to store or leak.</li>
-<li><strong>API key</strong> — generated when you sign up, stored hashed on our servers, and used to authenticate your requests.</li>
+<li><strong>API key</strong> — generated when you sign up, stored securely on our servers, and used only to authenticate your API requests.</li>
 <li><strong>Usage counts</strong> — the number of API requests you have used in the current billing period, so we can enforce plan quotas and show usage on your dashboard.</li>
 <li><strong>IP address</strong> — logged with requests for rate limiting, abuse prevention, and security investigation.</li>
 <li><strong>Payment information</strong> — handled entirely by <strong>Stripe</strong>. Your card number never touches our servers; we receive only a Stripe customer reference and subscription status.</li>
@@ -1709,7 +1728,7 @@ footer a:hover{color:#fff}
 <li><strong>Magic links</strong> expire 15 minutes after they are sent</li>
 <li><strong>Session tokens</strong> expire after 7 days</li>
 <li><strong>Rate-limit counters</strong> are ephemeral data held in Redis and expire automatically</li>
-<li><strong>Account data</strong> (email, hashed API key, usage history, billing records) is kept while your account is active, and for 90 days after account deletion, after which it is permanently purged. We may retain billing records longer where tax or accounting law requires.</li>
+<li><strong>Account data</strong> (email, API key, usage history, billing records) is kept while your account is active, and for 90 days after account deletion, after which it is permanently purged. We may retain billing records longer where tax or accounting law requires.</li>
 </ul>
 
 <h2>5. Third Parties</h2>
@@ -1729,7 +1748,7 @@ footer a:hover{color:#fff}
 
 <h2>8. Security</h2>
 <ul>
-<li>API keys are stored hashed, not in plaintext</li>
+<li>API keys are stored securely and used only to authenticate API requests</li>
 <li>All traffic is served over HTTPS only</li>
 <li>Session cookies are secure and HttpOnly</li>
 <li>Rate-limit and abuse-prevention data lives in Redis and expires automatically</li>
@@ -1773,8 +1792,11 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
     # 404 for anyone not logged in as owner
     if email != ADMIN_EMAIL:
         raise HTTPException(status_code=404)
+    if not ADMIN_PASSWORD:
+        raise HTTPException(status_code=503, detail="Admin not configured")
     # Require admin password + TOTP as two factors
-    admin_verified = request.cookies.get("admin_verified") == ADMIN_PASSWORD
+    _admin_token = request.cookies.get("admin_verified")
+    admin_verified = bool(_admin_token and redis_client.get(f"admin_session:{_admin_token}"))
     if not admin_verified:
         ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "unknown").split(",")[0].strip()
         lockout_key = f"admin_lockout:{ip}"
@@ -1821,8 +1843,10 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
 </div></body></html>""", status_code=404)
         # Both factors correct — clear fail counter, set verified cookie
         redis_client.delete(fail_key)
+        admin_token = secrets.token_hex(32)
+        redis_client.setex(f"admin_session:{admin_token}", 3600, "1")
         response = HTMLResponse("")
-        response.set_cookie("admin_verified", ADMIN_PASSWORD, httponly=True, secure=True, samesite="lax", max_age=3600)
+        response.set_cookie("admin_verified", admin_token, httponly=True, secure=True, samesite="lax", max_age=3600)
         response.headers["Location"] = "/admin"
         response.status_code = 302
         return response
@@ -1856,15 +1880,15 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
         toggle_color = "#ef4444" if act else "#22c55e"
         safe_key = key or ""
         rows += f"""<tr>
-            <td>{em}</td>
+            <td>{html.escape(str(em))}</td>
             <td><code style="font-size:11px">{safe_key[:20] + "..." if safe_key else "None"}</code></td>
             <td><span class="badge badge-{plan}">{plan.upper()}</span></td>
             <td>{used} / {limit} <div class="bar"><div class="bar-fill" style="width:{pct}%"></div></div></td>
             <td><span style="color:{status_color}">{status_text}</span></td>
             <td>{str(created)[:10]}</td>
             <td style="white-space:nowrap">
-              <button onclick="toggleKey(this, '{em}', {str(act).lower()})" style="background:{toggle_color};color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px">{toggle_label}</button>
-              <button onclick="deleteUser(this, '{em}')" style="background:#333;color:#ef4444;border:1px solid #ef4444;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">Delete</button>
+              <button class="btn-toggle" data-email="{html.escape(str(em), quote=True)}" data-active="{str(act).lower()}" style="background:{toggle_color};color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;margin-right:4px">{toggle_label}</button>
+              <button class="btn-delete" data-email="{html.escape(str(em), quote=True)}" style="background:#333;color:#ef4444;border:1px solid #ef4444;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px">Delete</button>
             </td>
         </tr>"""
 
@@ -1911,19 +1935,24 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
   <tbody>{rows}</tbody>
 </table>
 <script>
-async function toggleKey(btn, email, currentlyActive) {{
+async function toggleKey(btn) {{
+  const email = btn.dataset.email;
+  const currentlyActive = btn.dataset.active === 'true';
   btn.disabled = true;
   const r = await fetch('/admin/toggle-key', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{email, active: !currentlyActive}})}});
   if (r.ok) location.reload();
   else {{ alert('Error'); btn.disabled = false; }}
 }}
-async function deleteUser(btn, email) {{
+async function deleteUser(btn) {{
+  const email = btn.dataset.email;
   if (!confirm('Delete all data for ' + email + '?')) return;
   btn.disabled = true;
   const r = await fetch('/admin/delete-user', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{email}})}});
   if (r.ok) location.reload();
   else {{ alert('Error'); btn.disabled = false; }}
 }}
+document.querySelectorAll('.btn-toggle').forEach(b => b.addEventListener('click', () => toggleKey(b)));
+document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', () => deleteUser(b)));
 </script>
 </body></html>""")
 
@@ -1931,7 +1960,8 @@ async function deleteUser(btn, email) {{
 async def admin_toggle_key(request: Request):
     if get_session_email(request) != ADMIN_EMAIL:
         raise HTTPException(status_code=404)
-    if request.cookies.get("admin_verified") != ADMIN_PASSWORD:
+    _tok = request.cookies.get("admin_verified")
+    if not (_tok and redis_client.get(f"admin_session:{_tok}")):
         raise HTTPException(status_code=403)
     body = await request.json()
     email = body.get("email")
@@ -1947,7 +1977,8 @@ async def admin_toggle_key(request: Request):
 async def admin_delete_user(request: Request):
     if get_session_email(request) != ADMIN_EMAIL:
         raise HTTPException(status_code=404)
-    if request.cookies.get("admin_verified") != ADMIN_PASSWORD:
+    _tok = request.cookies.get("admin_verified")
+    if not (_tok and redis_client.get(f"admin_session:{_tok}")):
         raise HTTPException(status_code=403)
     body = await request.json()
     email = body.get("email")
@@ -1960,10 +1991,34 @@ async def admin_delete_user(request: Request):
     cur.close(); conn.close()
     return {"ok": True}
 
+@app.post("/admin/reset-usage")
+async def admin_reset_usage(request: Request):
+    """Reset monthly quotas for paid users. Called by Railway cron / external scheduler."""
+    if not CRON_SECRET:
+        raise HTTPException(status_code=503, detail="CRON_SECRET not configured")
+    auth = request.headers.get("X-Cron-Secret", "")
+    if not secrets.compare_digest(auth, CRON_SECRET):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE api_keys
+        SET requests_used = 0, usage_reset_at = NOW()
+        WHERE plan != 'free'
+          AND (usage_reset_at IS NULL OR usage_reset_at < NOW() - INTERVAL '30 days')
+    """)
+    reset_count = cur.rowcount
+    conn.commit()
+    cur.close(); conn.close()
+    return {"ok": True, "keys_reset": reset_count}
+
+
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
+    if not CRON_SECRET:
+        raise HTTPException(status_code=503, detail="CRON_SECRET not configured")
     auth = request.headers.get("X-Cron-Secret", "")
-    if auth != CRON_SECRET:
+    if not secrets.compare_digest(auth, CRON_SECRET):
         raise HTTPException(status_code=403, detail="Forbidden")
     body = await request.json()
     email = body.get("email")
