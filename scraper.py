@@ -253,12 +253,12 @@ def send_magic_link_email(to_email: str, token: str):
     subject = "Your StackSight login link"
     html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#fff;padding:40px;border-radius:12px">
       <h1 style="color:#a855f7;margin-bottom:4px">StackSight</h1>
-      <p style="color:#999;margin-top:0;margin-bottom:24px">B2B Hiring Intent API</p>
+      <p style="color:#bbb;margin-top:0;margin-bottom:24px">B2B Hiring Intent API</p>
       <h2 style="color:#fff">Sign in to your account</h2>
       <p style="color:#ccc">Click the button below to securely log in. This link expires in 15 minutes and can only be used once.</p>
       <a href="{url}" style="display:inline-block;background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0;font-size:16px">Sign In to Dashboard</a>
-      <p style="color:#666;font-size:13px">Or paste this link:<br><span style="color:#a855f7">{url}</span></p>
-      <p style="color:#666;font-size:12px;margin-top:24px">If you didn't request this, ignore this email.</p>
+      <p style="color:#888;font-size:13px">Or paste this link:<br><span style="color:#a855f7">{url}</span></p>
+      <p style="color:#888;font-size:12px;margin-top:24px">If you didn't request this, ignore this email.</p>
     </div>"""
     text = f"Sign in to StackSight\n\nClick here: {url}\n\nExpires in 15 minutes, single use only."
     send_email(to_email, subject, html, text)
@@ -390,16 +390,16 @@ async def docs_page():
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6;display:flex;min-height:100vh}
 nav{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:fixed;top:0;left:0;right:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}
 .logo{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}
-.nav-links a{color:#999;text-decoration:none;margin-left:24px;font-size:14px}.nav-links a:hover{color:#fff}
+.nav-links a{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px}.nav-links a:hover{color:#fff}
 .nav-links .btn-login{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px}
 .sidebar{width:240px;flex-shrink:0;position:fixed;top:61px;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1a1a1a;padding:24px 0}
-.sidebar-section{padding:8px 20px;font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.8px;margin-top:16px}
-.sidebar a{display:block;padding:8px 20px;font-size:13px;color:#777;text-decoration:none;border-left:2px solid transparent}
+.sidebar-section{padding:8px 20px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-top:16px}
+.sidebar a{display:block;padding:8px 20px;font-size:13px;color:#aaa;text-decoration:none;border-left:2px solid transparent}
 .sidebar a:hover{color:#ccc;background:#111}.sidebar a.active{color:#a855f7;border-left-color:#a855f7;background:#0f0518}
 .main{margin-left:240px;margin-top:61px;flex:1;padding:48px 60px;max-width:900px}
 h1{font-size:36px;font-weight:800;margin-bottom:8px}
 h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-top:48px;border-top:1px solid #1a1a1a}
-p{color:#888;margin-bottom:16px;font-size:15px}
+p{color:#b0b0b0;margin-bottom:16px;font-size:15px}
 .endpoint{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;margin-bottom:24px;overflow:hidden}
 .endpoint-header{display:flex;align-items:center;gap:12px;padding:16px 20px;background:#111;border-bottom:1px solid #1f1f1f}
 .method{font-size:12px;font-weight:700;padding:3px 10px;border-radius:5px}
@@ -408,8 +408,8 @@ p{color:#888;margin-bottom:16px;font-size:15px}
 .path{font-family:monospace;font-size:15px;color:#e5e5e5;font-weight:600}
 .endpoint-body{padding:20px}
 table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
-th{text-align:left;padding:10px 12px;background:#111;color:#555;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1f1f1f}
-td{padding:10px 12px;border-bottom:1px solid #0f0f0f;color:#aaa}
+th{text-align:left;padding:10px 12px;background:#111;color:#777;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1f1f1f}
+td{padding:10px 12px;border-bottom:1px solid #0f0f0f;color:#bbb}
 td:first-child{font-family:monospace;color:#a855f7;font-size:13px}
 pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;padding-top:44px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0;position:relative}
 pre::before{content:"";position:absolute;top:0;left:0;right:0;height:30px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;border-radius:7px 7px 0 0}
@@ -418,7 +418,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 .auth-box h4{color:#a855f7;font-size:14px;font-weight:600;margin-bottom:8px}
 .limits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .limit-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:16px;text-align:center}
-.limit-name{font-size:12px;color:#555;margin-bottom:4px}
+.limit-name{font-size:12px;color:#777;margin-bottom:4px}
 .limit-val{font-size:20px;font-weight:700;color:#a855f7}
 </style>
 </head>
@@ -444,17 +444,17 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 </div>
 <div class="main">
   <h1>API Documentation</h1>
-  <p style="font-size:17px;color:#999;margin-bottom:32px">Real-time hiring intent signals, tech stack detection, and bulk domain enrichment.</p>
+  <p style="font-size:17px;color:#bbb;margin-bottom:32px">Real-time hiring intent signals, tech stack detection, and bulk domain enrichment.</p>
   <h2 id="quickstart" style="border-top:none;margin-top:0;padding-top:0">Quick Start</h2>
   <p>Get your free API key at <a href="/#signup" style="color:#a855f7">stacksight.org</a>, then:</p>
   <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" -H "X-API-Key: ss_your_key"</pre>
   <h2 id="auth">Authentication</h2>
-  <div class="auth-box"><h4>X-API-Key Header</h4><p style="color:#666;margin:0">Pass your key in the <code style="color:#a855f7">X-API-Key</code> header. Keys look like <code style="color:#22d3ee">ss_...</code></p></div>
+  <div class="auth-box"><h4>X-API-Key Header</h4><p style="color:#888;margin:0">Pass your key in the <code style="color:#a855f7">X-API-Key</code> header. Keys look like <code style="color:#22d3ee">ss_...</code></p></div>
   <h2 id="limits">Rate Limits</h2>
   <div class="limits">
-    <div class="limit-card"><div class="limit-name">Free</div><div class="limit-val">10</div><div style="font-size:11px;color:#444">total requests</div></div>
-    <div class="limit-card"><div class="limit-name">Pro</div><div class="limit-val">5,000</div><div style="font-size:11px;color:#444">per month</div></div>
-    <div class="limit-card"><div class="limit-name">Business</div><div class="limit-val">50,000</div><div style="font-size:11px;color:#444">per month</div></div>
+    <div class="limit-card"><div class="limit-name">Free</div><div class="limit-val">10</div><div style="font-size:11px;color:#666">total requests</div></div>
+    <div class="limit-card"><div class="limit-name">Pro</div><div class="limit-val">5,000</div><div style="font-size:11px;color:#666">per month</div></div>
+    <div class="limit-card"><div class="limit-name">Business</div><div class="limit-val">50,000</div><div style="font-size:11px;color:#666">per month</div></div>
   </div>
   <h2 id="scrape">GET /scrape</h2>
   <div class="endpoint">
@@ -469,7 +469,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
   <div class="endpoint">
     <div class="endpoint-header"><span class="method get">GET</span><span class="path">/usage</span></div>
     <div class="endpoint-body">
-      <p style="color:#666;font-size:14px;margin-bottom:12px">Returns your current plan and usage stats.</p>
+      <p style="color:#888;font-size:14px;margin-bottom:12px">Returns your current plan and usage stats.</p>
       <pre>curl "https://stacksight.org/usage" -H "X-API-Key: ss_your_key"</pre>
       <pre>{
   "plan": "pro",
@@ -561,7 +561,7 @@ async def landing():
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
 nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}}
 .logo{{font-size:22px;font-weight:700;color:#a855f7;text-decoration:none}}
-.nav-links a{{color:#999;text-decoration:none;margin-left:24px;font-size:14px;transition:color .2s}}
+.nav-links a{{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px;transition:color .2s}}
 .nav-links a:hover{{color:#fff}}
 .nav-links .btn-login{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500}}
 .hero{{text-align:center;padding:90px 20px 60px;max-width:860px;margin:0 auto}}
@@ -569,7 +569,7 @@ nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-bet
 h1{{font-size:56px;font-weight:800;line-height:1.08;margin-bottom:22px;letter-spacing:-1px}}
 h2{{letter-spacing:-0.5px}}
 h1 span{{color:#a855f7}}
-.hero p{{font-size:19px;color:#888;max-width:620px;margin:0 auto 40px;line-height:1.7}}
+.hero p{{font-size:19px;color:#b0b0b0;max-width:620px;margin:0 auto 40px;line-height:1.7}}
 .cta-group{{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}}
 .btn-primary{{background:#a855f7;color:#fff;padding:14px 32px;border-radius:9px;text-decoration:none;font-weight:700;font-size:16px;transition:background .2s;display:inline-flex;align-items:center;gap:8px}}
 .btn-primary:hover{{background:#9333ea}}
@@ -578,32 +578,32 @@ h1 span{{color:#a855f7}}
 .stats-bar{{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;padding:40px 20px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;margin:0 0 60px}}
 .stat{{text-align:center}}
 .stat-num{{font-size:28px;font-weight:800;background:linear-gradient(135deg,#c084fc,#a855f7 55%,#7c3aed);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#a855f7}}
-.stat-label{{font-size:13px;color:#666;margin-top:2px}}
+.stat-label{{font-size:13px;color:#888;margin-top:2px}}
 .use-cases{{max-width:1100px;margin:0 auto 80px;padding:0 20px}}
 .use-cases h2,.how h2,.code-section h2,.pricing h2,.faq h2{{text-align:center;font-size:34px;font-weight:700;margin-bottom:12px}}
-.sub{{text-align:center;color:#666;margin-bottom:44px;font-size:16px}}
+.sub{{text-align:center;color:#888;margin-bottom:44px;font-size:16px}}
 .use-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}}
 .use-card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;transition:border-color .2s}}
-.use-card:hover{{border-color:#3b1a6e}}
+.use-card:hover{{border-color:#5b2a9e}}
 .use-icon{{width:44px;height:44px;border-radius:10px;background:#1a0a2e;border:1px solid #3b1a6e;display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:#a855f7}}
 .use-card h3{{font-size:16px;font-weight:600;margin-bottom:8px}}
-.use-card p{{color:#666;font-size:14px;line-height:1.6}}
+.use-card p{{color:#9a9a9a;font-size:14px;line-height:1.6}}
 .how{{max-width:860px;margin:0 auto 80px;padding:0 20px;text-align:center}}
 .steps{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}}
 .step{{padding:24px;position:relative}}
 .step:not(:last-child)::after{{content:"";position:absolute;top:44px;left:calc(50% + 34px);width:calc(100% - 68px);height:2px;background:linear-gradient(90deg,#3b1a6e,#1a0a2e)}}
 .step-num{{width:40px;height:40px;border-radius:50%;background:#1a0a2e;border:2px solid #a855f7;color:#a855f7;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}}
 .step h4{{font-size:15px;font-weight:600;margin-bottom:6px}}
-.step p{{color:#666;font-size:13px}}
+.step p{{color:#9a9a9a;font-size:13px}}
 .code-section{{max-width:900px;margin:0 auto 80px;padding:0 20px}}
 .code-tabs{{display:flex;gap:8px;margin-bottom:0;border-bottom:1px solid #1f1f1f}}
-.tab{{padding:10px 18px;font-size:13px;color:#666;border-bottom:2px solid transparent}}
+.tab{{padding:10px 18px;font-size:13px;color:#888;border-bottom:2px solid transparent}}
 .tab.active{{color:#a855f7;border-bottom-color:#a855f7}}
 pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0 0 10px 10px;padding:28px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.8;margin:0 0 80px}}
 .k{{color:#a855f7}}.s{{color:#22d3ee}}.n{{color:#fb923c}}
 .signup-section{{max-width:540px;margin:0 auto 80px;padding:0 20px;text-align:center}}
 .signup-section h2{{font-size:32px;font-weight:700;margin-bottom:10px;text-align:center}}
-.signup-section p{{color:#777;margin-bottom:28px;font-size:15px}}
+.signup-section p{{color:#aaa;margin-bottom:28px;font-size:15px}}
 .form-row{{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}}
 .form-row input{{flex:1;min-width:240px;background:#111;border:1px solid #2a2a2a;color:#fff;padding:13px 16px;border-radius:9px;font-size:15px;transition:border-color .2s}}
 .form-row input:focus{{outline:none;border-color:#a855f7}}
@@ -613,7 +613,7 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .msg.success{{background:#0a1f0a;border:1px solid #22c55e;color:#22c55e}}
 .msg.error{{background:#1f0a0a;border:1px solid #ef4444;color:#ef4444}}
 .trust-badges{{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:20px}}
-.trust-badge{{font-size:12px;color:#555;display:flex;align-items:center;gap:5px}}
+.trust-badge{{font-size:12px;color:#777;display:flex;align-items:center;gap:5px}}
 
 .why-section{{max-width:860px;margin:0 auto 80px;padding:0 20px;text-align:center}}
 .why-section h2{{font-size:34px;font-weight:700;margin-bottom:12px}}
@@ -621,21 +621,21 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .why-item{{display:flex;gap:16px;background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:24px}}
 .why-check{{color:#a855f7;font-size:22px;font-weight:700;flex-shrink:0;margin-top:2px}}
 .why-item strong{{display:block;font-size:16px;margin-bottom:6px;color:#fff}}
-.why-item p{{color:#888;font-size:14px;line-height:1.6;margin:0}}
-.why-footer{{color:#666;font-size:15px;line-height:1.7;margin-top:8px;font-style:italic}}
+.why-item p{{color:#b0b0b0;font-size:14px;line-height:1.6;margin:0}}
+.why-footer{{color:#888;font-size:15px;line-height:1.7;margin-top:8px;font-style:italic}}
 @media(max-width:600px){{.why-grid{{grid-template-columns:1fr}}}}
 .pricing{{max-width:1020px;margin:0 auto 80px;padding:0 20px}}
 .plans{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}}
 .plan{{background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:32px;position:relative;transition:border-color .2s}}
-.plan:hover{{border-color:#3b1a6e}}
+.plan:hover{{border-color:#5b2a9e}}
 .plan.featured{{border-color:#a855f7;background:#130a20}}
 .plan-badge{{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#a855f7;color:#fff;padding:4px 18px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}}
 .plan-name{{font-size:17px;font-weight:700;margin-bottom:4px;color:#ccc}}
 .plan-price{{font-size:40px;font-weight:800;color:#fff;margin:14px 0 4px;letter-spacing:-1px}}
-.plan-price span{{font-size:16px;color:#555;font-weight:400}}
-.plan-limit{{color:#666;font-size:13px;margin-bottom:24px}}
+.plan-price span{{font-size:16px;color:#777;font-weight:400}}
+.plan-limit{{color:#888;font-size:13px;margin-bottom:24px}}
 .plan ul{{list-style:none;margin-bottom:28px}}
-.plan ul li{{padding:7px 0;font-size:14px;color:#aaa;display:flex;align-items:center;gap:8px}}
+.plan ul li{{padding:7px 0;font-size:14px;color:#bbb;display:flex;align-items:center;gap:8px}}
 .plan ul li::before{{content:"";color:#a855f7;font-weight:700;flex-shrink:0}}
 .plan a{{display:block;text-align:center;padding:13px;border-radius:9px;font-weight:700;font-size:15px;text-decoration:none;transition:all .2s}}
 .btn-pp{{background:#a855f7;color:#fff}}
@@ -646,13 +646,13 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .faq-item{{border-bottom:1px solid #1a1a1a;padding:20px 0}}
 .faq-q{{font-size:16px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#ddd}}
 .faq-q:hover{{color:#a855f7}}
-.faq-a{{color:#666;font-size:14px;line-height:1.7;margin-top:12px;display:none}}
+.faq-a{{color:#888;font-size:14px;line-height:1.7;margin-top:12px;display:none}}
 .faq-a.open{{display:block}}
 .final-cta{{text-align:center;padding:80px 20px;background:linear-gradient(180deg,transparent,#0f0520 50%,transparent)}}
 .final-cta h2{{font-size:40px;font-weight:800;margin-bottom:16px;text-align:center}}
-.final-cta p{{color:#777;font-size:17px;margin-bottom:36px}}
-footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#444;font-size:13px}}
-footer a{{color:#666;text-decoration:none}}
+.final-cta p{{color:#aaa;font-size:17px;margin-bottom:36px}}
+footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#666;font-size:13px}}
+footer a{{color:#888;text-decoration:none}}
 footer a:hover{{color:#fff}}
 @media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}.step::after{{display:none}}}}
 </style>
@@ -846,9 +846,9 @@ async def login_page(request: Request):
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh}
 .card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:48px 40px;width:100%;max-width:420px;margin:20px;box-shadow:0 0 60px rgba(168,85,247,0.08)}
 .logo{font-size:24px;font-weight:700;color:#a855f7;text-align:center;margin-bottom:8px}
-.subtitle{text-align:center;color:#666;font-size:14px;margin-bottom:32px}
+.subtitle{text-align:center;color:#888;font-size:14px;margin-bottom:32px}
 h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
-p.desc{color:#888;font-size:14px;text-align:center;margin-bottom:24px}
+p.desc{color:#b0b0b0;font-size:14px;text-align:center;margin-bottom:24px}
 input{width:100%;background:#0a0a0a;border:1px solid #333;color:#fff;padding:12px 16px;border-radius:8px;font-size:15px;margin-bottom:12px}
 input:focus{outline:none;border-color:#a855f7}
 button{width:100%;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(168,85,247,0.3);transition:box-shadow .2s,transform .1s}
@@ -857,7 +857,7 @@ button:active{transform:translateY(1px)}
 .msg{margin-top:16px;padding:12px;border-radius:8px;font-size:14px;display:none;text-align:center}
 .msg.success{background:#0f2a0f;border:1px solid #22c55e;color:#22c55e}
 .msg.error{background:#2a0f0f;border:1px solid #ef4444;color:#ef4444}
-.back{display:block;text-align:center;margin-top:20px;color:#666;font-size:13px;text-decoration:none}
+.back{display:block;text-align:center;margin-top:20px;color:#888;font-size:13px;text-decoration:none}
 .back:hover{color:#fff}
 </style></head>
 <body>
@@ -941,14 +941,14 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
 <title>Welcome to StackSight!</title>
 <style>body{{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}}
 .card{{background:#111;border:1px solid #222;border-radius:16px;padding:48px;max-width:480px;text-align:center}}
-h1{{color:#a855f7;margin-bottom:8px}}p{{color:#999}}
+h1{{color:#a855f7;margin-bottom:8px}}p{{color:#bbb}}
 .key{{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;font-family:monospace;font-size:14px;color:#a855f7;word-break:break-all;margin:24px 0}}
 .btn{{display:inline-block;background:#a855f7;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:8px}}</style>
 </head><body><div class="card">
 <h1>You are in!</h1>
 <p>Your free StackSight API key:</p>
 <div class="key">{{api_key}}</div>
-<p style="font-size:13px;color:#666">We also emailed this to <strong style="color:#ccc">{{email}}</strong></p>
+<p style="font-size:13px;color:#888">We also emailed this to <strong style="color:#ccc">{{email}}</strong></p>
 <a href="/docs" class="btn">View API Docs</a>
 <a href="/dashboard" class="btn" style="background:#222;margin-left:8px">Dashboard</a>
 </div></body></html>""")
@@ -1031,7 +1031,7 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
         return HTMLResponse("""<!DOCTYPE html><html><head><title>StackSight</title>
 <style>body{font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
 .box{background:#111;border:1px solid #222;border-radius:12px;padding:48px;text-align:center;max-width:400px}
-h2{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
+h2{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 .btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
 <body><div class="box"><h2>No API Key Found</h2>
 <p>Your account doesn't have an active API key yet. Please sign up to get one.</p>
@@ -1055,12 +1055,12 @@ nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 
 .btn-logout:hover{{border-color:#555}}
 .container{{max-width:800px;margin:48px auto;padding:0 24px}}
 h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
-.subtitle{{color:#888;margin-bottom:40px;font-size:15px}}
+.subtitle{{color:#b0b0b0;margin-bottom:40px;font-size:15px}}
 .card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px}}
-.card h2{{font-size:14px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1f1f1f}}
+.card h2{{font-size:14px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1f1f1f}}
 .field + .field{{border-top:1px solid #161616;padding-top:18px}}
 .field{{margin-bottom:20px}}
-.field label{{display:block;font-size:13px;color:#888;margin-bottom:6px}}
+.field label{{display:block;font-size:13px;color:#aaa;margin-bottom:6px}}
 .field .value{{font-size:15px;color:#e5e5e5;font-family:monospace;background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
 .field .value span{{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 .copy-btn{{background:#6366f1;border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0}}
@@ -1068,7 +1068,7 @@ h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
 .badge{{display:inline-block;background:#1a1a2e;color:#6366f1;border:1px solid #2d2d5e;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;text-transform:capitalize}}
 .usage-bar{{background:#1a1a1a;border-radius:6px;height:8px;margin-top:8px;overflow:hidden}}
 .usage-fill{{background:#6366f1;height:100%;border-radius:6px;transition:width .3s}}
-.usage-label{{display:flex;justify-content:space-between;font-size:13px;color:#888;margin-top:6px}}
+.usage-label{{display:flex;justify-content:space-between;font-size:13px;color:#aaa;margin-top:6px}}
 .upgrade-btn{{display:inline-block;background:#6366f1;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-top:16px}}
 .upgrade-btn:hover{{background:#4f46e5}}
 </style>
@@ -1186,7 +1186,7 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
 <html><head><meta charset="UTF-8"><title>Email Verified - StackSight</title>
 <style>body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
 .box{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:48px;text-align:center;max-width:480px}
-h1{color:#a855f7;margin-bottom:12px}p{color:#888;margin-bottom:24px}
+h1{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 .btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px}
 .btn2{display:inline-block;background:transparent;border:1px solid #333;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px}</style></head>
 <body><div class="box">
@@ -1221,7 +1221,7 @@ a{{color:#a855f7}}</style></head>
 <body><div class="box"><h1>StackSight Demo: {clean}</h1>
 <p style="margin-bottom:20px"><a href="/">Home</a> | <a href="/#signup">Get free API key</a> | <a href="/login">Sign in</a></p>
 <pre>{json.dumps({"source": "demo", "data": data}, indent=2)}</pre>
-<p style="margin-top:16px;color:#666">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
+<p style="margin-top:16px;color:#888">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
 </div></body></html>""")
 
 
@@ -1287,7 +1287,7 @@ async def success():
 <html><head><meta charset="UTF-8"><title>Payment Successful - StackSight</title>
 <style>body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
 .box{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:48px;text-align:center;max-width:500px}
-h1{color:#22c55e;margin-bottom:12px}p{color:#888;margin-bottom:24px}
+h1{color:#22c55e;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 a{background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
 <body><div class="box">
 <h1>Payment Successful!</h1>
@@ -1346,14 +1346,14 @@ nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 
 .logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#a855f7}}
 .container{{max-width:760px;margin:60px auto;padding:0 24px 80px}}
 h1{{font-size:32px;font-weight:700;margin-bottom:8px}}
-.updated{{color:#666;font-size:14px;margin-bottom:40px}}
+.updated{{color:#888;font-size:14px;margin-bottom:40px}}
 h2{{font-size:18px;font-weight:600;margin:36px 0 12px;color:#e5e5e5}}
-p{{color:#aaa;margin-bottom:16px}}
-ul{{color:#aaa;padding-left:20px;margin-bottom:16px}}
+p{{color:#bbb;margin-bottom:16px}}
+ul{{color:#bbb;padding-left:20px;margin-bottom:16px}}
 ul li{{margin-bottom:8px}}
 a{{color:#a855f7}}
-footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#444;font-size:13px}}
-footer a{{color:#666;text-decoration:none}}
+footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#666;font-size:13px}}
+footer a{{color:#888;text-decoration:none}}
 </style></head>
 <body>
 <nav><a href="/" class="logo">Stack<span>Sight</span></a></nav>
@@ -1421,14 +1421,14 @@ nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 
 .logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#a855f7}}
 .container{{max-width:760px;margin:60px auto;padding:0 24px 80px}}
 h1{{font-size:32px;font-weight:700;margin-bottom:8px}}
-.updated{{color:#666;font-size:14px;margin-bottom:40px}}
+.updated{{color:#888;font-size:14px;margin-bottom:40px}}
 h2{{font-size:18px;font-weight:600;margin:36px 0 12px;color:#e5e5e5}}
-p{{color:#aaa;margin-bottom:16px}}
-ul{{color:#aaa;padding-left:20px;margin-bottom:16px}}
+p{{color:#bbb;margin-bottom:16px}}
+ul{{color:#bbb;padding-left:20px;margin-bottom:16px}}
 ul li{{margin-bottom:8px}}
 a{{color:#a855f7}}
-footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#444;font-size:13px}}
-footer a{{color:#666;text-decoration:none}}
+footer{{border-top:1px solid #1a1a1a;padding:24px;text-align:center;color:#666;font-size:13px}}
+footer a{{color:#888;text-decoration:none}}
 </style></head>
 <body>
 <nav><a href="/" class="logo">Stack<span>Sight</span></a></nav>
@@ -1511,7 +1511,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
         lockout_key = f"admin_lockout:{ip}"
         fail_key = f"admin_fails:{ip}"
         if redis_client.get(lockout_key):
-            return HTMLResponse("<!DOCTYPE html><html><body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h1 style='color:#333;font-size:48px'>404</h1><p style='color:#666'>Page not found</p></div></body></html>", status_code=404)
+            return HTMLResponse("<!DOCTYPE html><html><body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'><div style='text-align:center'><h1 style='color:#333;font-size:48px'>404</h1><p style='color:#888'>Page not found</p></div></body></html>", status_code=404)
         pw_correct = pw == ADMIN_PASSWORD
         totp_ok = totp is not None and TOTP_SECRET and pyotp.TOTP(TOTP_SECRET).verify(totp, valid_window=1)
         if not (pw_correct and totp_ok):
@@ -1527,7 +1527,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
 <body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
 <div style='text-align:center'>
   <h1 style='font-size:48px;color:#333'>404</h1>
-  <p style='color:#666'>Page not found</p>
+  <p style='color:#888'>Page not found</p>
   <form method='get' style='margin-top:24px'>
     <input type='hidden' name='pw' value='{pw}'>
     <input name='totp' type='text' placeholder='Authenticator code' autofocus maxlength='6' inputmode='numeric'
@@ -1542,7 +1542,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
 <body style='font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>
 <div style='text-align:center'>
   <h1 style='font-size:48px;color:#333'>404</h1>
-  <p style='color:#666'>Page not found</p>
+  <p style='color:#888'>Page not found</p>
   <form method='get' style='margin-top:24px'>
     <input name='pw' type='password' placeholder='Password' autofocus
       style='background:#111;border:1px solid #333;color:#fff;padding:10px 16px;border-radius:8px;font-size:15px;margin-right:8px'>
@@ -1607,11 +1607,11 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;padding:32px}}
 h1{{font-size:28px;font-weight:700;color:#a855f7;margin-bottom:8px}}
-.sub{{color:#666;margin-bottom:32px;font-size:14px}}
+.sub{{color:#888;margin-bottom:32px;font-size:14px}}
 .stats{{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}}
 .stat{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:20px}}
 .stat-value{{font-size:32px;font-weight:700;color:#a855f7}}
-.stat-label{{color:#666;font-size:13px;margin-top:4px}}
+.stat-label{{color:#888;font-size:13px;margin-top:4px}}
 table{{width:100%;border-collapse:collapse;background:#111;border-radius:12px;overflow:hidden}}
 th{{background:#1a1a1a;padding:12px 16px;text-align:left;font-size:13px;color:#888;font-weight:500;border-bottom:1px solid #1f1f1f}}
 td{{padding:12px 16px;font-size:14px;border-bottom:1px solid #1a1a1a}}
@@ -1624,7 +1624,7 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
 .badge-business{{background:#0a1a2e;color:#3b82f6}}
 .bar{{background:#1f1f1f;border-radius:4px;height:4px;margin-top:6px;width:120px}}
 .bar-fill{{background:#a855f7;height:4px;border-radius:4px}}
-.back{{color:#666;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:24px}}
+.back{{color:#888;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:24px}}
 .back:hover{{color:#fff}}
 </style></head>
 <body>
