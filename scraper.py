@@ -38,10 +38,11 @@ TOTP_SECRET = os.environ.get("TOTP_SECRET", "")
 BASE_URL = os.environ.get("BASE_URL", "https://stacksight.org")
 
 STRIPE_PRICES = {
+    "starter": os.environ.get("STRIPE_PRICE_STARTER", ""),
     "pro": os.environ.get("STRIPE_PRICE_PRO", "price_1TrLQ6DUssNU8xAWD0eyqLx4"),
     "business": os.environ.get("STRIPE_PRICE_BUSINESS", "price_1TrLceDUssNU8xAWKWUSPLlR"),
 }
-PLAN_LIMITS = {"free": 10, "pro": 5000, "business": 50000}
+PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 
 #  Rate limiting 
 _rate_limit: dict = {}
@@ -319,7 +320,7 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
                 VALUES (%s, %s, %s, %s, %s, %s, TRUE)
             """, (api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
     else:
-        # Free signup: deduplicate on email — reuse the existing key if the user already has one.
+        # Free signup: deduplicate on email â reuse the existing key if the user already has one.
         cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (email,))
         row = cur.fetchone()
         if row and row[0]:
@@ -457,7 +458,7 @@ async def docs_page():
 <meta name="description" content="StackSight API documentation. Integrate real-time hiring intent signals and tech stack detection into your B2B workflows. Free tier available.">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="StackSight API Documentation">
-<meta property="og:description" content="Full reference for the StackSight API — hiring intent signals, tech stack detection, and domain enrichment endpoints.">
+<meta property="og:description" content="Full reference for the StackSight API â hiring intent signals, tech stack detection, and domain enrichment endpoints.">
 <meta property="og:url" content="https://stacksight.org/docs">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://stacksight.org/docs">
@@ -545,7 +546,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
   <div class="endpoint">
     <div class="endpoint-header"><span class="method post">POST</span><span class="path">/bulk</span><span style="font-size:11px;background:#1a1a0a;color:#eab308;border:1px solid #713f12;padding:2px 8px;border-radius:4px;margin-left:8px">Pro &amp; Business</span></div>
     <div class="endpoint-body">
-      <p style="color:#888;font-size:14px;margin-bottom:12px">Enrich up to 50 domains in a single request. Runs concurrently — same speed as one. Each domain counts as 1 request against your quota.</p>
+      <p style="color:#888;font-size:14px;margin-bottom:12px">Enrich up to 50 domains in a single request. Runs concurrently â same speed as one. Each domain counts as 1 request against your quota.</p>
       <table><tr><th>Body field</th><th>Type</th><th>Required</th><th>Description</th></tr>
       <tr><td>domains</td><td>array</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>List of domains to enrich. Max 50.</td></tr></table>
       <pre>curl -X POST "https://stacksight.org/bulk" \
@@ -591,7 +592,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 }</pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" — whether data was cached or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" â whether data was cached or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
@@ -604,7 +605,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
     <tr><td style="color:#fb923c">400</td><td>Missing or invalid domain</td></tr>
     <tr><td style="color:#fb923c">401</td><td>Missing or invalid API key</td></tr>
     <tr><td style="color:#fb923c">429</td><td>Rate limit exceeded</td></tr>
-    <tr><td style="color:#fb923c">500</td><td>Scrape failed  retry</td></tr>
+    <tr><td style="color:#fb923c">500</td><td>Scrape failed, please retry</td></tr>
   </table>
   <h2 id="sdks">Code Examples</h2>
   <pre># Python
@@ -775,7 +776,7 @@ footer a:hover{{color:#fff}}
 }})();
 </script>
 <div class="hero">
-  <div class="badge"> v{VERSION} &nbsp;&nbsp; Live API</div>
+  <div class="badge">Live Data</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
   <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment  all in one REST API.</p>
   <div class="cta-group">
@@ -794,7 +795,7 @@ footer a:hover{{color:#fff}}
   <p class="sub">Know who's ready to buy before they raise their hand.</p>
   <div class="use-grid">
     <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
-    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h3>Tech Stack Intel</h3><p>Know if a prospect runs Salesforce, HubSpot, or your competitor before your first call.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h3>Tech Stack Intel</h3><p>Know what frontend frameworks, analytics, and marketing tech your prospect runs before your first call.</p></div>
     <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
     <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
   </div>
@@ -840,12 +841,12 @@ footer a:hover{{color:#fff}}
   <h2>Why developers choose StackSight</h2>
   <p class="sub">We're not the biggest. We're the fastest, cheapest, and simplest.</p>
   <div class="why-grid">
-    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Real-time data</strong><p>We scrape live — not from a database that's months old. What you get is what's on their site today.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Real-time data</strong><p>We scrape live â days-fresh data — not a months-old database. What you get is what's on their site today.</p></div></div>
     <div class="why-item"><span class="why-check">&#10003;</span><div><strong>10x cheaper</strong><p>No enterprise pricing. No annual contracts. No minimum seats. Pay for what you use.</p></div></div>
     <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Zero friction</strong><p>Sign up, get a key, make a call. No sales calls, no demos, no approval process.</p></div></div>
     <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Simple API</strong><p>One endpoint, clean JSON, works in minutes. No SDKs required, no complex setup.</p></div></div>
   </div>
-  <p class="why-footer">Our competitors have broader data — contact info, firmographics, CRM integrations. If you need all that, use them. If you need fast, fresh, affordable hiring signals and tech stack data — that's us.</p>
+  <p class="why-footer">Our competitors have broader data â contact info, firmographics, CRM integrations. If you need all that, use them. If you need fast, fresh, affordable hiring signals and tech stack data â that's us.</p>
 </div>
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
@@ -891,7 +892,7 @@ footer a:hover{{color:#fff}}
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -1244,7 +1245,7 @@ async def demo(domain: str):
     return HTMLResponse(f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Demo: {esc} - StackSight</title>
-<meta name="description" content="See real-time hiring data and tech stack for {esc} via the StackSight API. Free demo — no signup required.">
+<meta name="description" content="See real-time hiring data and tech stack for {esc} via the StackSight API. Free demo â no signup required.">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="StackSight Demo: {esc}">
 <meta property="og:description" content="Live hiring intent and tech stack data for {esc}. Powered by StackSight.">
@@ -1312,7 +1313,7 @@ footer a:hover{{color:#fff}}
       <div class="company-name">{html.escape(str(data.get('company_name', clean)))}</div>
       <div class="company-domain">{esc}</div>
     </div>
-    <div class="badge-hiring" style="color:{"#22c55e" if data.get('is_hiring') else "#ef4444"};background:{"#0a1f0a" if data.get('is_hiring') else "#1f0a0a"};border:1px solid {"#22c55e" if data.get('is_hiring') else "#ef4444"}">{"● Hiring" if data.get('is_hiring') else "● Not Hiring"}</div>
+    <div class="badge-hiring" style="color:{"#22c55e" if data.get('is_hiring') else "#ef4444"};background:{"#0a1f0a" if data.get('is_hiring') else "#1f0a0a"};border:1px solid {"#22c55e" if data.get('is_hiring') else "#ef4444"}">{"â Hiring" if data.get('is_hiring') else "â Not Hiring"}</div>
   </div>
   <div class="grid">
     <div class="card">
@@ -1339,7 +1340,7 @@ footer a:hover{{color:#fff}}
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -1350,6 +1351,19 @@ footer a:hover{{color:#fff}}
 
 
 @app.get("/scrape")
+async def scrape_redirect(request: Request, domain: str = None, x_api_key: str = Header(None)):
+    """Backward-compat redirect to /v1/enrich"""
+    from fastapi.responses import RedirectResponse
+    url = request.url.path.replace("/scrape", "/v1/enrich")
+    return RedirectResponse(url=str(request.url).replace("/scrape", "/v1/enrich"), status_code=301)
+
+@app.post("/bulk")
+async def bulk_redirect(request: Request):
+    """Backward-compat redirect to /v1/bulk"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=str(request.url).replace("/bulk", "/v1/bulk"), status_code=308)
+
+@app.get("/v1/enrich")
 async def scrape(domain: str, x_api_key: str = Header(None)):
     domain = validate_domain(domain)
     api_key, plan = verify_api_key(x_api_key)
@@ -1368,7 +1382,7 @@ async def scrape(domain: str, x_api_key: str = Header(None)):
 @app.get("/analyze/{domain}")
 async def analyze(domain: str, x_api_key: str = Header(None), api_key: str = None):
     return await scrape(domain=domain, x_api_key=x_api_key or api_key)
-@app.post("/bulk")
+@app.post("/v1/bulk")
 async def bulk(request: Request, x_api_key: str = Header(None)):
     api_key, plan = verify_api_key(x_api_key)
     body = await request.json()
@@ -1485,7 +1499,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             background_tasks.add_task(provision_api_key, email, plan, customer_id, session_id)
 
     elif event["type"] == "invoice.payment_succeeded":
-        # Subscription renewed — reset usage for this customer
+        # Subscription renewed â reset usage for this customer
         invoice = event["data"]["object"]
         customer_id = invoice.get("customer")
         billing_reason = invoice.get("billing_reason", "")
@@ -1501,7 +1515,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             cur.close(); conn.close()
 
     elif event["type"] == "customer.subscription.deleted":
-        # Subscription cancelled — downgrade to free
+        # Subscription cancelled â downgrade to free
         subscription = event["data"]["object"]
         customer_id = subscription.get("customer")
         if customer_id:
@@ -1515,7 +1529,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             cur.close(); conn.close()
 
     elif event["type"] == "invoice.payment_failed":
-        # Payment failed — leave access for now but could notify user
+        # Payment failed â leave access for now but could notify user
         # Stripe will retry; subscription.deleted fires if all retries fail
         pass
 
@@ -1605,20 +1619,20 @@ footer a:hover{color:#fff}
 <h2>2. Description of Service</h2>
 <p>StackSight is a REST API that provides B2B sales intelligence derived from publicly available information. When you query a company domain, our systems retrieve that company's publicly accessible careers and website pages and return structured data including:</p>
 <ul>
-<li>Hiring signals — whether the company appears to be actively hiring, and open engineering and sales roles detected on its public careers page</li>
-<li>Tech stack detection — technologies identified from public job postings and website signals</li>
+<li>Hiring signals â whether the company appears to be actively hiring, and open engineering and sales roles detected on its public careers page</li>
+<li>Tech stack detection â technologies identified from public job postings and website signals</li>
 <li>Bulk domain enrichment for lists of domains, subject to your plan's limits</li>
 </ul>
-<p>StackSight only processes information that companies have chosen to publish on the public internet. We do not access private systems, authenticated pages, or paywalled content. There is no mobile app and no user-generated content — the service is API access plus a web dashboard for managing your account.</p>
+<p>StackSight only processes information that companies have chosen to publish on the public internet. We do not access private systems, authenticated pages, or paywalled content. There is no mobile app and no user-generated content â the service is API access plus a web dashboard for managing your account.</p>
 
 <h2>3. API Usage & Rate Limits</h2>
 <p>Access requires an API key tied to a plan:</p>
 <ul>
-<li><strong>Free</strong> — 10 requests, no credit card required</li>
-<li><strong>Pro</strong> — $49/month, 5,000 requests per month</li>
-<li><strong>Business</strong> — $199/month, 50,000 requests per month</li>
+<li><strong>Free</strong> â 10 requests, no credit card required</li>
+<li><strong>Pro</strong> â $49/month, 5,000 requests per month</li>
+<li><strong>Business</strong> â $199/month, 50,000 requests per month</li>
 </ul>
-<p>When you reach your plan's limit, further requests return HTTP <code>429</code> until your quota resets at the start of your next billing period or you upgrade. We do not silently bill overages — requests beyond your quota are rejected, not charged. We may also apply short-window rate limits (requests per minute) to protect service stability; these are documented in the <a href="/docs">API docs</a>.</p>
+<p>When you reach your plan's limit, further requests return HTTP <code>429</code> until your quota resets at the start of your next billing period or you upgrade. We do not silently bill overages â requests beyond your quota are rejected, not charged. We may also apply short-window rate limits (requests per minute) to protect service stability; these are documented in the <a href="/docs">API docs</a>.</p>
 
 <h2>4. Prohibited Uses</h2>
 <p>You agree not to:</p>
@@ -1633,16 +1647,16 @@ footer a:hover{color:#fff}
 </ul>
 
 <h2>5. Payment & Billing</h2>
-<p>Paid plans are billed monthly in advance through <strong>Stripe</strong>, our payment processor. We never see or store your card number. Subscriptions renew automatically each month until cancelled. You may cancel at any time from your dashboard or by emailing <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a>; cancellation takes effect at the end of the current billing period and you retain access until then. We do not provide refunds for billing periods that have already started or for unused requests, except where required by law. Prices may change with at least 30 days' notice before the change applies to your subscription.</p>
+<p>Paid plans are billed monthly in advance through <strong>Stripe</strong>, our payment processor. We never see or store your card number. Subscriptions renew automatically each month until cancelled. You may cancel at any time from your dashboard or by emailing <a href="mailto:support@stacksight.org">support@stacksight.org</a>; cancellation takes effect at the end of the current billing period and you retain access until then. We do not provide refunds for billing periods that have already started or for unused requests, except where required by law. Prices may change with at least 30 days' notice before the change applies to your subscription.</p>
 
 <h2>6. API Key Security</h2>
-<p>Your API key is a credential. You are responsible for keeping it secret and for all requests made with it, whether or not you authorized them. Do not embed your key in client-side code, public repositories, or shared documents. If you believe your key has been compromised, email <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a> immediately and we will revoke and reissue it. Usage incurred before revocation counts against your quota.</p>
+<p>Your API key is a credential. You are responsible for keeping it secret and for all requests made with it, whether or not you authorized them. Do not embed your key in client-side code, public repositories, or shared documents. If you believe your key has been compromised, email <a href="mailto:support@stacksight.org">support@stacksight.org</a> immediately and we will revoke and reissue it. Usage incurred before revocation counts against your quota.</p>
 
 <h2>7. Data & Privacy</h2>
 <p>Our collection and handling of your personal data (email address, usage data, IP address) is described in our <a href="/privacy">Privacy Policy</a>, which is incorporated into these Terms by reference.</p>
 
 <h2>8. Intellectual Property</h2>
-<p>StackSight owns the service, including the platform, software, API design, documentation, branding, and the systems that generate our data. These Terms grant you a limited, non-exclusive, non-transferable license to use the API and its output for your internal business purposes while your account is in good standing. You own the derived works you create from API output — enriched CRM records, reports, scoring models, and similar transformations are yours. The underlying facts returned by the API (a company's public job postings and technologies) are public information and are not claimed as proprietary by either party.</p>
+<p>StackSight owns the service, including the platform, software, API design, documentation, branding, and the systems that generate our data. These Terms grant you a limited, non-exclusive, non-transferable license to use the API and its output for your internal business purposes while your account is in good standing. You own the derived works you create from API output â enriched CRM records, reports, scoring models, and similar transformations are yours. The underlying facts returned by the API (a company's public job postings and technologies) are public information and are not claimed as proprietary by either party.</p>
 
 <h2>9. Disclaimer of Warranties</h2>
 <p>THE SERVICE AND ALL DATA ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. Data is extracted from public sources that change without notice; we do not warrant that it is accurate, complete, or current, and you should treat it as a signal rather than a source of truth. We do not guarantee uninterrupted or error-free operation, and we may modify or discontinue features with reasonable notice.</p>
@@ -1657,12 +1671,12 @@ footer a:hover{color:#fff}
 <p>We may update these Terms from time to time. For material changes we will notify active paying customers by email at least 14 days before the changes take effect, and we will update the date at the top of this page. Continued use of the service after changes take effect constitutes acceptance.</p>
 
 <h2>13. Contact</h2>
-<p>Questions about these Terms? Email <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a>.</p>
+<p>Questions about these Terms? Email <a href="mailto:support@stacksight.org">support@stacksight.org</a>.</p>
 </div>
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -1735,11 +1749,11 @@ footer a:hover{color:#fff}
 
 <h2>1. What We Collect</h2>
 <ul>
-<li><strong>Email address</strong> — required to create an account. We use passwordless magic link authentication, so your email is your identity. There are no passwords for us to store or leak.</li>
-<li><strong>API key</strong> — generated when you sign up, stored securely on our servers, and used only to authenticate your API requests.</li>
-<li><strong>Usage counts</strong> — the number of API requests you have used in the current billing period, so we can enforce plan quotas and show usage on your dashboard.</li>
-<li><strong>IP address</strong> — logged with requests for rate limiting, abuse prevention, and security investigation.</li>
-<li><strong>Payment information</strong> — handled entirely by <strong>Stripe</strong>. Your card number never touches our servers; we receive only a Stripe customer reference and subscription status.</li>
+<li><strong>Email address</strong> â required to create an account. We use passwordless magic link authentication, so your email is your identity. There are no passwords for us to store or leak.</li>
+<li><strong>API key</strong> â generated when you sign up, stored securely on our servers, and used only to authenticate your API requests.</li>
+<li><strong>Usage counts</strong> â the number of API requests you have used in the current billing period, so we can enforce plan quotas and show usage on your dashboard.</li>
+<li><strong>IP address</strong> â logged with requests for rate limiting, abuse prevention, and security investigation.</li>
+<li><strong>Payment information</strong> â handled entirely by <strong>Stripe</strong>. Your card number never touches our servers; we receive only a Stripe customer reference and subscription status.</li>
 </ul>
 
 <h2>2. What We Don't Collect</h2>
@@ -1770,9 +1784,9 @@ footer a:hover{color:#fff}
 <h2>5. Third Parties</h2>
 <p>We share data only with the infrastructure providers needed to run the service:</p>
 <ul>
-<li><strong>Stripe</strong> — payment processing (<a href="https://stripe.com/privacy">Stripe's privacy policy</a>)</li>
-<li><strong>SendGrid / SMTP provider</strong> — delivery of transactional email only (magic links, receipts). We never send marketing blasts through it without your consent.</li>
-<li><strong>Railway</strong> — hosting infrastructure where the application and database run</li>
+<li><strong>Stripe</strong> â payment processing (<a href="https://stripe.com/privacy">Stripe's privacy policy</a>)</li>
+<li><strong>SendGrid / SMTP provider</strong> â delivery of transactional email only (magic links, receipts). We never send marketing blasts through it without your consent.</li>
+<li><strong>Railway</strong> â hosting infrastructure where the application and database run</li>
 </ul>
 <p>No advertising networks. No data brokers. No one else.</p>
 
@@ -1780,7 +1794,7 @@ footer a:hover{color:#fff}
 <p>We do not sell, rent, or trade your personal information to anyone, for any purpose. The data our API returns about companies is derived from publicly available web pages and does not include our users' personal data.</p>
 
 <h2>7. Your Rights</h2>
-<p>You can access, correct, or delete your personal data at any time. To delete your account, email <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a> from your account email address and we will purge your data within 30 days, subject to the retention rules in Section 4. Depending on where you live (e.g. the EU/UK under GDPR, or California under CCPA), you may have additional statutory rights; email us and we will honor them.</p>
+<p>You can access, correct, or delete your personal data at any time. To delete your account, email <a href="mailto:support@stacksight.org">support@stacksight.org</a> from your account email address and we will purge your data within 30 days, subject to the retention rules in Section 4. Depending on where you live (e.g. the EU/UK under GDPR, or California under CCPA), you may have additional statutory rights; email us and we will honor them.</p>
 
 <h2>8. Security</h2>
 <ul>
@@ -1795,12 +1809,12 @@ footer a:hover{color:#fff}
 <p>If we make material changes to this policy, we will notify account holders by email before the changes take effect and update the date at the top of this page.</p>
 
 <h2>10. Contact</h2>
-<p>Privacy questions or requests: <a href="mailto:ngryn@stacksight.org">ngryn@stacksight.org</a></p>
+<p>Privacy questions or requests: <a href="mailto:support@stacksight.org">support@stacksight.org</a></p>
 </div>
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:ngryn@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -1877,7 +1891,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
       style='background:#a855f7;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:15px;cursor:pointer'>Enter</button>
   </form>
 </div></body></html>""", status_code=404)
-        # Both factors correct — clear fail counter, set verified cookie
+        # Both factors correct â clear fail counter, set verified cookie
         redis_client.delete(fail_key)
         admin_token = secrets.token_hex(32)
         redis_client.setex(f"admin_session:{admin_token}", 3600, "1")
@@ -1957,7 +1971,7 @@ code{{font-size:12px;color:#a855f7;background:#1a0a2e;padding:2px 6px;border-rad
 .back:hover{{color:#fff}}
 </style></head>
 <body>
-<a href="/" class="back">← Back to site</a>
+<a href="/" class="back">â Back to site</a>
 <h1>Admin Dashboard</h1>
 <p class="sub">Logged in as {email}</p>
 <div class="stats">
