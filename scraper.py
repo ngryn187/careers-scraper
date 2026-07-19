@@ -1331,6 +1331,49 @@ async def scrape(domain: str, x_api_key: str = Header(None)):
 @app.get("/analyze/{domain}")
 async def analyze(domain: str, x_api_key: str = Header(None), api_key: str = None):
     return await scrape(domain=domain, x_api_key=x_api_key or api_key)
+@app.post("/bulk")
+async def bulk(request: Request, x_api_key: str = Header(None)):
+    api_key, plan = verify_api_key(x_api_key)
+    body = await request.json()
+    domains = body.get("domains", [])
+    if not domains:
+        raise HTTPException(status_code=400, detail="Provide a list of domains")
+    if len(domains) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 domains per request")
+
+    # Check they have enough quota for all domains
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT requests_used, requests_limit FROM api_keys WHERE api_key=%s", (api_key,))
+    row = cur.fetchone()
+    cur.close(); conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    used, limit = row
+    remaining = limit - used
+    if remaining < len(domains):
+        raise HTTPException(status_code=429, detail=f"Not enough quota: {remaining} requests remaining, {len(domains)} needed")
+
+    async def process_domain(domain: str):
+        clean = domain.lower().strip().rstrip("/").replace("https://", "").replace("http://", "")
+        cache_key = f"domain:{clean}"
+        cached = redis_client.get(cache_key)
+        if cached:
+            increment_usage(api_key)
+            return {"domain": clean, "source": "cache", "data": json.loads(cached)}
+        try:
+            raw_text, url, status = await scrape_page(clean)
+            extracted = extract_with_openai(raw_text)
+            redis_client.setex(cache_key, 604800, json.dumps(extracted))
+            increment_usage(api_key)
+            return {"domain": clean, "source": "live", "data": extracted}
+        except Exception as e:
+            return {"domain": clean, "source": "error", "error": str(e)}
+
+    results = await asyncio.gather(*[process_domain(d) for d in domains])
+    return {"results": list(results), "count": len(results)}
+
+
 
 
 @app.get("/usage")
