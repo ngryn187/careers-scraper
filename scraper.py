@@ -1949,7 +1949,7 @@ footer a:hover{color:#fff}
 <h2>3. API Usage & Rate Limits</h2>
 <p>Access requires an API key tied to a plan:</p>
 <ul>
-<li><strong>Free</strong> -- 10 requests, no credit card required</li>
+<li><strong>Free</strong> -- 25 requests, no credit card required</li>
 <li><strong>Pro</strong> -- $49/month, 5,000 requests per month</li>
 <li><strong>Business</strong> -- $199/month, 50,000 requests per month</li>
 </ul>
