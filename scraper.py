@@ -46,8 +46,8 @@ PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 
 #  Rate limiting 
 _rate_limit: dict = {}
-RATE_LIMIT_MAX = 20
 RATE_LIMIT_WINDOW = 60
+RATE_LIMITS = {"free": 10, "starter": 60, "pro": 300, "business": 1000}
 
 #  Redis / App 
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
@@ -188,14 +188,15 @@ def create_session(email: str, response: Response) -> str:
     return token
 
 #  Rate limiting 
-def check_rate_limit(api_key: str):
+def check_rate_limit(api_key: str, plan: str = "free"):
     now = time.time()
     window_start = now - RATE_LIMIT_WINDOW
     if api_key not in _rate_limit:
         _rate_limit[api_key] = []
     _rate_limit[api_key] = [t for t in _rate_limit[api_key] if t > window_start]
-    if len(_rate_limit[api_key]) >= RATE_LIMIT_MAX:
-        raise HTTPException(status_code=429, detail="Rate limit exceeded. Max 20 requests/minute.")
+    limit = RATE_LIMITS.get(plan, 10)
+    if len(_rate_limit[api_key]) >= limit:
+        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {limit} requests/minute.")
     _rate_limit[api_key].append(now)
 
 #  API key auth 
@@ -215,7 +216,7 @@ def verify_api_key(x_api_key: str):
         raise HTTPException(status_code=403, detail="API key deactivated")
     if used >= limit:
         raise HTTPException(status_code=429, detail=f"Request limit reached ({limit} for {plan} plan). Upgrade at stacksight.org")
-    check_rate_limit(x_api_key)
+    check_rate_limit(x_api_key, plan)
     return x_api_key, plan
 
 def increment_usage(api_key: str):
