@@ -531,7 +531,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 </div>
 <div class="main">
   <h1>API Documentation</h1>
-  <p style="font-size:17px;color:#bbb;margin-bottom:32px">Real-time hiring intent signals, tech stack detection, and bulk domain enrichment.</p>
+  <p style="font-size:17px;color:#bbb;margin-bottom:32px">Turn a domain into a complete company profile -- hiring signals, tech stack, and enrichment data in one API call.</p>
   <h2 id="quickstart" style="border-top:none;margin-top:0;padding-top:0">Quick Start</h2>
   <p>Get your free API key at <a href="/#signup" style="color:#a855f7">stacksight.org</a>, then:</p>
   <pre>curl -X GET "https://stacksight.org/v1/enrich?domain=stripe.com" -H "X-API-Key: ss_your_key"</pre>
@@ -817,7 +817,7 @@ footer a:hover{{color:#fff}}
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
   <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment  all in one REST API.</p>
   <div class="cta-group">
-    <a href="#signup" class="btn-primary"> Get Free API Key</a>
+    <a href="#signup" class="btn-primary"> Start for Free</a>
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
   <div class="hero-demo">
@@ -853,8 +853,8 @@ footer a:hover{{color:#fff}}
   <div class="stat"><div class="stat-num">3</div><div class="stat-label">Lines to integrate</div></div>
 </div>
 <div class="use-cases">
-  <h2>Built for revenue teams</h2>
-  <p class="sub">Know who's ready to buy before they raise their hand.</p>
+  <h2>Built for teams that move fast</h2>
+  <p class="sub">From sales to engineering -- StackSight gives every team the domain intelligence they need.</p>
   <div class="use-grid">
     <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
     <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h3>Tech Stack Intel</h3><p>Know what frontend frameworks, analytics, and marketing tech your prospect runs before your first call.</p></div>
