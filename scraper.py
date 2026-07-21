@@ -845,7 +845,7 @@ footer a:hover{{color:#fff}}
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
-      btn.disabled = false; btn.textContent = 'Analyze â';
+      btn.disabled = false; btn.textContent = 'Analyze Ã¢ÂÂ';
     }}
   }}
   document.addEventListener('DOMContentLoaded', function() {{
@@ -894,7 +894,7 @@ footer a:hover{{color:#fff}}
 </div>
 <div class="signup-section" id="signup">
   <h2>Start for free</h2>
-  <p>10 lookups  no credit card  instant delivery</p>
+  <p>25 lookups &nbsp;&bull;&nbsp; no credit card &nbsp;&bull;&nbsp; instant delivery</p>
   <div class="form-row">
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
     <button onclick="signup()">Get My Free Key</button>
