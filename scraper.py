@@ -41,8 +41,6 @@ STRIPE_PRICES = {
     "starter": os.environ.get("STRIPE_PRICE_STARTER", ""),
     "pro": os.environ.get("STRIPE_PRICE_PRO", "price_1TrLQ6DUssNU8xAWD0eyqLx4"),
     "business": os.environ.get("STRIPE_PRICE_BUSINESS", "price_1TrLceDUssNU8xAWKWUSPLlR"),
-    "pro_annual": os.environ.get("STRIPE_PRICE_PRO_ANNUAL", ""),
-    "business_annual": os.environ.get("STRIPE_PRICE_BUSINESS_ANNUAL", ""),
 }
 PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 
@@ -663,7 +661,7 @@ window.addEventListener('scroll',()=>{
   links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
 });
 </script>
-<style>.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px}.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s}.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px}.billed-annually{font-size:12px;color:#aaa;margin-top:4px}</style><script>function setBilling(mode){document.getElementById("toggle-monthly").classList.toggle("active",mode==="monthly");document.getElementById("toggle-annual").classList.toggle("active",mode==="annual");document.querySelectorAll(".monthly-price").forEach(function(el){el.style.display=mode==="monthly"?"":"none"});document.querySelectorAll(".annual-price").forEach(function(el){el.style.display=mode==="annual"?"":"none"});document.querySelectorAll(".checkout-link").forEach(function(el){el.href=mode==="monthly"?el.dataset.monthly:el.dataset.annual})}</script></body></html>""")
+</body></html>""")
 
 @app.get("/", response_class=HTMLResponse)
 async def landing():
@@ -888,7 +886,7 @@ footer a:hover{{color:#fff}}
 </div>
 <div class="signup-section" id="signup">
   <h2>Start for free</h2>
-  <p>25 lookups  no credit card  instant delivery</p>
+  <p>10 lookups  no credit card  instant delivery</p>
   <div class="form-row">
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
     <button onclick="signup()">Get My Free Key</button>
@@ -915,10 +913,6 @@ footer a:hover{{color:#fff}}
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
   <p class="sub">Scale as you grow. Cancel any time.</p>
-  <div class="billing-toggle">
-    <button class="toggle-btn active" id="toggle-monthly" onclick="setBilling('monthly')">Monthly</button>
-    <button class="toggle-btn" id="toggle-annual" onclick="setBilling('annual')">Annual <span class="save-badge">Save 20%</span></button>
-  </div>
   <div class="plans">
     <div class="plan">
       <div class="plan-name">Free</div>
@@ -937,19 +931,17 @@ footer a:hover{{color:#fff}}
     <div class="plan featured">
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
-      <div class="plan-price monthly-price">$49<span>/mo</span></div>
-      <div class="plan-price annual-price" style="display:none">$39<span>/mo</span><div class="billed-annually">billed annually ($468/yr)</div></div>
+      <div class="plan-price">$49<span>/mo</span></div>
       <div class="plan-limit">5,000 requests/month</div>
-      <ul><li>5,000 API requests/month</li><li>300 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro" class="btn-pp checkout-link" data-monthly="/checkout/pro" data-annual="/checkout/pro_annual">Get Pro </a>
+      <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
+      <a href="/checkout/pro" class="btn-pp">Get Pro </a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
-      <div class="plan-price monthly-price">$199<span>/mo</span></div>
-      <div class="plan-price annual-price" style="display:none">$166<span>/mo</span><div class="billed-annually">billed annually ($1,992/yr)</div></div>
+      <div class="plan-price">$199<span>/mo</span></div>
       <div class="plan-limit">50,000 requests/month</div>
-      <ul><li>50,000 API requests/month</li><li>1,000 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business" class="btn-pp checkout-link" data-monthly="/checkout/business" data-annual="/checkout/business_annual">Get Business </a>
+      <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
+      <a href="/checkout/business" class="btn-pp">Get Business </a>
     </div>
   </div>
 </div>
@@ -2333,7 +2325,7 @@ async function deleteUser(btn) {{
 document.querySelectorAll('.btn-toggle').forEach(b => b.addEventListener('click', () => toggleKey(b)));
 document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', () => deleteUser(b)));
 </script>
-<style>.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px}.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s}.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px}.billed-annually{font-size:12px;color:#aaa;margin-top:4px}</style><script>function setBilling(mode){document.getElementById("toggle-monthly").classList.toggle("active",mode==="monthly");document.getElementById("toggle-annual").classList.toggle("active",mode==="annual");document.querySelectorAll(".monthly-price").forEach(function(el){el.style.display=mode==="monthly"?"":"none"});document.querySelectorAll(".annual-price").forEach(function(el){el.style.display=mode==="annual"?"":"none"});document.querySelectorAll(".checkout-link").forEach(function(el){el.href=mode==="monthly"?el.dataset.monthly:el.dataset.annual})}</script></body></html>""")
+</body></html>""")
 
 @app.post("/admin/toggle-key")
 async def admin_toggle_key(request: Request):
