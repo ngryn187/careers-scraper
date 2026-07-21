@@ -456,157 +456,205 @@ async def docs_page():
     return HTMLResponse("""<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>API Docs - StackSight</title>
-<meta name="description" content="StackSight API documentation. Integrate real-time hiring intent signals and tech stack detection into your B2B workflows. Free tier available.">
-<meta name="robots" content="index,follow">
-<meta property="og:title" content="StackSight API Documentation">
-<meta property="og:description" content="Full reference for the StackSight API -- hiring intent signals, tech stack detection, and domain enrichment endpoints.">
-<meta property="og:url" content="https://stacksight.org/docs">
-<meta property="og:type" content="website">
-<link rel="canonical" href="https://stacksight.org/docs">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6;display:flex;min-height:100vh}
-nav{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:fixed;top:0;left:0;right:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}
-.logo{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}
-.nav-links a{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px}.nav-links a:hover{color:#fff}
-.nav-links .btn-login{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px}
-.sidebar{width:240px;flex-shrink:0;position:fixed;top:61px;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1a1a1a;padding:24px 0}
-.sidebar-section{padding:8px 20px;font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-top:16px}
-.sidebar a{display:block;padding:8px 20px;font-size:13px;color:#aaa;text-decoration:none;border-left:2px solid transparent}
-.sidebar a:hover{color:#ccc;background:#111}.sidebar a.active{color:#a855f7;border-left-color:#a855f7;background:#0f0518}
-.main{margin-left:240px;margin-top:61px;flex:1;padding:48px 60px;max-width:900px}
-h1{font-size:36px;font-weight:800;margin-bottom:8px}
-h2{font-size:22px;font-weight:700;margin:48px 0 16px;padding-top:48px;border-top:1px solid #1a1a1a}
-p{color:#b0b0b0;margin-bottom:16px;font-size:15px}
-.endpoint{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:12px;margin-bottom:24px;overflow:hidden}
-.endpoint-header{display:flex;align-items:center;gap:12px;padding:16px 20px;background:#111;border-bottom:1px solid #1f1f1f}
-.method{font-size:12px;font-weight:700;padding:3px 10px;border-radius:5px}
-.get{background:#0a2a1a;color:#22c55e;border:1px solid #166534}
-.post{background:#1a1a0a;color:#eab308;border:1px solid #713f12}
-.path{font-family:monospace;font-size:15px;color:#e5e5e5;font-weight:600}
-.endpoint-body{padding:20px}
-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14px}
-th{text-align:left;padding:10px 12px;background:#111;color:#777;font-size:12px;text-transform:uppercase;border-bottom:1px solid #1f1f1f}
-td{padding:10px 12px;border-bottom:1px solid #0f0f0f;color:#bbb}
-td:first-child{font-family:monospace;color:#a855f7;font-size:13px}
-pre{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;padding-top:44px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0;position:relative}
-pre::before{content:"";position:absolute;top:0;left:0;right:0;height:30px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;border-radius:7px 7px 0 0}
-pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:14px 0 0 #eab308,28px 0 0 #22c55e}
-.auth-box{background:#0f0518;border:1px solid #3b1a6e;border-radius:10px;padding:20px;margin-bottom:24px}
-.auth-box h4{color:#a855f7;font-size:14px;font-weight:600;margin-bottom:8px}
-.limits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
-.limit-card{background:#111;border:1px solid #1f1f1f;border-radius:8px;padding:16px;text-align:center}
-.limit-name{font-size:12px;color:#777;margin-bottom:4px}
-.limit-val{font-size:20px;font-weight:700;color:#a855f7}
-
-.hero-demo{{margin-top:48px;max-width:560px;margin-left:auto;margin-right:auto;text-align:center}}
-.hero-demo-label{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:16px}}
-.hero-demo-input-row{{display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;transition:border-color .2s;max-width:480px;margin:0 auto}}
-.hero-demo-input-row input{{flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none}}
-.hero-demo-input-row:focus-within{{border-color:#7c3aed}}.hero-demo-input-row input::placeholder{{color:#374151}}
-.hero-demo-input-row button{{padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}}
-.hero-demo-input-row button:hover{{opacity:.85}}.hero-demo-input-row button:disabled{{opacity:.5;cursor:not-allowed}}
-#hero-demo-result{{margin-top:10px;font-size:13px;color:#f87171;padding:8px;background:#1a0a2e;border-radius:6px}}
+body{background:#0a0a0a;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;min-height:100vh}
+a{color:#a855f7;text-decoration:none}
+a:hover{text-decoration:underline}
+/* Sidebar */
+.sidebar{width:240px;min-width:240px;background:#111;border-right:1px solid #1f1f1f;padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:0 20px 24px;font-size:18px;font-weight:700;color:#fff;border-bottom:1px solid #1f1f1f;margin-bottom:16px}
+.sidebar-logo span{color:#a855f7}
+.sidebar-section{padding:8px 20px 4px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;margin-top:12px}
+.sidebar a{display:block;padding:7px 20px;font-size:14px;color:#9ca3af;border-left:2px solid transparent;transition:all .15s}
+.sidebar a:hover,.sidebar a.active{color:#e5e7eb;border-left-color:#a855f7;background:rgba(168,85,247,.06);text-decoration:none}
+/* Main */
+.main{flex:1;padding:48px 56px;max-width:860px}
+h1{font-size:32px;font-weight:700;color:#fff;margin-bottom:8px}
+h2{font-size:22px;font-weight:600;color:#fff;margin:48px 0 16px;padding-top:48px;border-top:1px solid #1f1f1f}
+h2:first-of-type{margin-top:24px;padding-top:0;border-top:none}
+h3{font-size:15px;font-weight:600;color:#d1d5db;margin:24px 0 10px}
+p{color:#9ca3af;line-height:1.7;margin-bottom:12px;font-size:15px}
+/* Code */
+pre{background:#111;border:1px solid #1f1f1f;border-radius:10px;padding:18px 20px;overflow-x:auto;margin:16px 0}
+code{font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;color:#e5e7eb}
+.inline-code{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;padding:2px 7px;font-size:13px;color:#a855f7;font-family:monospace}
+/* Method badges */
+.method{display:inline-flex;align-items:center;gap:10px;margin-bottom:12px}
+.badge{font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 10px;border-radius:5px}
+.badge-get{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.badge-post{background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3)}
+.endpoint-path{font-family:monospace;font-size:16px;color:#fff;font-weight:600}
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th{text-align:left;padding:10px 14px;background:#111;color:#6b7280;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #1f1f1f}
+td{padding:10px 14px;border-bottom:1px solid #1a1a1a;color:#d1d5db;vertical-align:top}
+td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
+/* Rate limit pills */
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.plan-card{background:#111;border:1px solid #1f1f1f;border-radius:10px;padding:16px}
+.plan-card.pro{border-color:rgba(168,85,247,.4)}
+.plan-name{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:6px}
+.plan-limit{font-size:22px;font-weight:700;color:#fff}
+.plan-sub{font-size:12px;color:#6b7280;margin-top:2px}
+/* Nav */
+.topnav{display:none}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:-1px}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:#a855f7;border-bottom-color:#a855f7}
+.tab-content{display:none}
+.tab-content.active{display:block}
 </style>
 </head>
 <body>
-<nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/demo/stripe.com">Demo</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a></div></nav>
-<script>
-(function(){{
-  fetch('/usage',{{'credentials':'include'}}).then(r=>{{
-    if(r.ok){{r.json().then(d=>{{
-      var btn=document.getElementById('nav-auth-btn');
-      if(btn){{btn.textContent='My Account';btn.href='/dashboard';}}
-    }});}}  
-  }}).catch(function(){{}});
-}})();
-</script>
-<div class="sidebar">
+<nav class="sidebar">
+  <div class="sidebar-logo">Stack<span>Sight</span></div>
   <div class="sidebar-section">Getting Started</div>
-  <a href="#quickstart" class="active">Quick Start</a><a href="#auth">Authentication</a><a href="#limits">Rate Limits</a>
+  <a href="#quickstart">Quick Start</a>
+  <a href="#auth">Authentication</a>
+  <a href="#rate-limits">Rate Limits</a>
   <div class="sidebar-section">Endpoints</div>
-  <a href="#enrich">GET /v1/enrich</a><a href="#bulk">POST /v1/bulk</a><a href="#usage">GET /usage</a><a href="#webhooks">Webhooks</a>
+  <a href="#enrich">GET /scrape</a>
+  <a href="#bulk">POST /bulk</a>
+  <a href="#usage">GET /usage</a>
+  <a href="#webhooks">Webhooks</a>
   <div class="sidebar-section">Reference</div>
-  <a href="#response">Response Schema</a><a href="#errors">Error Codes</a><a href="#sdks">Code Examples</a>
-</div>
-<div class="main">
-  <h1>API Documentation</h1>
-  <p style="font-size:17px;color:#bbb;margin-bottom:32px">Turn a domain into a complete company profile -- hiring signals, tech stack, and enrichment data in one API call.</p>
-  <h2 id="quickstart" style="border-top:none;margin-top:0;padding-top:0">Quick Start</h2>
-  <p>Get your free API key at <a href="/#signup" style="color:#a855f7">stacksight.org</a>, then:</p>
-  <pre>curl -X GET "https://stacksight.org/v1/enrich?domain=stripe.com" -H "X-API-Key: ss_your_key"</pre>
-  <h2 id="auth">Authentication</h2>
-  <div class="auth-box"><h4>X-API-Key Header</h4><p style="color:#888;margin:0">Pass your key in the <code style="color:#a855f7">X-API-Key</code> header. Keys look like <code style="color:#22d3ee">ss_...</code></p></div>
-  <h2 id="limits">Rate Limits</h2>
-  <div class="limits">
-    <div class="limit-card"><div class="limit-name">Free</div><div class="limit-val">10</div><div style="font-size:11px;color:#666">total requests</div></div>
-    <div class="limit-card"><div class="limit-name">Pro</div><div class="limit-val">5,000</div><div style="font-size:11px;color:#666">per month</div></div>
-    <div class="limit-card"><div class="limit-name">Business</div><div class="limit-val">50,000</div><div style="font-size:11px;color:#666">per month</div></div>
+  <a href="#schema">Response Schema</a>
+  <a href="#errors">Error Codes</a>
+  <a href="#examples">Code Examples</a>
+  <div style="padding:24px 20px 0;margin-top:auto">
+    <a href="/" style="font-size:13px;color:#6b7280">← Back to Home</a>
   </div>
-  <h2 id="enrich">GET /v1/enrich</h2>
-  <div class="endpoint">
-    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/v1/enrich</span></div>
-    <div class="endpoint-body">
-      <table><tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
-      <tr><td>domain</td><td>string</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>Domain to enrich, e.g. stripe.com</td></tr></table>
-      <pre>curl "https://stacksight.org/v1/enrich?domain=notion.so" -H "X-API-Key: ss_your_key"</pre>
-      <h4>Example Response</h4>
-      <pre>{
+</nav>
+<main class="main">
+  <h1>API Documentation</h1>
+  <p>Turn any domain into a complete company profile — hiring signals, tech stack, and enrichment data in one REST API call.</p>
+
+  <h2 id="quickstart">Quick Start</h2>
+  <p>Get your free API key at <a href="/">stacksight.org</a>, then make your first call:</p>
+  <pre><code>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
+  -H "X-API-Key: ss_your_key"</code></pre>
+
+  <h2 id="auth">Authentication</h2>
+  <h3>X-API-Key Header</h3>
+  <p>Pass your key in the <span class="inline-code">X-API-Key</span> header on every request. API keys are prefixed with <span class="inline-code">ss_</span>.</p>
+  <pre><code>-H "X-API-Key: ss_abc123..."</code></pre>
+  <p>You can find your API key in your <a href="/dashboard">dashboard</a> at any time.</p>
+
+  <h2 id="rate-limits">Rate Limits</h2>
+  <p>Requests are rate-limited per minute per API key. Monthly quotas reset on your billing date.</p>
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-limit">25</div>
+      <div class="plan-sub">total requests</div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-limit">500</div>
+      <div class="plan-sub">per month · 60/min</div>
+    </div>
+    <div class="plan-card pro">
+      <div class="plan-name">Pro</div>
+      <div class="plan-limit">5,000</div>
+      <div class="plan-sub">per month · 300/min</div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Business</div>
+      <div class="plan-limit">50,000</div>
+      <div class="plan-sub">per month · 1,000/min</div>
+    </div>
+  </div>
+  <p>When you exceed the rate limit you'll receive a <span class="inline-code">429 Too Many Requests</span> response. Retry after the window resets (60 seconds).</p>
+
+  <h2 id="enrich">GET /scrape</h2>
+  <div class="method">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/scrape</span>
+  </div>
+  <p>Enrich a single domain with hiring intent signals and tech stack detection.</p>
+  <table>
+    <tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    <tr><td>domain</td><td>string</td><td>Yes</td><td>Domain to enrich, e.g. <span class="inline-code">stripe.com</span></td></tr>
+  </table>
+  <pre><code>curl "https://stacksight.org/scrape?domain=notion.so" \
+  -H "X-API-Key: ss_your_key"</code></pre>
+  <h3>Example Response</h3>
+  <pre><code>{
   "domain": "notion.so",
   "source": "live",
   "data": {
     "company_name": "Notion",
     "is_hiring": true,
-    "engineering_roles": 12,
-    "sales_roles": 4,
+    "engineering_roles": ["Backend Engineer", "ML Engineer"],
+    "sales_roles": ["Account Executive"],
     "detected_tech_stack": ["React", "Cloudflare", "Google Analytics", "Intercom"],
     "cached": false
   }
-}</pre>
-    </div>
+}</code></pre>
+
+  <h2 id="bulk">POST /bulk</h2>
+  <div class="method">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/bulk</span>
+    <span style="font-size:12px;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:4px;padding:2px 8px">Pro &amp; Business</span>
   </div>
-  <h2 id="bulk">POST /v1/bulk</h2>
-  <div class="endpoint">
-    <div class="endpoint-header"><span class="method post">POST</span><span class="path">/v1/bulk</span><span style="font-size:11px;background:#1a1a0a;color:#eab308;border:1px solid #713f12;padding:2px 8px;border-radius:4px;margin-left:8px">Pro &amp; Business</span></div>
-    <div class="endpoint-body">
-      <p style="color:#888;font-size:14px;margin-bottom:12px">Enrich up to 50 domains in a single request. Runs concurrently -- same speed as one. Each domain counts as 1 request against your quota.</p>
-      <table><tr><th>Body field</th><th>Type</th><th>Required</th><th>Description</th></tr>
-      <tr><td>domains</td><td>array</td><td style="color:#ef4444;font-size:11px;font-weight:700">required</td><td>List of domains to enrich. Max 50.</td></tr></table>
-      <pre>curl -X POST "https://stacksight.org/bulk" \
+  <p>Enrich up to 50 domains in a single request. Runs concurrently — same speed as one. Each domain counts as 1 request against your monthly quota.</p>
+  <table>
+    <tr><th>Body Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+    <tr><td>domains</td><td>array</td><td>Yes</td><td>List of domains to enrich. Max 50.</td></tr>
+  </table>
+  <pre><code>curl -X POST "https://stacksight.org/bulk" \
   -H "X-API-Key: ss_your_key" \
   -H "Content-Type: application/json" \
-  -d '{"domains": ["stripe.com", "notion.so", "vercel.com"]}'</pre>
-      <pre>{
+  -d '{"domains": ["stripe.com", "notion.so", "vercel.com"]}'</code></pre>
+  <pre><code>{
   "results": [
     {"domain": "stripe.com", "source": "cache", "data": {"company_name": "Stripe", "is_hiring": true, ...}},
-    {"domain": "notion.so",  "source": "live",  "data": {"company_name": "Notion", "is_hiring": true, ...}},
-    {"domain": "vercel.com", "source": "cache", "data": {"company_name": "Vercel", "is_hiring": true, ...}}
+    {"domain": "notion.so",  "source": "live",  "data": {"company_name": "Notion",  "is_hiring": true, ...}},
+    {"domain": "vercel.com", "source": "cache", "data": {"company_name": "Vercel",  "is_hiring": true, ...}}
   ],
   "count": 3
-}</pre>
-    </div>
-  </div>
+}</code></pre>
+
   <h2 id="usage">GET /usage</h2>
-  <div class="endpoint">
-    <div class="endpoint-header"><span class="method get">GET</span><span class="path">/usage</span></div>
-    <div class="endpoint-body">
-      <p style="color:#888;font-size:14px;margin-bottom:12px">Returns your current plan and usage stats.</p>
-      <pre>curl "https://stacksight.org/usage" -H "X-API-Key: ss_your_key"</pre>
-      <pre>{
+  <div class="method">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/usage</span>
+  </div>
+  <p>Returns your current plan, usage stats, and remaining quota.</p>
+  <pre><code>curl "https://stacksight.org/usage" \
+  -H "X-API-Key: ss_your_key"</code></pre>
+  <pre><code>{
   "plan": "pro",
   "requests_used": 142,
   "requests_limit": 5000,
   "requests_remaining": 4858,
   "created_at": "2026-07-01T12:00:00"
-}</pre>
-    </div>
+}</code></pre>
+
+  <h2 id="webhooks">Webhooks</h2>
+  <div class="method">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/webhooks/stripe</span>
   </div>
-  <h2 id="response">Response Schema</h2>
-  <p>All responses wrap the result in a <code style="color:#a855f7">data</code> object:</p>
-  <pre>{
-  "source": "cache",  // or "live" for fresh scrape
+  <p>StackSight uses Stripe webhooks to handle subscription lifecycle events automatically.</p>
+  <table>
+    <tr><th>Event</th><th>Effect</th></tr>
+    <tr><td>checkout.session.completed</td><td>Provisions API key and upgrades plan</td></tr>
+    <tr><td>invoice.payment_succeeded</td><td>Resets monthly usage quota on billing cycle</td></tr>
+    <tr><td>customer.subscription.deleted</td><td>Downgrades account to free plan</td></tr>
+  </table>
+  <p>Webhook signatures are verified using your Stripe webhook secret. Business plan customers can contact <a href="mailto:support@stacksight.org">support@stacksight.org</a> to configure custom webhook destinations.</p>
+
+  <h2 id="schema">Response Schema</h2>
+  <p>All responses wrap the result in a <span class="inline-code">data</span> object:</p>
+  <pre><code>{
+  "source": "cache",   // or "live" for a fresh scrape
   "data": {
     "company_name": "Stripe",
     "is_hiring": true,
@@ -614,57 +662,63 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
     "sales_roles": ["Account Executive", "Solutions Engineer"],
     "detected_tech_stack": ["React", "AWS", "Cloudflare"]
   }
-}</pre>
+}</code></pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" -- whether data was cached or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" — whether data was served from cache or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
     <tr><td>data.sales_roles</td><td>array</td><td>Sales job titles detected</td></tr>
-    <tr><td>data.detected_tech_stack</td><td>array</td><td>Technologies found on careers/jobs pages</td></tr>
+    <tr><td>data.detected_tech_stack</td><td>array</td><td>Technologies found on their careers/jobs pages</td></tr>
   </table>
-    <h2 id="webhooks">Webhooks</h2>
-  <div class="endpoint">
-    <div class="endpoint-header"><span class="method post">POST</span><span class="path">/webhooks/stripe</span></div>
-    <div class="endpoint-body">
-      <p>StackSight uses webhooks to handle subscription lifecycle events automatically.</p>
-      <table>
-        <tr><th>Event</th><th>Effect</th></tr>
-        <tr><td><code>checkout.session.completed</code></td><td>Provisions API key and upgrades plan</td></tr>
-        <tr><td><code>invoice.payment_succeeded</code></td><td>Resets monthly usage quota on billing cycle</td></tr>
-        <tr><td><code>customer.subscription.deleted</code></td><td>Downgrades account to free plan</td></tr>
-      </table>
-      <p>Webhook signatures are verified using your Stripe webhook secret. Business plan customers can contact <a href="mailto:support@stacksight.org">support@stacksight.org</a> to configure custom webhook destinations.</p>
-    </div>
-  </div>
-<h2 id="errors">Error Codes</h2>
+
+  <h2 id="errors">Error Codes</h2>
   <table>
     <tr><th>Status</th><th>Meaning</th></tr>
-    <tr><td style="color:#fb923c">400</td><td>Missing or invalid domain</td></tr>
-    <tr><td style="color:#fb923c">401</td><td>Missing or invalid API key</td></tr>
-    <tr><td style="color:#fb923c">429</td><td>Rate limit exceeded</td></tr>
-    <tr><td style="color:#fb923c">500</td><td>Scrape failed, please retry</td></tr>
+    <tr><td>400</td><td>Missing or invalid domain parameter</td></tr>
+    <tr><td>401</td><td>Missing or invalid API key</td></tr>
+    <tr><td>429</td><td>Rate limit exceeded — retry after 60s</td></tr>
+    <tr><td>500</td><td>Scrape failed, please retry</td></tr>
   </table>
-  <h2 id="sdks">Code Examples</h2>
-  <pre># Python
-import requests
-r = requests.get("https://stacksight.org/scrape", params={"domain":"stripe.com"}, headers={"X-API-Key":"ss_your_key"})
-print(r.json())</pre>
-  <pre>// JavaScript
-const res = await fetch('https://stacksight.org/scrape?domain=stripe.com', { headers: {'X-API-Key':'ss_your_key'} });
-console.log(await res.json());</pre>
-</div>
+
+  <h2 id="examples">Code Examples</h2>
+  <h3>Python</h3>
+  <pre><code>import requests
+
+r = requests.get(
+    "https://stacksight.org/scrape",
+    params={"domain": "stripe.com"},
+    headers={"X-API-Key": "ss_your_key"}
+)
+print(r.json())</code></pre>
+  <h3>JavaScript</h3>
+  <pre><code>const res = await fetch('https://stacksight.org/scrape?domain=stripe.com', {
+  headers: { 'X-API-Key': 'ss_your_key' }
+});
+console.log(await res.json());</code></pre>
+  <h3>Node.js (axios)</h3>
+  <pre><code>const axios = require('axios');
+const { data } = await axios.get('https://stacksight.org/scrape', {
+  params: { domain: 'stripe.com' },
+  headers: { 'X-API-Key': 'ss_your_key' }
+});
+console.log(data);</code></pre>
+</main>
 <script>
+// Highlight active sidebar link on scroll
+const sections = document.querySelectorAll('h2[id]');
 const links = document.querySelectorAll('.sidebar a');
-window.addEventListener('scroll',()=>{
-  let cur='';
-  document.querySelectorAll('[id]').forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});
-  links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
 });
 </script>
-</body></html>""")
-
+</body>
+</html>""")
 @app.get("/", response_class=HTMLResponse)
 async def landing():
     return HTMLResponse(f"""<!DOCTYPE html>
@@ -845,7 +899,7 @@ footer a:hover{{color:#fff}}
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
-      btn.disabled = false; btn.textContent = 'Analyze Ã¢ÂÂ';
+      btn.disabled = false; btn.textContent = 'Analyze ÃÂ¢ÃÂÃÂ';
     }}
   }}
   document.addEventListener('DOMContentLoaded', function() {{
