@@ -499,13 +499,13 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 .limit-name{font-size:12px;color:#777;margin-bottom:4px}
 .limit-val{font-size:20px;font-weight:700;color:#a855f7}
 
-.hero-demo{{margin-top:32px;max-width:520px;margin-left:auto;margin-right:auto}}
-.hero-demo-label{{font-size:13px;color:#888;margin-bottom:10px}}
-.hero-demo-input-row{{display:flex;gap:8px}}
-.hero-demo-input-row input{{flex:1;padding:12px 16px;background:#1a0a2e;border:1px solid #3b1a6e;border-radius:8px;color:#fff;font-size:15px;outline:none}}
-.hero-demo-input-row input:focus{{border-color:#a855f7}}
-.hero-demo-input-row button{{padding:12px 20px;background:#a855f7;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap}}
-.hero-demo-input-row button:hover{{background:#9333ea}}
+.hero-demo{{margin-top:48px;max-width:560px;margin-left:auto;margin-right:auto;text-align:center}}
+.hero-demo-label{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:16px}}
+.hero-demo-input-row{{display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;transition:border-color .2s;max-width:480px;margin:0 auto}}
+.hero-demo-input-row input{{flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none}}
+.hero-demo-input-row:focus-within{{border-color:#7c3aed}}.hero-demo-input-row input::placeholder{{color:#374151}}
+.hero-demo-input-row button{{padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}}
+.hero-demo-input-row button:hover{{opacity:.85}}.hero-demo-input-row button:disabled{{opacity:.5;cursor:not-allowed}}
 #hero-demo-result{{margin-top:10px;font-size:13px;color:#f87171;padding:8px;background:#1a0a2e;border-radius:6px}}
 </style>
 </head>
@@ -829,7 +829,7 @@ footer a:hover{{color:#fff}}
     <div id="hero-demo-result" style="display:none"></div>
   </div>
   <script>
-  async function heroDemo() {{
+  window.heroDemo = async function() {{
     const domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
     const btn = document.getElementById('hero-demo-btn');
     const result = document.getElementById('hero-demo-result');
