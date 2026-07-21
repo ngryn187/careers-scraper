@@ -255,8 +255,8 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str):
     t = threading.Thread(target=_send_email_sync, args=(to_email, subject, html_body, text_body), daemon=True)
     t.start()
 
-def send_magic_link_email(to_email: str, token: str):
-    url = f"{BASE_URL}/auth?token={token}"
+def send_magic_link_email(to_email: str, token: str, next_url: str = ""):
+    url = f"{BASE_URL}/auth?token={token}" + (f"&next={next_url}" if next_url else "")
     subject = "Your StackSight login link"
     html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#fff;padding:40px;border-radius:12px">
       <h1 style="color:#a855f7;margin-bottom:4px">StackSight</h1>
@@ -1257,7 +1257,7 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     if get_session_email(request):
-        return RedirectResponse("/dashboard")
+        return RedirectResponse(next if next.startswith("/") else "/dashboard")
     return HTMLResponse("""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -1343,7 +1343,7 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
 
 
 @app.get("/auth")
-async def auth(token: str, request: Request):
+async def auth(token: str, request: Request, next: str = "/dashboard"):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT email, used, expires_at FROM magic_links WHERE token=%s", (token,))
