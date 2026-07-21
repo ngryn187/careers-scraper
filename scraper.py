@@ -936,7 +936,7 @@ footer a:hover{{color:#fff}}
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
       <div class="plan-price" id="pro-price" style="display:none">$49<span>/mo</span></div>
-      <div id="pro-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$39<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $468/yr &bull; save $120</div></div>
+      <div id="pro-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$39<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $468/yr &bull; save 20%</div></div>
       <div class="plan-limit">5,000 requests/month</div>
       <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
       <a href="/checkout/pro_annual" class="btn-pp" id="pro-btn">Get Pro </a>
@@ -944,7 +944,7 @@ footer a:hover{{color:#fff}}
     <div class="plan">
       <div class="plan-name">Business</div>
       <div class="plan-price" id="biz-price" style="display:none">$199<span>/mo</span></div>
-      <div id="biz-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$166<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $1,992/yr &bull; save $396</div></div>
+      <div id="biz-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$166<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $1,992/yr &bull; save 20%</div></div>
       <div class="plan-limit">50,000 requests/month</div>
       <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
       <a href="/checkout/business_annual" class="btn-pp" id="biz-btn">Get Business </a>
