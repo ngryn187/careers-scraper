@@ -851,7 +851,9 @@ footer a:hover{{color:#fff}}
       btn.disabled = false;
       btn.textContent = 'Analyze →';
     }}
-  }}ered by StackSight.">
+  }}
+  </script>
+</div>
 <meta property="og:url" content="https://stacksight.org/demo/{url_clean}">
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://stacksight.org/demo/{url_clean}">
