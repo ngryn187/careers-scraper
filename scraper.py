@@ -822,37 +822,36 @@ footer a:hover{{color:#fff}}
     <a href="#signup" class="btn-primary"> Start for Free</a>
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
-  <div class="hero-demo">
-    <div class="hero-demo-label">Try any domain -- no signup required</div>
-    <div class="hero-demo-input-row">
-      <input id="hero-domain-input" type="text" pl<script>
+  <div style="margin-top:48px;text-align:center">
+    <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:16px">Try any domain &mdash; free signup required</p>
+    <div id="hero-demo-row" style="display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;max-width:480px;margin:0 auto">
+      <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off"
+        style="flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none"
+        onfocus="this.closest('#hero-demo-row').style.borderColor='#7c3aed'"
+        onblur="this.closest('#hero-demo-row').style.borderColor='#2a2a2a'">
+      <button id="hero-demo-btn" onclick="heroDemo()"
+        style="padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap">Analyze &#8594;</button>
+    </div>
+  </div>
+  <script>
   async function heroDemo() {{
-    const domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
-    const btn = document.getElementById('hero-demo-btn');
-    btn.textContent = 'Checking...';
-    btn.disabled = true;
+    var domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
+    var btn = document.getElementById('hero-demo-btn');
+    btn.textContent = 'Checking...'; btn.disabled = true;
     try {{
-      const check = await fetch('/usage', {{credentials: 'include'}});
-      if (!check.ok) {{
-        window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
-        return;
-      }}
+      var r = await fetch('/usage', {{credentials:'include'}});
+      if (!r.ok) {{ window.location.href = '/login?next=/demo/' + encodeURIComponent(domain); return; }}
       window.location.href = '/demo/' + encodeURIComponent(domain);
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
-      btn.disabled = false;
-      btn.textContent = 'Analyze →';
+      btn.disabled = false; btn.textContent = 'Analyze →';
     }}
   }}
   document.addEventListener('DOMContentLoaded', function() {{
     var inp = document.getElementById('hero-domain-input');
-    if (inp) inp.addEventListener('keydown', function(e) {{ if (e.key === 'Enter') heroDemo(); }});
+    if (inp) inp.addEventListener('keydown', function(e) {{ if (e.key==='Enter') heroDemo(); }});
   }});
-  </script>lock'; }}
-    btn.textContent = 'Analyze --'; btn.disabled = false;
-  }}
-  document.getElementById('hero-domain-input').addEventListener('keydown', e => {{ if(e.key==='Enter') heroDemo(); }});
   </script>
 </div>
 <div class="stats-bar">
