@@ -502,7 +502,7 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 .limit-val{font-size:20px;font-weight:700;color:#a855f7}
 
 .hero-demo{{margin-top:48px;max-width:560px;margin-left:auto;margin-right:auto;text-align:center}}
-.hero-demo-label{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:16px}}
+.hero-demo-label{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:16px}}
 .hero-demo-input-row{{display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;transition:border-color .2s;max-width:480px;margin:0 auto}}
 .hero-demo-input-row input{{flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none}}
 .hero-demo-input-row:focus-within{{border-color:#7c3aed}}.hero-demo-input-row input::placeholder{{color:#374151}}
