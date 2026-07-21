@@ -293,7 +293,7 @@ def send_verification_email(email: str, token: str):
 <p><a href="{verify_url}">{verify_url}</a></p>
 <p>This link expires in 24 hours.</p>
 <p>- The StackSight Team</p>
-</body></html>"""
+<style>.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px}.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s}.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px}.billed-ann{font-size:12px;color:#aaa;margin-top:4px}</style><script>function setBilling(mode){var m=mode==="monthly";document.getElementById("toggle-monthly").classList.toggle("active",m);document.getElementById("toggle-annual").classList.toggle("active",!m);document.querySelectorAll(".monthly-price").forEach(function(el){el.style.display=m?"":"none"});document.querySelectorAll(".annual-price").forEach(function(el){el.style.display=m?"none":""});document.querySelectorAll(".checkout-link").forEach(function(el){el.href=m?el.getAttribute("data-monthly"):el.getAttribute("data-annual")});}</script></body></html>"""
     text_body = f"Verify your email: {verify_url}"
     _send_email_sync(email, subject, html_body, text_body)
 def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, stripe_session_id: str = None):
@@ -913,6 +913,10 @@ footer a:hover{{color:#fff}}
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
   <p class="sub">Scale as you grow. Cancel any time.</p>
+  <div class="billing-toggle">
+    <button class="toggle-btn active" id="toggle-monthly" onclick="setBilling('monthly')">Monthly</button>
+    <button class="toggle-btn" id="toggle-annual" onclick="setBilling('annual')">Annual <span class="save-badge">Save 20%</span></button>
+  </div>
   <div class="plans">
     <div class="plan">
       <div class="plan-name">Free</div>
@@ -931,17 +935,19 @@ footer a:hover{{color:#fff}}
     <div class="plan featured">
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
-      <div class="plan-price">$49<span>/mo</span></div>
+      <div class="plan-price monthly-price">$49<span>/mo</span></div>
+      <div class="plan-price annual-price" style="display:none">$39<span>/mo</span><div class="billed-ann">billed $468/yr</div></div>
       <div class="plan-limit">5,000 requests/month</div>
       <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro" class="btn-pp">Get Pro </a>
+      <a href="/checkout/pro" class="btn-pp checkout-link" data-monthly="/checkout/pro" data-annual="/checkout/pro_annual">Get Pro </a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
-      <div class="plan-price">$199<span>/mo</span></div>
+      <div class="plan-price monthly-price">$199<span>/mo</span></div>
+      <div class="plan-price annual-price" style="display:none">$166<span>/mo</span><div class="billed-ann">billed $1,992/yr</div></div>
       <div class="plan-limit">50,000 requests/month</div>
       <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business" class="btn-pp">Get Business </a>
+      <a href="/checkout/business" class="btn-pp checkout-link" data-monthly="/checkout/business" data-annual="/checkout/business_annual">Get Business </a>
     </div>
   </div>
 </div>
