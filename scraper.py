@@ -821,7 +821,7 @@ footer a:hover{{color:#fff}}
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
   <div class="hero-demo">
-    <div class="hero-demo-label">Try any domain -- no signup required</div>
+    <div class="hero-demo-label">Try any domain -- free account required</div>
     <div class="hero-demo-input-row">
       <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off" />
       <button id="hero-demo-btn" onclick="heroDemo()">Analyze &rarr;</button>
@@ -833,17 +833,23 @@ footer a:hover{{color:#fff}}
     const domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
     const btn = document.getElementById('hero-demo-btn');
     const result = document.getElementById('hero-demo-result');
-    btn.textContent = 'Analyzing...';
+    btn.textContent = 'Checking...';
     btn.disabled = true;
-    result.style.display = 'none';
     try {{
-      const r = await fetch('/demo/' + encodeURIComponent(domain));
-      if (r.ok) {{ window.location.href = '/demo/' + encodeURIComponent(domain); }}
-      else {{ result.textContent = 'Error: ' + r.status; result.style.display = 'block'; }}
-    }} catch(e) {{ result.textContent = 'Request failed'; result.style.display = 'block'; }}
-    btn.textContent = 'Analyze --'; btn.disabled = false;
-  }}
-  document.getElementById('hero-domain-input').addEventListener('keydown', e => {{ if(e.key==='Enter') heroDemo(); }});
+      const check = await fetch('/usage', {{credentials: 'include'}});
+      if (!check.ok) {{
+        window.location.href = '/register?next=/demo/' + encodeURIComponent(domain);
+        return;
+      }}
+      btn.textContent = 'Analyzing...';
+      window.location.href = '/demo/' + encodeURIComponent(domain);
+    }} catch(e) {{
+      window.location.href = '/register?next=/demo/' + encodeURIComponent(domain);
+    }} finally {{
+      btn.disabled = false;
+      btn.textContent = 'Analyze ->';
+    }}
+  }}; }});
   </script>
 </div>
 <div class="stats-bar">
