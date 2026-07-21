@@ -1259,61 +1259,101 @@ async def login_page(request: Request):
     if get_session_email(request):
         return RedirectResponse(next if next.startswith("/") else "/dashboard")
     return HTMLResponse("""<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sign In - StackSight</title>
-<meta name="description" content="Sign in to your StackSight account to access real-time B2B hiring intent data and tech stack intelligence for any domain.">
-<meta name="robots" content="noindex,nofollow">
-<meta property="og:title" content="Sign In - StackSight">
-<meta property="og:description" content="Access your StackSight API dashboard for B2B hiring signals and tech stack data.">
-<meta property="og:url" content="https://stacksight.org/login">
-<meta property="og:type" content="website">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.card{background:#111;border:1px solid #1f1f1f;border-radius:16px;padding:48px 40px;width:100%;max-width:420px;margin:20px;box-shadow:0 0 60px rgba(168,85,247,0.08)}
-.logo{font-size:24px;font-weight:700;color:#a855f7;text-align:center;margin-bottom:8px}
-.subtitle{text-align:center;color:#888;font-size:14px;margin-bottom:32px}
-h2{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
-p.desc{color:#b0b0b0;font-size:14px;text-align:center;margin-bottom:24px}
-input{width:100%;background:#0a0a0a;border:1px solid #333;color:#fff;padding:12px 16px;border-radius:8px;font-size:15px;margin-bottom:12px}
-input:focus{outline:none;border-color:#a855f7}
-button{width:100%;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(168,85,247,0.3);transition:box-shadow .2s,transform .1s}
-button:hover{box-shadow:0 4px 28px rgba(168,85,247,0.45)}
-button:active{transform:translateY(1px)}
-.msg{margin-top:16px;padding:12px;border-radius:8px;font-size:14px;display:none;text-align:center}
-.msg.success{background:#0f2a0f;border:1px solid #22c55e;color:#22c55e}
-.msg.error{background:#2a0f0f;border:1px solid #ef4444;color:#ef4444}
-.back{display:block;text-align:center;margin-top:20px;color:#888;font-size:13px;text-decoration:none}
-.back:hover{color:#fff}
-</style></head>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.15) 0%,transparent 60%)}
+.wrap{width:100%;max-width:420px}
+.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:block;text-align:center;margin-bottom:48px}
+.card{background:#111;border:1.5px solid #1f1f1f;border-radius:20px;padding:40px 36px}
+h1{font-size:26px;font-weight:700;margin-bottom:8px;text-align:center}
+.sub{color:#6b7280;font-size:14px;text-align:center;margin-bottom:32px;line-height:1.5}
+.sub span{color:#a78bfa}
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}
+input[type=email]{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}
+input[type=email]:focus{border-color:#7c3aed}
+input[type=email]::placeholder{color:#374151}
+.btn{width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;letter-spacing:.01em}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.msg{margin-top:20px;padding:14px 16px;border-radius:10px;font-size:14px;text-align:center;display:none}
+.msg.success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#22c55e}
+.msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444}
+.divider{display:flex;align-items:center;gap:12px;margin:28px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1f1f1f}
+.divider span{color:#4b5563;font-size:12px;white-space:nowrap}
+.footer{text-align:center;margin-top:24px;font-size:13px;color:#4b5563}
+.footer a{color:#7c3aed;text-decoration:none}
+.footer a:hover{color:#a78bfa}
+.demo-note{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#a78bfa;text-align:center;margin-bottom:24px;display:none}
+</style>
+</head>
 <body>
-<div class="card">
-  <div class="logo">StackSight</div>
-  <div class="subtitle">B2B Hiring Intent API</div>
-  <h2>Sign In</h2>
-  <p class="desc">Enter your email and we'll send you a secure login link - no password needed.</p>
-  <input type="email" id="email" placeholder="you@company.com" autofocus>
-  <button onclick="sendLink()">Send Login Link</button>
-  <div class="msg" id="msg"></div>
-  <a href="/" class="back">Back to StackSight</a>
+<div class="wrap">
+  <a href="/" class="logo">StackSight</a>
+  <div class="card">
+    <div class="demo-note" id="demo-note">Sign in to run your free domain analysis</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Enter your email and we'll send you a magic link.<br><span>No password needed.</span></p>
+    <div>
+      <label for="email">Email address</label>
+      <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
+      <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
+      <div class="msg" id="msg"></div>
+    </div>
+    <div class="divider"><span>New to StackSight?</span></div>
+    <div class="footer">
+      Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br>
+      <a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a>
+    </div>
+  </div>
 </div>
 <script>
-async function sendLink() {
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('next')) {
+    const note = document.getElementById('demo-note');
+    note.style.display = 'block';
+  }
+})();
+
+async function doLogin() {
   const email = document.getElementById('email').value.trim();
+  const btn = document.getElementById('submit-btn');
   const msg = document.getElementById('msg');
-  if (!email || !email.includes('@')) { msg.className='msg error'; msg.style.display='block'; msg.textContent='Please enter a valid email.'; return; }
-  msg.className='msg'; msg.style.display='block'; msg.textContent='Sending login link...';
+  if (!email || !email.includes('@')) {
+    msg.className = 'msg error'; msg.style.display = 'block';
+    msg.textContent = 'Please enter a valid email address.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Sending...';
+  msg.style.display = 'none';
+  const next = new URLSearchParams(window.location.search).get('next') || '';
   try {
-    const r = await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const r = await fetch('/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, next})});
     const d = await r.json();
-    if (r.ok) { msg.className='msg success'; msg.textContent='Check your email for a login link!'; }
-    else { msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; }
-  } catch(e) { msg.className='msg error'; msg.textContent='Network error. Please try again.'; }
+    if (r.ok) {
+      msg.className = 'msg success'; msg.style.display = 'block';
+      msg.textContent = 'Magic link sent! Check your inbox (and spam folder).';
+      btn.textContent = 'Link sent';
+    } else {
+      msg.className = 'msg error'; msg.style.display = 'block';
+      msg.textContent = d.detail || 'Something went wrong. Try again.';
+      btn.disabled = false; btn.textContent = 'Send magic link';
+    }
+  } catch(e) {
+    msg.className = 'msg error'; msg.style.display = 'block';
+    msg.textContent = 'Request failed. Please try again.';
+    btn.disabled = false; btn.textContent = 'Send magic link';
+  }
 }
-document.getElementById('email').addEventListener('keypress', e => { if(e.key==='Enter') sendLink(); });
+
+document.getElementById('email').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 </script>
-</body></html>""")
+</body>
+</html>""")
 
 
 @app.post("/login")
