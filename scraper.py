@@ -1259,7 +1259,8 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     if get_session_email(request):
-        return RedirectResponse(next if next.startswith("/") else "/dashboard")
+        next_url = request.query_params.get("next", "/dashboard")
+        return RedirectResponse(next_url if next_url.startswith("/") else "/dashboard")
     return HTMLResponse("""<!DOCTYPE html>
 <html lang="en">
 <head>
