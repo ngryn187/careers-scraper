@@ -509,12 +509,6 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
 .hero-demo-input-row button{{padding:12px 20px;background:#a855f7;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap}}
 .hero-demo-input-row button:hover{{background:#9333ea}}
 #hero-demo-result{{margin-top:10px;font-size:13px;color:#f87171;padding:8px;background:#1a0a2e;border-radius:6px}}
-
-.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px;}
-.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s;}
-.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
-.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px;}
-.billed-annually{font-size:12px;color:#aaa;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -528,16 +522,6 @@ pre::after{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;
     }});}}  
   }}).catch(function(){{}});
 }})();
-
-function setBilling(mode) {
-  document.getElementById('toggle-monthly').classList.toggle('active', mode==='monthly');
-  document.getElementById('toggle-annual').classList.toggle('active', mode==='annual');
-  document.querySelectorAll('.monthly-price').forEach(el => el.style.display = mode==='monthly' ? '' : 'none');
-  document.querySelectorAll('.annual-price').forEach(el => el.style.display = mode==='annual' ? '' : 'none');
-  document.querySelectorAll('.checkout-link').forEach(el => {
-    el.href = mode==='monthly' ? el.dataset.monthly : el.dataset.annual;
-  });
-}
 </script>
 <div class="sidebar">
   <div class="sidebar-section">Getting Started</div>
@@ -808,7 +792,7 @@ footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#
 footer a{{color:#888;text-decoration:none}}
 footer a:hover{{color:#fff}}
 @media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}.step::after{{display:none}}}}
-</style>
+.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px}.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s}.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px}.billed-annually{font-size:12px;color:#aaa;margin-top:4px}</style>
 </head>
 <body>
 <nav>
@@ -847,7 +831,8 @@ footer a:hover{{color:#fff}}
     <div id="hero-demo-result" style="display:none"></div>
   </div>
   <script>
-  async function heroDemo() {{
+  async function setBilling(mode){document.getElementById('toggle-monthly').classList.toggle('active',mode==='monthly');document.getElementById('toggle-annual').classList.toggle('active',mode==='annual');document.querySelectorAll('.monthly-price').forEach(el=>el.style.display=mode==='monthly'?'':'none');document.querySelectorAll('.annual-price').forEach(el=>el.style.display=mode==='annual'?'':'none');document.querySelectorAll('.checkout-link').forEach(el=>{el.href=mode==='monthly'?el.dataset.monthly:el.dataset.annual;})}
+function heroDemo() {{
     const domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
     const btn = document.getElementById('hero-demo-btn');
     const result = document.getElementById('hero-demo-result');
