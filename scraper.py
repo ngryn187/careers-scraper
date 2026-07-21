@@ -849,7 +849,7 @@ footer a:hover{{color:#fff}}
       btn.disabled = false;
       btn.textContent = 'Analyze ->';
     }}
-  }}; }});
+  }};
   </script>
 </div>
 <div class="stats-bar">
