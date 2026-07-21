@@ -821,7 +821,7 @@ footer a:hover{{color:#fff}}
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
   <div class="hero-demo">
-    <div class="hero-demo-label">Try any domain -- free account required</div>
+    <div class="hero-demo-label">Try any domain -- free signup required</div>
     <div class="hero-demo-input-row">
       <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off" />
       <button id="hero-demo-btn" onclick="heroDemo()">Analyze &rarr;</button>
@@ -838,13 +838,13 @@ footer a:hover{{color:#fff}}
     try {{
       const check = await fetch('/usage', {{credentials: 'include'}});
       if (!check.ok) {{
-        window.location.href = '/register?next=/demo/' + encodeURIComponent(domain);
+        window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
         return;
       }}
       btn.textContent = 'Analyzing...';
       window.location.href = '/demo/' + encodeURIComponent(domain);
     }} catch(e) {{
-      window.location.href = '/register?next=/demo/' + encodeURIComponent(domain);
+      window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
       btn.disabled = false;
       btn.textContent = 'Analyze ->';
