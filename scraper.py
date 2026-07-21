@@ -41,6 +41,8 @@ STRIPE_PRICES = {
     "starter": os.environ.get("STRIPE_PRICE_STARTER", ""),
     "pro": os.environ.get("STRIPE_PRICE_PRO", "price_1TrLQ6DUssNU8xAWD0eyqLx4"),
     "business": os.environ.get("STRIPE_PRICE_BUSINESS", "price_1TrLceDUssNU8xAWKWUSPLlR"),
+    "pro_annual": os.environ.get("STRIPE_PRICE_PRO_ANNUAL", ""),
+    "business_annual": os.environ.get("STRIPE_PRICE_BUSINESS_ANNUAL", ""),
 }
 PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 
@@ -821,18 +823,12 @@ footer a:hover{{color:#fff}}
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
   <div class="hero-demo">
-    <div class="hero-demo-label">Try any domain -- free signup required</div>
+    <div class="hero-demo-label">Try any domain -- no signup required</div>
     <div class="hero-demo-input-row">
-      <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off" />
-      <button id="hero-demo-btn" onclick="heroDemo()">Analyze &rarr;</button>
-    </div>
-    <div id="hero-demo-result" style="display:none"></div>
-  </div>
-  <script>
-  window.heroDemo = async function() {{
+      <input id="hero-domain-input" type="text" pl<script>
+  async function heroDemo() {{
     const domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
     const btn = document.getElementById('hero-demo-btn');
-    const result = document.getElementById('hero-demo-result');
     btn.textContent = 'Checking...';
     btn.disabled = true;
     try {{
@@ -841,15 +837,22 @@ footer a:hover{{color:#fff}}
         window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
         return;
       }}
-      btn.textContent = 'Analyzing...';
       window.location.href = '/demo/' + encodeURIComponent(domain);
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
       btn.disabled = false;
-      btn.textContent = 'Analyze ->';
+      btn.textContent = 'Analyze →';
     }}
-  }};
+  }}
+  document.addEventListener('DOMContentLoaded', function() {{
+    var inp = document.getElementById('hero-domain-input');
+    if (inp) inp.addEventListener('keydown', function(e) {{ if (e.key === 'Enter') heroDemo(); }});
+  }});
+  </script>lock'; }}
+    btn.textContent = 'Analyze --'; btn.disabled = false;
+  }}
+  document.getElementById('hero-domain-input').addEventListener('keydown', e => {{ if(e.key==='Enter') heroDemo(); }});
   </script>
 </div>
 <div class="stats-bar">
@@ -985,7 +988,7 @@ async function signup() {{
   btn.textContent='Sending...'; btn.disabled=true;
   msg.className='msg'; msg.style.display='block'; msg.textContent='Sending...';
   try {{
-    const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email, next: new URLSearchParams(window.location.search).get('next') || ''}})}})  ;
+    const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email}})}});
     const d = await r.json();
     if (r.ok) {{ msg.className='msg success'; msg.textContent='Check your inbox! Click the link to get your API key.'; btn.textContent='Sent!'; }}
     else {{ msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
@@ -1264,31 +1267,29 @@ async def login_page(request: Request):
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sign In - StackSight</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.15) 0%,transparent 60%)}
-.wrap{width:100%;max-width:420px}
-.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:block;text-align:center;margin-bottom:48px}
-.card{background:#111;border:1.5px solid #1f1f1f;border-radius:20px;padding:40px 36px}
-h1{font-size:26px;font-weight:700;margin-bottom:8px;text-align:center}
-.sub{color:#6b7280;font-size:14px;text-align:center;margin-bottom:32px;line-height:1.5}
-.sub span{color:#a78bfa}
-label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}
-input[type=email]{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}
-input[type=email]:focus{border-color:#7c3aed}
-input[type=email]::placeholder{color:#374151}
-.btn{width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;letter-spacing:.01em}
-.btn:hover{opacity:.9}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.msg{margin-top:20px;padding:14px 16px;border-radius:10px;font-size:14px;text-align:center;display:none}
-.msg.success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#22c55e}
-.msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444}
-.divider{display:flex;align-items:center;gap:12px;margin:28px 0}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1f1f1f}
-.divider span{color:#4b5563;font-size:12px;white-space:nowrap}
-.footer{text-align:center;margin-top:24px;font-size:13px;color:#4b5563}
-.footer a{color:#7c3aed;text-decoration:none}
-.footer a:hover{color:#a78bfa}
-.demo-note{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#a78bfa;text-align:center;margin-bottom:24px;display:none}
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.15) 0%,transparent 60%)}}
+.wrap{{width:100%;max-width:420px}}
+.logo{{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:block;text-align:center;margin-bottom:48px}}
+.card{{background:#111;border:1.5px solid #1f1f1f;border-radius:20px;padding:40px 36px}}
+h1{{font-size:26px;font-weight:700;margin-bottom:8px;text-align:center}}
+.sub{{color:#6b7280;font-size:14px;text-align:center;margin-bottom:32px;line-height:1.5}}
+.sub span{{color:#a78bfa}}
+label{{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}}
+input[type=email]{{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}}
+input[type=email]:focus{{border-color:#7c3aed}}
+input[type=email]::placeholder{{color:#374151}}
+.btn{{width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}}
+.btn:hover{{opacity:.9}}.btn:disabled{{opacity:.5;cursor:not-allowed}}
+.msg{{margin-top:20px;padding:14px 16px;border-radius:10px;font-size:14px;text-align:center;display:none}}
+.msg.success{{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#22c55e}}
+.msg.error{{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444}}
+.divider{{display:flex;align-items:center;gap:12px;margin:28px 0}}
+.divider::before,.divider::after{{content:'';flex:1;height:1px;background:#1f1f1f}}
+.divider span{{color:#4b5563;font-size:12px}}
+.footer{{text-align:center;font-size:13px;color:#4b5563}}
+.footer a{{color:#7c3aed;text-decoration:none}}
+.demo-note{{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#a78bfa;text-align:center;margin-bottom:24px;display:none}}
 </style>
 </head>
 <body>
@@ -1297,63 +1298,44 @@ input[type=email]::placeholder{color:#374151}
   <div class="card">
     <div class="demo-note" id="demo-note">Sign in to run your free domain analysis</div>
     <h1>Welcome back</h1>
-    <p class="sub">Enter your email and we'll send you a magic link.<br><span>No password needed.</span></p>
-    <div>
-      <label for="email">Email address</label>
-      <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
-      <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
-      <div class="msg" id="msg"></div>
-    </div>
+    <p class="sub">Enter your email and we'll send a magic link.<br><span>No password needed.</span></p>
+    <label for="email">Email address</label>
+    <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
+    <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
+    <div class="msg" id="msg"></div>
     <div class="divider"><span>New to StackSight?</span></div>
-    <div class="footer">
-      Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br>
-      <a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a>
-    </div>
+    <div class="footer">Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
   </div>
 </div>
 <script>
-(function() {
-  const p = new URLSearchParams(window.location.search);
-  if (p.get('next')) {
-    const note = document.getElementById('demo-note');
-    note.style.display = 'block';
-  }
-})();
-
-async function doLogin() {
-  const email = document.getElementById('email').value.trim();
-  const btn = document.getElementById('submit-btn');
-  const msg = document.getElementById('msg');
-  if (!email || !email.includes('@')) {
+(function(){{
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('next')) document.getElementById('demo-note').style.display = 'block';
+}})();
+async function doLogin() {{
+  var email = document.getElementById('email').value.trim();
+  var btn = document.getElementById('submit-btn');
+  var msg = document.getElementById('msg');
+  if (!email || !email.includes('@')) {{
     msg.className = 'msg error'; msg.style.display = 'block';
-    msg.textContent = 'Please enter a valid email address.'; return;
-  }
-  btn.disabled = true; btn.textContent = 'Sending...';
-  msg.style.display = 'none';
-  const next = new URLSearchParams(window.location.search).get('next') || '';
-  try {
-    const r = await fetch('/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, next})});
-    const d = await r.json();
-    if (r.ok) {
-      msg.className = 'msg success'; msg.style.display = 'block';
-      msg.textContent = 'Magic link sent! Check your inbox (and spam folder).';
-      btn.textContent = 'Link sent';
-    } else {
-      msg.className = 'msg error'; msg.style.display = 'block';
-      msg.textContent = d.detail || 'Something went wrong. Try again.';
-      btn.disabled = false; btn.textContent = 'Send magic link';
-    }
-  } catch(e) {
-    msg.className = 'msg error'; msg.style.display = 'block';
-    msg.textContent = 'Request failed. Please try again.';
-    btn.disabled = false; btn.textContent = 'Send magic link';
-  }
-}
-
-document.getElementById('email').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    msg.textContent = 'Please enter a valid email.'; return;
+  }}
+  btn.disabled = true; btn.textContent = 'Sending...'; msg.style.display = 'none';
+  var next = new URLSearchParams(window.location.search).get('next') || '';
+  try {{
+    var r = await fetch('/login', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email,next}})}});
+    var d = await r.json();
+    if (r.ok) {{ msg.className='msg success'; msg.style.display='block'; msg.textContent='Magic link sent! Check your inbox.'; btn.textContent='Link sent!'; }}
+    else {{ msg.className='msg error'; msg.style.display='block'; msg.textContent=d.detail||'Something went wrong.'; btn.disabled=false; btn.textContent='Send magic link'; }}
+  }} catch(e) {{
+    msg.className='msg error'; msg.style.display='block'; msg.textContent='Request failed. Try again.'; btn.disabled=false; btn.textContent='Send magic link';
+  }}
+}}
+document.addEventListener('DOMContentLoaded',function(){{
+  document.getElementById('email').addEventListener('keydown',function(e){{if(e.key==='Enter')doLogin();}});
+}});
 </script>
-</body>
-</html>""")
+</body></html>""")
 
 
 @app.post("/login")
@@ -1824,72 +1806,12 @@ async def me(x_api_key: str = Header(None)):
 
 @app.get("/choose/pro", response_class=HTMLResponse)
 async def choose_pro():
-    return HTMLResponse("""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Pro Plan - Choose Billing | StackSight</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}.wrap{max-width:520px;width:100%;text-align:center}.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}.tag{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}h1{font-size:30px;font-weight:700;margin-bottom:10px}.sub{color:#6b7280;font-size:15px;margin-bottom:40px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.card{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}.card:hover{border-color:#4c1d95;transform:translateY(-2px)}.card.best{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}.card.best:hover{box-shadow:0 0 48px rgba(124,58,237,0.3)}.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}.lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}.card.best .lbl{color:#a78bfa}.price{font-size:40px;font-weight:800;line-height:1}.price span{font-size:15px;font-weight:400;color:#6b7280}.card.best .price span{color:#a78bfa}.psub{font-size:12px;color:#4b5563;margin-top:8px}.card.best .psub{color:#7c3aed}.save{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}.cancel{font-size:12px;color:#4b5563;margin-top:10px}.back{color:#4b5563;font-size:13px;text-decoration:none}.back:hover{color:#9ca3af}@media(max-width:420px){.cards{grid-template-columns:1fr}}</style>
-</head>
-<body>
-<div class="wrap">
-  <a href="/" class="logo">StackSight</a>
-  <div class="tag">Pro Plan</div>
-  <h1>Choose your billing</h1>
-  <p class="sub">Same features, same API. Pick what works for you.</p>
-  <div class="cards">
-    <a href="/checkout/pro" class="card">
-      <div class="lbl">Monthly</div>
-      <div class="price">$49<span>/mo</span></div>
-      <div class="psub">billed monthly</div>
-      <div class="cancel">Cancel anytime</div>
-    </a>
-    <a href="/checkout/pro_annual" class="card best">
-      <div class="badge">BEST VALUE</div>
-      <div class="lbl">Annual</div>
-      <div class="price">$39<span>/mo</span></div>
-      <div class="psub">billed $468/yr</div>
-      <div class="save">Save 20%</div>
-    </a>
-  </div>
-  <a href="/#pricing" class="back">Back to pricing</a>
-</div>
-</body></html>""")
+    return HTMLResponse("""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pro Plan - Choose Billing | StackSight</title><style>*{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}}.wrap{{max-width:520px;width:100%;text-align:center}}.logo{{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}}.tag{{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}}h1{{font-size:30px;font-weight:700;margin-bottom:10px}}.sub{{color:#6b7280;font-size:15px;margin-bottom:40px}}.cards{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}}.card{{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}}.card:hover{{border-color:#4c1d95;transform:translateY(-2px)}}.card.best{{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}}.badge{{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}}.lbl{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}}.card.best .lbl{{color:#a78bfa}}.price{{font-size:40px;font-weight:800;line-height:1}}.price span{{font-size:15px;font-weight:400;color:#6b7280}}.card.best .price span{{color:#a78bfa}}.psub{{font-size:12px;color:#4b5563;margin-top:8px}}.card.best .psub{{color:#7c3aed}}.save{{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}}.cancel{{font-size:12px;color:#4b5563;margin-top:10px}}.back{{color:#4b5563;font-size:13px;text-decoration:none}}.back:hover{{color:#9ca3af}}</style></head><body><div class="wrap"><a href="/" class="logo">StackSight</a><div class="tag">Pro Plan</div><h1>Choose your billing</h1><p class="sub">Same features, same API. Pick what works for you.</p><div class="cards"><a href="/checkout/pro" class="card"><div class="lbl">Monthly</div><div class="price">$49<span>/mo</span></div><div class="psub">billed monthly</div><div class="cancel">Cancel anytime</div></a><a href="/checkout/pro_annual" class="card best"><div class="badge">BEST VALUE</div><div class="lbl">Annual</div><div class="price">$39<span>/mo</span></div><div class="psub">billed $468/yr</div><div class="save">Save 20%</div></a></div><a href="/#pricing" class="back">Back to pricing</a></div></body></html>""")
 
 
 @app.get("/choose/business", response_class=HTMLResponse)
 async def choose_business():
-    return HTMLResponse("""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Business Plan - Choose Billing | StackSight</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}.wrap{max-width:520px;width:100%;text-align:center}.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}.tag{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}h1{font-size:30px;font-weight:700;margin-bottom:10px}.sub{color:#6b7280;font-size:15px;margin-bottom:40px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.card{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}.card:hover{border-color:#4c1d95;transform:translateY(-2px)}.card.best{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}.card.best:hover{box-shadow:0 0 48px rgba(124,58,237,0.3)}.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}.lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}.card.best .lbl{color:#a78bfa}.price{font-size:40px;font-weight:800;line-height:1}.price span{font-size:15px;font-weight:400;color:#6b7280}.card.best .price span{color:#a78bfa}.psub{font-size:12px;color:#4b5563;margin-top:8px}.card.best .psub{color:#7c3aed}.save{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}.cancel{font-size:12px;color:#4b5563;margin-top:10px}.back{color:#4b5563;font-size:13px;text-decoration:none}.back:hover{color:#9ca3af}@media(max-width:420px){.cards{grid-template-columns:1fr}}</style>
-</head>
-<body>
-<div class="wrap">
-  <a href="/" class="logo">StackSight</a>
-  <div class="tag">Business Plan</div>
-  <h1>Choose your billing</h1>
-  <p class="sub">Same features, same API. Pick what works for you.</p>
-  <div class="cards">
-    <a href="/checkout/business" class="card">
-      <div class="lbl">Monthly</div>
-      <div class="price">$199<span>/mo</span></div>
-      <div class="psub">billed monthly</div>
-      <div class="cancel">Cancel anytime</div>
-    </a>
-    <a href="/checkout/business_annual" class="card best">
-      <div class="badge">BEST VALUE</div>
-      <div class="lbl">Annual</div>
-      <div class="price">$166<span>/mo</span></div>
-      <div class="psub">billed $1,992/yr</div>
-      <div class="save">Save 20%</div>
-    </a>
-  </div>
-  <a href="/#pricing" class="back">Back to pricing</a>
-</div>
-</body></html>""")
+    return HTMLResponse("""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Business Plan - Choose Billing | StackSight</title><style>*{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}}.wrap{{max-width:520px;width:100%;text-align:center}}.logo{{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}}.tag{{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}}h1{{font-size:30px;font-weight:700;margin-bottom:10px}}.sub{{color:#6b7280;font-size:15px;margin-bottom:40px}}.cards{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}}.card{{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}}.card:hover{{border-color:#4c1d95;transform:translateY(-2px)}}.card.best{{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}}.badge{{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}}.lbl{{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}}.card.best .lbl{{color:#a78bfa}}.price{{font-size:40px;font-weight:800;line-height:1}}.price span{{font-size:15px;font-weight:400;color:#6b7280}}.card.best .price span{{color:#a78bfa}}.psub{{font-size:12px;color:#4b5563;margin-top:8px}}.card.best .psub{{color:#7c3aed}}.save{{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}}.cancel{{font-size:12px;color:#4b5563;margin-top:10px}}.back{{color:#4b5563;font-size:13px;text-decoration:none}}.back:hover{{color:#9ca3af}}</style></head><body><div class="wrap"><a href="/" class="logo">StackSight</a><div class="tag">Business Plan</div><h1>Choose your billing</h1><p class="sub">Same features, same API. Pick what works for you.</p><div class="cards"><a href="/checkout/business" class="card"><div class="lbl">Monthly</div><div class="price">$199<span>/mo</span></div><div class="psub">billed monthly</div><div class="cancel">Cancel anytime</div></a><a href="/checkout/business_annual" class="card best"><div class="badge">BEST VALUE</div><div class="lbl">Annual</div><div class="price">$166<span>/mo</span></div><div class="psub">billed $1,992/yr</div><div class="save">Save 20%</div></a></div><a href="/#pricing" class="back">Back to pricing</a></div></body></html>""")
 
 
 @app.get("/checkout/{plan}")
