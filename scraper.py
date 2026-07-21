@@ -663,7 +663,7 @@ window.addEventListener('scroll',()=>{
   links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+cur));
 });
 </script>
-</body></html>""")
+<style>.billing-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:32px}.toggle-btn{padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px;transition:all .2s}.toggle-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff}.save-badge{background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px}.billed-annually{font-size:12px;color:#aaa;margin-top:4px}</style><script>function setBilling(mode){document.getElementById("toggle-monthly").classList.toggle("active",mode==="monthly");document.getElementById("toggle-annual").classList.toggle("active",mode==="annual");document.querySelectorAll(".monthly-price").forEach(function(el){el.style.display=mode==="monthly"?"":"none"});document.querySelectorAll(".annual-price").forEach(function(el){el.style.display=mode==="annual"?"":"none"});document.querySelectorAll(".checkout-link").forEach(function(el){el.href=mode==="monthly"?el.dataset.monthly:el.dataset.annual})}</script></body></html>""")
 
 @app.get("/", response_class=HTMLResponse)
 async def landing():
