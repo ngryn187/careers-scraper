@@ -985,7 +985,7 @@ async function signup() {{
   btn.textContent='Sending...'; btn.disabled=true;
   msg.className='msg'; msg.style.display='block'; msg.textContent='Sending...';
   try {{
-    const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email}})}});
+    const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email, next: new URLSearchParams(window.location.search).get('next') || ''}})}})  ;
     const d = await r.json();
     if (r.ok) {{ msg.className='msg success'; msg.textContent='Check your inbox! Click the link to get your API key.'; btn.textContent='Sent!'; }}
     else {{ msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
@@ -1336,7 +1336,9 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
     )
     conn.commit()
     cur.close(); conn.close()
-    background_tasks.add_task(send_magic_link_email, email, token)
+    next_url = body.get("next", "")
+    safe_next = next_url if next_url.startswith("/") else ""
+    background_tasks.add_task(send_magic_link_email, email, token, safe_next)
     return {"message": "Login link sent"}
 
 
