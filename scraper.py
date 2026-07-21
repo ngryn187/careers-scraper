@@ -942,7 +942,7 @@ footer a:hover{{color:#fff}}
       <div class="plan-price">$39<span>/mo</span></div>
       <div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:10px">billed annually &bull; save 20%</div>
       <div class="plan-limit">5,000 requests/month</div>
-      <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
+      <ul><li>5,000 API requests/month</li><li>300 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
       <a href="/choose/pro" class="btn-pp">Get Pro</a>
     </div>
     <div class="plan">
@@ -950,7 +950,7 @@ footer a:hover{{color:#fff}}
       <div class="plan-price">$166<span>/mo</span></div>
       <div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:10px">billed annually &bull; save 20%</div>
       <div class="plan-limit">50,000 requests/month</div>
-      <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
+      <ul><li>50,000 API requests/month</li><li>1,000 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
       <a href="/choose/business" class="btn-pp">Get Business</a>
     </div>
   </div>
