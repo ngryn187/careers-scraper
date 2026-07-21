@@ -914,8 +914,8 @@ footer a:hover{{color:#fff}}
   <h2>Simple Pricing</h2>
   <p class="sub">Scale as you grow. Cancel any time.</p>
   <div style="display:flex;gap:8px;justify-content:center;margin-bottom:32px">
-    <button class="toggle-btn active" id="btn-monthly" onclick="setBilling(0)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:#7c3aed;color:#fff;cursor:pointer;font-size:14px">Monthly</button>
-    <button class="toggle-btn" id="btn-annual" onclick="setBilling(1)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px">Annual <span style="background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px">Save 20%</span></button>
+    <button class="toggle-btn" id="btn-monthly" onclick="setBilling(0)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px">Monthly</button>
+    <button class="toggle-btn active" id="btn-annual" onclick="setBilling(1)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:#7c3aed;color:#fff;cursor:pointer;font-size:14px">Annual <span style="background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px">Save 20%</span></button>
   </div>
   <div class="plans">
     <div class="plan">
@@ -935,19 +935,19 @@ footer a:hover{{color:#fff}}
     <div class="plan featured">
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
-      <div class="plan-price" id="pro-price">$49<span>/mo</span></div>
-      <div id="pro-ann" style="display:none;font-size:13px;color:#aaa;margin:2px 0 8px">$39<span>/mo</span> <small>billed $468/yr</small></div>
+      <div class="plan-price" id="pro-price" style="display:none">$49<span>/mo</span></div>
+      <div id="pro-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$39<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $468/yr &bull; save $120</div></div>
       <div class="plan-limit">5,000 requests/month</div>
       <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro" class="btn-pp" id="pro-btn">Get Pro </a>
+      <a href="/checkout/pro_annual" class="btn-pp" id="pro-btn">Get Pro </a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
-      <div class="plan-price" id="biz-price">$199<span>/mo</span></div>
-      <div id="biz-ann" style="display:none;font-size:13px;color:#aaa;margin:2px 0 8px">$166<span>/mo</span> <small>billed $1,992/yr</small></div>
+      <div class="plan-price" id="biz-price" style="display:none">$199<span>/mo</span></div>
+      <div id="biz-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$166<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $1,992/yr &bull; save $396</div></div>
       <div class="plan-limit">50,000 requests/month</div>
       <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business" class="btn-pp" id="biz-btn">Get Business </a>
+      <a href="/checkout/business_annual" class="btn-pp" id="biz-btn">Get Business </a>
     </div>
   </div>
 </div>
