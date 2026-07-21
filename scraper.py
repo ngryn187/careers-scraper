@@ -823,8 +823,7 @@ footer a:hover{{color:#fff}}
     <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
   </div>
   <div style="margin-top:48px;text-align:center">
-    <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:16px">Try any domain &mdash; free signup required</p>
-    <div id="hero-demo-row" style="display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;max-width:480px;margin:0 auto">
+    <div id="hero-demo-row" style="display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;max-width:480px;margin:32px auto 0">
       <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off"
         style="flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none"
         onfocus="this.closest('#hero-demo-row').style.borderColor='#7c3aed'"
