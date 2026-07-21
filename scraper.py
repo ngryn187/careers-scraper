@@ -845,7 +845,7 @@ footer a:hover{{color:#fff}}
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
-      btn.disabled = false; btn.textContent = 'Analyze →';
+      btn.disabled = false; btn.textContent = 'Analyze â';
     }}
   }}
   document.addEventListener('DOMContentLoaded', function() {{
