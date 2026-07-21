@@ -913,10 +913,6 @@ footer a:hover{{color:#fff}}
 <div class="pricing" id="pricing">
   <h2>Simple Pricing</h2>
   <p class="sub">Scale as you grow. Cancel any time.</p>
-  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:32px">
-    <button class="toggle-btn" id="btn-monthly" onclick="setBilling(0)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:transparent;color:#aaa;cursor:pointer;font-size:14px">Monthly</button>
-    <button class="toggle-btn active" id="btn-annual" onclick="setBilling(1)" style="padding:8px 20px;border-radius:20px;border:1px solid #444;background:#7c3aed;color:#fff;cursor:pointer;font-size:14px">Annual <span style="background:#22c55e;color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:6px">Save 20%</span></button>
-  </div>
   <div class="plans">
     <div class="plan">
       <div class="plan-name">Free</div>
@@ -935,19 +931,17 @@ footer a:hover{{color:#fff}}
     <div class="plan featured">
       <div class="plan-badge">MOST POPULAR</div>
       <div class="plan-name">Pro</div>
-      <div class="plan-price" id="pro-price" style="display:none">$49<span>/mo</span></div>
-      <div id="pro-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$39<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $468/yr &bull; save 20%</div></div>
+      <div class="plan-price">$39<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:12px">billed annually &bull; save 20%</div>
       <div class="plan-limit">5,000 requests/month</div>
       <ul><li>5,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
-      <a href="/checkout/pro_annual" class="btn-pp" id="pro-btn">Get Pro </a>
+      <a href="/choose/pro" class="btn-pp">Get Pro</a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
-      <div class="plan-price" id="biz-price" style="display:none">$199<span>/mo</span></div>
-      <div id="biz-ann" style="font-size:inherit;color:inherit;margin:0"><div class="plan-price">$166<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:8px">billed $1,992/yr &bull; save 20%</div></div>
+      <div class="plan-price">$166<span>/mo</span></div><div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:12px">billed annually &bull; save 20%</div>
       <div class="plan-limit">50,000 requests/month</div>
       <ul><li>50,000 API requests/month</li><li>20 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
-      <a href="/checkout/business_annual" class="btn-pp" id="biz-btn">Get Business </a>
+      <a href="/choose/business" class="btn-pp">Get Business</a>
     </div>
   </div>
 </div>
@@ -1793,6 +1787,106 @@ async def usage(x_api_key: str = Header(None), key: str = None):
 async def me(x_api_key: str = Header(None)):
     return await usage(x_api_key=x_api_key)
 
+
+
+@app.get("/choose/pro", response_class=HTMLResponse)
+async def choose_pro():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose Billing - StackSight</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}}
+.container{{max-width:600px;width:100%;text-align:center}}
+.logo{{font-size:24px;font-weight:700;color:#7c3aed;margin-bottom:40px;text-decoration:none;display:block}}
+h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
+p{{color:#aaa;margin-bottom:40px}}
+.options{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}}
+.option{{border:2px solid #222;border-radius:16px;padding:28px 20px;cursor:pointer;transition:border-color .2s;text-decoration:none;color:#fff;display:block}}
+.option:hover{{border-color:#7c3aed}}
+.option.recommended{{border-color:#7c3aed;position:relative}}
+.badge{{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;white-space:nowrap}}
+.option-label{{font-size:13px;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}}
+.option-price{{font-size:36px;font-weight:700;margin-bottom:4px}}
+.option-price span{{font-size:16px;font-weight:400;color:#aaa}}
+.option-sub{{font-size:12px;color:#aaa;margin-top:6px}}
+.option-save{{color:#22c55e;font-size:12px;font-weight:600;margin-top:4px}}
+.back{{color:#aaa;font-size:14px;text-decoration:none}}
+.back:hover{{color:#fff}}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="logo">StackSight</a>
+  <h1>Choose your billing</h1>
+  <p>Same features, same API. Pick what works for you.</p>
+  <div class="options">
+    <a href="/checkout/pro" class="option">
+      <div class="option-label">Monthly</div>
+      <div class="option-price">$49<span>/mo</span></div>
+      <div class="option-sub">Cancel anytime</div>
+    </a>
+    <a href="/checkout/pro_annual" class="option recommended">
+      <div class="badge">BEST VALUE</div>
+      <div class="option-label">Annual</div>
+      <div class="option-price">$39<span>/mo</span></div>
+      <div class="option-sub">billed $468/yr</div>
+      <div class="option-save">Save 20%</div>
+    </a>
+  </div>
+  <a href="/#pricing" class="back">← Back to pricing</a>
+</div>
+</body></html>""")
+
+
+@app.get("/choose/business", response_class=HTMLResponse)
+async def choose_business():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose Billing - StackSight</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}}
+.container{{max-width:600px;width:100%;text-align:center}}
+.logo{{font-size:24px;font-weight:700;color:#7c3aed;margin-bottom:40px;text-decoration:none;display:block}}
+h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
+p{{color:#aaa;margin-bottom:40px}}
+.options{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}}
+.option{{border:2px solid #222;border-radius:16px;padding:28px 20px;cursor:pointer;transition:border-color .2s;text-decoration:none;color:#fff;display:block}}
+.option:hover{{border-color:#7c3aed}}
+.option.recommended{{border-color:#7c3aed;position:relative}}
+.badge{{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;white-space:nowrap}}
+.option-label{{font-size:13px;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}}
+.option-price{{font-size:36px;font-weight:700;margin-bottom:4px}}
+.option-price span{{font-size:16px;font-weight:400;color:#aaa}}
+.option-sub{{font-size:12px;color:#aaa;margin-top:6px}}
+.option-save{{color:#22c55e;font-size:12px;font-weight:600;margin-top:4px}}
+.back{{color:#aaa;font-size:14px;text-decoration:none}}
+.back:hover{{color:#fff}}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="logo">StackSight</a>
+  <h1>Choose your billing</h1>
+  <p>Same features, same API. Pick what works for you.</p>
+  <div class="options">
+    <a href="/checkout/business" class="option">
+      <div class="option-label">Monthly</div>
+      <div class="option-price">$199<span>/mo</span></div>
+      <div class="option-sub">Cancel anytime</div>
+    </a>
+    <a href="/checkout/business_annual" class="option recommended">
+      <div class="badge">BEST VALUE</div>
+      <div class="option-label">Annual</div>
+      <div class="option-price">$166<span>/mo</span></div>
+      <div class="option-sub">billed $1,992/yr</div>
+      <div class="option-save">Save 20%</div>
+    </a>
+  </div>
+  <a href="/#pricing" class="back">← Back to pricing</a>
+</div>
+</body></html>""")
 
 @app.get("/checkout/{plan}")
 async def checkout(plan: str):
