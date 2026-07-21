@@ -527,12 +527,12 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
   <a href="#errors">Error Codes</a>
   <a href="#examples">Code Examples</a>
   <div style="padding:24px 20px 0;margin-top:auto">
-    <a href="/" style="font-size:13px;color:#6b7280">← Back to Home</a>
+    <a href="/" style="font-size:13px;color:#6b7280">â Back to Home</a>
   </div>
 </nav>
 <main class="main">
   <h1>API Documentation</h1>
-  <p>Turn any domain into a complete company profile — hiring signals, tech stack, and enrichment data in one REST API call.</p>
+  <p>Turn any domain into a complete company profile â hiring signals, tech stack, and enrichment data in one REST API call.</p>
 
   <h2 id="quickstart">Quick Start</h2>
   <p>Get your free API key at <a href="/">stacksight.org</a>, then make your first call:</p>
@@ -556,17 +556,17 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <div class="plan-card">
       <div class="plan-name">Starter</div>
       <div class="plan-limit">500</div>
-      <div class="plan-sub">per month · 60/min</div>
+      <div class="plan-sub">per month Â· 60/min</div>
     </div>
     <div class="plan-card pro">
       <div class="plan-name">Pro</div>
       <div class="plan-limit">5,000</div>
-      <div class="plan-sub">per month · 300/min</div>
+      <div class="plan-sub">per month Â· 300/min</div>
     </div>
     <div class="plan-card">
       <div class="plan-name">Business</div>
       <div class="plan-limit">50,000</div>
-      <div class="plan-sub">per month · 1,000/min</div>
+      <div class="plan-sub">per month Â· 1,000/min</div>
     </div>
   </div>
   <p>When you exceed the rate limit you'll receive a <span class="inline-code">429 Too Many Requests</span> response. Retry after the window resets (60 seconds).</p>
@@ -603,7 +603,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <span class="endpoint-path">/bulk</span>
     <span style="font-size:12px;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:4px;padding:2px 8px">Pro &amp; Business</span>
   </div>
-  <p>Enrich up to 50 domains in a single request. Runs concurrently — same speed as one. Each domain counts as 1 request against your monthly quota.</p>
+  <p>Enrich up to 50 domains in a single request. Runs concurrently â same speed as one. Each domain counts as 1 request against your monthly quota.</p>
   <table>
     <tr><th>Body Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
     <tr><td>domains</td><td>array</td><td>Yes</td><td>List of domains to enrich. Max 50.</td></tr>
@@ -665,7 +665,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
 }</code></pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" — whether data was served from cache or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" â whether data was served from cache or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
@@ -678,7 +678,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <tr><th>Status</th><th>Meaning</th></tr>
     <tr><td>400</td><td>Missing or invalid domain parameter</td></tr>
     <tr><td>401</td><td>Missing or invalid API key</td></tr>
-    <tr><td>429</td><td>Rate limit exceeded — retry after 60s</td></tr>
+    <tr><td>429</td><td>Rate limit exceeded â retry after 60s</td></tr>
     <tr><td>500</td><td>Scrape failed, please retry</td></tr>
   </table>
 
@@ -884,7 +884,7 @@ footer a:hover{{color:#fff}}
         onfocus="this.closest('#hero-demo-row').style.borderColor='#7c3aed'"
         onblur="this.closest('#hero-demo-row').style.borderColor='#2a2a2a'">
       <button id="hero-demo-btn" onclick="heroDemo()"
-        style="padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap">Analyze &#8594;</button>
+        style="padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap">Analyze -></button>
     </div>
   </div>
   <script>
@@ -899,7 +899,7 @@ footer a:hover{{color:#fff}}
     }} catch(e) {{
       window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
     }} finally {{
-      btn.disabled = false; btn.textContent = 'Analyze ÃÂ¢ÃÂÃÂ';
+      btn.disabled = false; btn.textContent = 'Analyze ->';;
     }}
   }}
   document.addEventListener('DOMContentLoaded', function() {{
