@@ -527,12 +527,12 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
   <a href="#errors">Error Codes</a>
   <a href="#examples">Code Examples</a>
   <div style="padding:24px 20px 0;margin-top:auto">
-    <a href="/" style="font-size:13px;color:#6b7280">ÃÂ¢ÃÂÃÂ Back to Home</a>
+    <a href="/" style="font-size:13px;color:#6b7280">ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Back to Home</a>
   </div>
 </nav>
 <main class="main">
   <h1>API Documentation</h1>
-  <p>Turn any domain into a complete company profile ÃÂ¢ÃÂÃÂ hiring signals, tech stack, and enrichment data in one REST API call.</p>
+  <p>Turn any domain into a complete company profile ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ hiring signals, tech stack, and enrichment data in one REST API call.</p>
 
   <h2 id="quickstart">Quick Start</h2>
   <p>Get your free API key at <a href="/">stacksight.org</a>, then make your first call:</p>
@@ -556,17 +556,17 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <div class="plan-card">
       <div class="plan-name">Starter</div>
       <div class="plan-limit">500</div>
-      <div class="plan-sub">per month ÃÂÃÂ· 60/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂ· 60/min</div>
     </div>
     <div class="plan-card pro">
       <div class="plan-name">Pro</div>
       <div class="plan-limit">5,000</div>
-      <div class="plan-sub">per month ÃÂÃÂ· 300/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂ· 300/min</div>
     </div>
     <div class="plan-card">
       <div class="plan-name">Business</div>
       <div class="plan-limit">50,000</div>
-      <div class="plan-sub">per month ÃÂÃÂ· 1,000/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂ· 1,000/min</div>
     </div>
   </div>
   <p>When you exceed the rate limit you'll receive a <span class="inline-code">429 Too Many Requests</span> response. Retry after the window resets (60 seconds).</p>
@@ -603,7 +603,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <span class="endpoint-path">/bulk</span>
     <span style="font-size:12px;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:4px;padding:2px 8px">Pro &amp; Business</span>
   </div>
-  <p>Enrich up to 50 domains in a single request. Runs concurrently ÃÂ¢ÃÂÃÂ same speed as one. Each domain counts as 1 request against your monthly quota.</p>
+  <p>Enrich up to 50 domains in a single request. Runs concurrently ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ same speed as one. Each domain counts as 1 request against your monthly quota.</p>
   <table>
     <tr><th>Body Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
     <tr><td>domains</td><td>array</td><td>Yes</td><td>List of domains to enrich. Max 50.</td></tr>
@@ -665,7 +665,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
 }</code></pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" ÃÂ¢ÃÂÃÂ whether data was served from cache or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ whether data was served from cache or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
@@ -678,7 +678,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <tr><th>Status</th><th>Meaning</th></tr>
     <tr><td>400</td><td>Missing or invalid domain parameter</td></tr>
     <tr><td>401</td><td>Missing or invalid API key</td></tr>
-    <tr><td>429</td><td>Rate limit exceeded ÃÂ¢ÃÂÃÂ retry after 60s</td></tr>
+    <tr><td>429</td><td>Rate limit exceeded ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ retry after 60s</td></tr>
     <tr><td>500</td><td>Scrape failed, please retry</td></tr>
   </table>
 
@@ -1469,115 +1469,186 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
     key_row = cur.fetchone()
     conn.close()
     if not key_row or not key_row[0]:
-        return HTMLResponse("""<!DOCTYPE html><html><head><title>StackSight</title>
-<style>body{font-family:sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-.box{background:#111;border:1px solid #222;border-radius:12px;padding:48px;text-align:center;max-width:400px}
-h2{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
-.btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
-<body><div class="box"><h2>No API Key Found</h2>
-<p>Your account doesn't have an active API key yet. Please sign up to get one.</p>
-<a href="/#signup" class="btn">Get Your Free API Key</a></div></body></html>""")
-    api_key, plan, used, limit_val, created_at = key_row
-    masked = api_key[:8] + ("*" * 24) + api_key[-4:]
-    pct = round((used / limit_val) * 100) if limit_val else 0
+        return HTMLResponse("""<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Dashboard - StackSight</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111;border:1px solid #222;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%}h2{font-size:1.5rem;margin-bottom:12px}p{color:#888;margin-bottom:24px}a{display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class='card'><h2>No API Key Found</h2><p>Contact support or generate a new key.</p><a href='/'>Go Home</a></div></body></html>""")
+    api_key, plan, requests_used, requests_limit, created_at = key_row
+    plan_color = {"free": "#6b7280", "starter": "#2563eb", "pro": "#7c3aed", "business": "#059669"}.get(plan, "#6b7280")
+    plan_limits = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
+    monthly_limit = plan_limits.get(plan, 25)
+    usage_pct = min(100, round((requests_used / monthly_limit) * 100)) if monthly_limit > 0 else 0
+    bar_color = "#ef4444" if usage_pct >= 90 else "#f59e0b" if usage_pct >= 70 else "#22c55e"
+    upgrade_html = ""
+    if plan == "free":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Starter - $29/mo</a>"
+    elif plan == "starter":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Pro - $99/mo</a>"
+    elif plan == "pro":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Business - $299/mo</a>"
     created_str = created_at.strftime("%B %d, %Y") if created_at else "N/A"
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Account - StackSight</title>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Dashboard - StackSight</title>
 <style>
-*{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;min-height:100vh}}
-nav{{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid #1f1f1f;background:#0d0d0d}}
-.logo{{font-size:20px;font-weight:700;color:#fff;text-decoration:none}}.logo span{{color:#6366f1}}
-.nav-links{{display:flex;gap:12px;align-items:center}}
-.btn-logout{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;text-decoration:none;font-size:14px}}
-.btn-logout:hover{{border-color:#555}}
-.container{{max-width:800px;margin:48px auto;padding:0 24px}}
-h1{{font-size:28px;font-weight:700;margin-bottom:8px}}
-.subtitle{{color:#b0b0b0;margin-bottom:40px;font-size:15px}}
-.card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:28px;margin-bottom:20px}}
-.card h2{{font-size:14px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #1f1f1f}}
-.field + .field{{border-top:1px solid #161616;padding-top:18px}}
-.field{{margin-bottom:20px}}
-.field label{{display:block;font-size:13px;color:#aaa;margin-bottom:6px}}
-.field .value{{font-size:15px;color:#e5e5e5;font-family:monospace;background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}}
-.field .value span{{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
-.copy-btn{{background:#6366f1;border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0}}
-.copy-btn:hover{{background:#4f46e5}}
-.badge{{display:inline-block;background:#1a1a2e;color:#6366f1;border:1px solid #2d2d5e;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;text-transform:capitalize}}
-.usage-bar{{background:#1a1a1a;border-radius:6px;height:8px;margin-top:8px;overflow:hidden}}
-.usage-fill{{background:#6366f1;height:100%;border-radius:6px;transition:width .3s}}
-.usage-label{{display:flex;justify-content:space-between;font-size:13px;color:#aaa;margin-top:6px}}
-.upgrade-btn{{display:inline-block;background:#6366f1;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-top:16px}}
-.upgrade-btn:hover{{background:#4f46e5}}
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#09090b;color:#fafafa;min-height:100vh}}
+nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}}
+.logo{{font-size:1.25rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:-0.5px}}
+.logo span{{color:#2563eb}}
+.nav-right{{display:flex;align-items:center;gap:16px}}
+.nav-email{{color:#71717a;font-size:0.875rem}}
+.logout-btn{{color:#71717a;font-size:0.875rem;text-decoration:none;padding:6px 12px;border:1px solid #27272a;border-radius:6px;transition:color 0.2s,border-color 0.2s}}
+.logout-btn:hover{{color:#fff;border-color:#52525b}}
+.container{{max-width:900px;margin:0 auto;padding:40px 24px}}
+h1{{font-size:1.875rem;font-weight:700;margin-bottom:4px}}
+.subtitle{{color:#71717a;margin-bottom:32px;font-size:0.9375rem}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:24px}}
+.card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px}}
+.card-label{{font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#71717a;margin-bottom:8px}}
+.card-value{{font-size:1.5rem;font-weight:700;color:#fff}}
+.card-sub{{font-size:0.8125rem;color:#52525b;margin-top:4px}}
+.plan-badge{{display:inline-flex;align-items:center;gap:6px;background:{plan_color}22;border:1px solid {plan_color}44;color:{plan_color};padding:4px 12px;border-radius:20px;font-size:0.875rem;font-weight:600;text-transform:capitalize}}
+.usage-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.usage-header{{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}}
+.usage-title{{font-size:1rem;font-weight:600}}
+.usage-count{{font-size:0.875rem;color:#71717a}}
+.bar-bg{{background:#1f1f23;border-radius:99px;height:8px;overflow:hidden}}
+.bar-fill{{height:8px;border-radius:99px;background:{bar_color};width:{usage_pct}%;transition:width 0.6s ease}}
+.usage-footer{{display:flex;justify-content:space-between;margin-top:8px;font-size:0.75rem;color:#52525b}}
+.key-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.key-label{{font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#71717a;margin-bottom:12px}}
+.key-row{{display:flex;gap:8px;align-items:center}}
+.key-input{{flex:1;background:#0d0d0f;border:1px solid #27272a;border-radius:8px;padding:10px 14px;color:#a1a1aa;font-family:'Courier New',monospace;font-size:0.875rem;outline:none}}
+.copy-btn{{background:#1f1f23;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#a1a1aa;cursor:pointer;font-size:0.875rem;white-space:nowrap;transition:all 0.2s}}
+.copy-btn:hover{{background:#27272a;color:#fff}}
+.code-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.code-card h3{{font-size:1rem;font-weight:600;margin-bottom:16px}}
+.code-tabs{{display:flex;gap:2px;background:#0d0d0f;border-radius:8px;padding:4px;margin-bottom:16px;width:fit-content}}
+.code-tab{{padding:6px 14px;border-radius:6px;font-size:0.8125rem;cursor:pointer;color:#71717a;border:none;background:transparent;transition:all 0.2s}}
+.code-tab.active{{background:#1f1f23;color:#fff}}
+pre{{background:#0d0d0f;border:1px solid #1f1f23;border-radius:8px;padding:16px;overflow-x:auto;font-size:0.8125rem;line-height:1.6;color:#a1a1aa}}
+code .key{{color:#22c55e}}
+code .str{{color:#f59e0b}}
+code .kw{{color:#60a5fa}}
+.upgrade-section{{text-align:center;padding:32px;background:#111113;border:1px solid #1f1f23;border-radius:12px;margin-bottom:24px}}
+.upgrade-section p{{color:#71717a;margin-bottom:16px;font-size:0.9375rem}}
+.upgrade-btn{{display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9375rem;transition:background 0.2s}}
+.upgrade-btn:hover{{background:#1d4ed8}}
 </style>
 </head>
 <body>
 <nav>
-  <a href="/" class="logo">Stack<span>Sight</span></a>
-  <div class="nav-links">
-    <a href="/dashboard" style="color:#6366f1;text-decoration:none;font-size:14px;font-weight:500">My Account</a>
-    <a href="/logout" class="btn-logout">Sign Out</a>
+  <a class='logo' href='/'>Stack<span>Sight</span></a>
+  <div class='nav-right'>
+    <span class='nav-email'>{email}</span>
+    <a href='/logout' class='logout-btn'>Sign out</a>
   </div>
 </nav>
-<div class="container">
-  <h1>My Account</h1>
-  <p class="subtitle">Signed in as {email}</p>
-
-  <div class="card">
-    <h2>API Key</h2>
-    <div class="field">
-      <label>Your API Key</label>
-      <div class="value">
-        <span id="api-key-display">{masked}</span>
-        <button class="copy-btn" onclick="copyKey('{api_key}')">Copy</button>
-      </div>
+<div class='container'>
+  <h1>Dashboard</h1>
+  <p class='subtitle'>Manage your API key and monitor usage</p>
+  <div class='grid'>
+    <div class='card'>
+      <div class='card-label'>Current Plan</div>
+      <div style='margin-top:4px'><span class='plan-badge'>{plan}</span></div>
+      <div class='card-sub'>Member since {created_str}</div>
     </div>
-    <div class="field">
-      <label>Member Since</label>
-      <div style="font-size:15px;color:#e5e5e5">{created_str}</div>
+    <div class='card'>
+      <div class='card-label'>Requests This Month</div>
+      <div class='card-value'>{requests_used:,}</div>
+      <div class='card-sub'>of {monthly_limit:,} included</div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>Plan & Usage</h2>
-    <div class="field">
-      <label>Current Plan</label>
-      <span class="badge">{plan}</span>
-    </div>
-    <div class="field">
-      <label>API Requests This Month</label>
-      <div class="usage-bar"><div class="usage-fill" style="width:{pct}%"></div></div>
-      <div class="usage-label"><span>{used} used</span><span>{limit_val} limit</span></div>
-    </div>
-    {"" if plan != "free" else '<a href="/checkout/pro" class="upgrade-btn">Upgrade to Pro</a>'}
-  </div>
-
-  <div class="card">
-    <h2>Quick Start</h2>
-    <div class="field">
-      <label>Example API Call</label>
-      <div class="value" style="font-size:13px">
-        <span>curl https://stacksight.org/scrape?domain=stripe.com -H "X-API-Key: YOUR_KEY"</span>
-      </div>
+    <div class='card'>
+      <div class='card-label'>Monthly Reset</div>
+      <div class='card-value' id='reset-countdown'>--</div>
+      <div class='card-sub'>days remaining</div>
     </div>
   </div>
+  <div class='usage-card'>
+    <div class='usage-header'>
+      <span class='usage-title'>Monthly Usage</span>
+      <span class='usage-count'>{requests_used:,} / {monthly_limit:,} requests</span>
+    </div>
+    <div class='bar-bg'><div class='bar-fill'></div></div>
+    <div class='usage-footer'><span>0</span><span>{usage_pct}% used</span><span>{monthly_limit:,}</span></div>
+  </div>
+  <div class='key-card'>
+    <div class='key-label'>Your API Key</div>
+    <div class='key-row'>
+      <input class='key-input' id='apikey' type='password' value='{api_key}' readonly>
+      <button class='copy-btn' id='toggleBtn' onclick='toggleKey()'>Show</button>
+      <button class='copy-btn' id='copyBtn' onclick='copyKey()'>Copy</button>
+    </div>
+  </div>
+  <div class='code-card'>
+    <h3>Quick Start</h3>
+    <div class='code-tabs'>
+      <button class='code-tab active' onclick='showTab(this,"curl")'>cURL</button>
+      <button class='code-tab' onclick='showTab(this,"python")'>Python</button>
+      <button class='code-tab' onclick='showTab(this,"js")'>JavaScript</button>
+    </div>
+    <div id='tab-curl'>
+<pre><code>curl "https://stacksight.org/scrape?domain=stripe.com" \
+  -H "<span class='kw'>X-API-Key</span>: <span class='key'>YOUR_KEY</span>"</code></pre>
+    </div>
+    <div id='tab-python' style='display:none'>
+<pre><code><span class='kw'>import</span> requests
+
+resp = requests.get(
+    <span class='str'>"https://stacksight.org/scrape"</span>,
+    params={{<span class='str'>"domain"</span>: <span class='str'>"stripe.com"</span>}},
+    headers={{<span class='str'>"X-API-Key"</span>: <span class='str'>"<span class='key'>YOUR_KEY</span>"</span>}}
+)
+<span class='kw'>print</span>(resp.json())</code></pre>
+    </div>
+    <div id='tab-js' style='display:none'>
+<pre><code><span class='kw'>const</span> res = <span class='kw'>await</span> fetch(
+  <span class='str'>"https://stacksight.org/scrape?domain=stripe.com"</span>,
+  {{headers: {{<span class='str'>"X-API-Key"</span>: <span class='str'>"<span class='key'>YOUR_KEY</span>"</span>}}}}
+);
+<span class='kw'>const</span> data = <span class='kw'>await</span> res.json();</code></pre>
+    </div>
+  </div>
+  {upgrade_html and f"<div class='upgrade-section'><p>Unlock more requests and higher rate limits</p>{upgrade_html}</div>" or ""}
 </div>
 <script>
-function copyKey(key) {{
-  navigator.clipboard.writeText(key).then(function(){{
-    var btn = event.target;
+function toggleKey() {{
+  const inp = document.getElementById('apikey');
+  const btn = document.getElementById('toggleBtn');
+  if (inp.type === 'password') {{ inp.type = 'text'; btn.textContent = 'Hide'; }}
+  else {{ inp.type = 'password'; btn.textContent = 'Show'; }}
+}}
+function copyKey() {{
+  const val = document.getElementById('apikey').value;
+  navigator.clipboard.writeText(val).then(() => {{
+    const btn = document.getElementById('copyBtn');
     btn.textContent = 'Copied!';
-    setTimeout(function(){{btn.textContent='Copy';}}, 2000);
+    setTimeout(() => btn.textContent = 'Copy', 2000);
   }});
 }}
+function showTab(el, name) {{
+  document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['curl','python','js'].forEach(t => {{
+    document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
+  }});
+}}
+// Days until end of month
+(function() {{
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  const days = Math.ceil((end - now) / 86400000);
+  document.getElementById('reset-countdown').textContent = days;
+}})();
+// Replace YOUR_KEY placeholders with masked key
+document.querySelectorAll('code').forEach(el => {{
+  el.innerHTML = el.innerHTML.replace(/YOUR_KEY/g, '{api_key[:8]}...');
+}});
 </script>
-</body></html>"""
-    return HTMLResponse(content=html)
-# ROUTES  FREE SIGNUP
-# 
+</body>
+</html>"""
+    return HTMLResponse(html)
 
 @app.post("/signup")
 async def signup(request: Request, background_tasks: BackgroundTasks):
