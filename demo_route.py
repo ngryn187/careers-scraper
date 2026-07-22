@@ -12,7 +12,7 @@ def get_session_email(request: Request):
     from scraper import SESSIONS
     return SESSIONS.get(token)
 
-async def demo_page(domain: str, request: Request):
+async def demo_page(domain: str, request: Request, sessions: dict = {}):
     email = get_session_email(request)
     if not email:
         return RedirectResponse(f"/login?next=/demo/{domain}")
