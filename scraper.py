@@ -527,12 +527,12 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
   <a href="#errors">Error Codes</a>
   <a href="#examples">Code Examples</a>
   <div style="padding:24px 20px 0;margin-top:auto">
-    <a href="/" style="font-size:13px;color:#6b7280">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Back to Home</a>
+    <a href="/" style="font-size:13px;color:#6b7280">ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Back to Home</a>
   </div>
 </nav>
 <main class="main">
   <h1>API Documentation</h1>
-  <p>Turn any domain into a complete company profile ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ hiring signals, tech stack, and enrichment data in one REST API call.</p>
+  <p>Turn any domain into a complete company profile ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ hiring signals, tech stack, and enrichment data in one REST API call.</p>
 
   <h2 id="quickstart">Quick Start</h2>
   <p>Get your free API key at <a href="/">stacksight.org</a>, then make your first call:</p>
@@ -556,17 +556,17 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <div class="plan-card">
       <div class="plan-name">Starter</div>
       <div class="plan-limit">500</div>
-      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 60/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 60/min</div>
     </div>
     <div class="plan-card pro">
       <div class="plan-name">Pro</div>
       <div class="plan-limit">5,000</div>
-      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 300/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 300/min</div>
     </div>
     <div class="plan-card">
       <div class="plan-name">Business</div>
       <div class="plan-limit">50,000</div>
-      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 1,000/min</div>
+      <div class="plan-sub">per month ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ· 1,000/min</div>
     </div>
   </div>
   <p>When you exceed the rate limit you'll receive a <span class="inline-code">429 Too Many Requests</span> response. Retry after the window resets (60 seconds).</p>
@@ -603,7 +603,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <span class="endpoint-path">/bulk</span>
     <span style="font-size:12px;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:4px;padding:2px 8px">Pro &amp; Business</span>
   </div>
-  <p>Enrich up to 50 domains in a single request. Runs concurrently ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ same speed as one. Each domain counts as 1 request against your monthly quota.</p>
+  <p>Enrich up to 50 domains in a single request. Runs concurrently ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ same speed as one. Each domain counts as 1 request against your monthly quota.</p>
   <table>
     <tr><th>Body Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
     <tr><td>domains</td><td>array</td><td>Yes</td><td>List of domains to enrich. Max 50.</td></tr>
@@ -665,7 +665,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
 }</code></pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ whether data was served from cache or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ whether data was served from cache or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
@@ -678,7 +678,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <tr><th>Status</th><th>Meaning</th></tr>
     <tr><td>400</td><td>Missing or invalid domain parameter</td></tr>
     <tr><td>401</td><td>Missing or invalid API key</td></tr>
-    <tr><td>429</td><td>Rate limit exceeded ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ retry after 60s</td></tr>
+    <tr><td>429</td><td>Rate limit exceeded ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ retry after 60s</td></tr>
     <tr><td>500</td><td>Scrape failed, please retry</td></tr>
   </table>
 
@@ -1715,8 +1715,90 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo(domain: str, request: Request):
-    from demo_route import demo_page
-    return await demo_page(domain, request, SESSIONS)
+    # Auth check using in-memory SESSIONS
+    token = request.cookies.get("session")
+    email = SESSIONS.get(token) if token else None
+    if not email:
+        return RedirectResponse(f"/login?next=/demo/{domain}")
+
+    # Call the scrape endpoint internally
+    import httpx as _httpx
+    base = os.environ.get("BASE_URL", "https://stacksight.org")
+    data, src = {}, "error"
+    try:
+        async with _httpx.AsyncClient(timeout=30) as client:
+            r = await client.get(f"{base}/scrape", params={"domain": domain}, cookies=dict(request.cookies))
+        if r.status_code == 200:
+            d = r.json()
+            data = d.get("data", {})
+            src = d.get("source", "live")
+    except Exception:
+        pass
+
+    jobs = data.get("jobs", [])
+    tech = data.get("tech_stack", [])
+    is_hiring = data.get("is_hiring")
+    if is_hiring is True:
+        hiring_badge = "<span style='background:#052e16;color:#22c55e;border:1px solid #166534;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Actively Hiring</span>"
+    elif is_hiring is False:
+        hiring_badge = "<span style='background:#1f0a0a;color:#ef4444;border:1px solid #991b1b;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Not Hiring</span>"
+    else:
+        hiring_badge = "<span style='background:#1c1c1e;color:#71717a;border:1px solid #27272a;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Unknown</span>"
+
+    jobs_html = "".join(f"<div style='padding:12px 0;border-bottom:1px solid #1f1f23'><div style='font-weight:600'>{j.get('title','')}</div><div style='color:#71717a;font-size:.875rem'>{j.get('department','')}</div></div>" for j in jobs[:10]) or "<p style='color:#52525b'>No open jobs found.</p>"
+    tech_html = "".join(f"<span style='background:#1f1f23;border:1px solid #27272a;padding:4px 10px;border-radius:6px;font-size:.8125rem'>{t}</span>" for t in tech[:20]) or "<span style='color:#52525b'>None detected</span>"
+
+    html = f"""<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Demo: {domain} - StackSight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#fafafa;min-height:100vh}}
+nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}}
+.logo{{font-size:1.25rem;font-weight:700;color:#fff;text-decoration:none}}
+.logo span{{color:#2563eb}}
+.container{{max-width:860px;margin:0 auto;padding:40px 24px}}
+.search-bar{{display:flex;gap:8px;margin-bottom:32px}}
+.search-bar input{{flex:1;background:#111113;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#fff;font-size:1rem;outline:none}}
+.search-bar input:focus{{border-color:#2563eb}}
+.search-bar button{{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:600}}
+.card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:20px}}
+.card h2{{font-size:1rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#71717a;margin-bottom:16px}}
+.meta{{display:flex;align-items:center;gap:12px;margin-bottom:8px}}
+.source{{font-size:.75rem;color:#52525b}}
+.tech-wrap{{display:flex;flex-wrap:wrap;gap:8px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class='logo' href='/'>Stack<span>Sight</span></a>
+  <a href='/dashboard' style='color:#71717a;font-size:.875rem;text-decoration:none'>Dashboard</a>
+</nav>
+<div class='container'>
+  <form class='search-bar' onsubmit='event.preventDefault();window.location="/demo/"+encodeURIComponent(document.getElementById("d").value.trim())'>
+    <input id='d' value='{domain}' placeholder='Enter a domain...' required>
+    <button type='submit'>Analyze</button>
+  </form>
+  <div class='card'>
+    <h2>Overview</h2>
+    <div class='meta'><strong style='font-size:1.25rem'>{domain}</strong> {hiring_badge}</div>
+    <div class='source'>Source: {src}</div>
+  </div>
+  <div class='card'>
+    <h2>Tech Stack</h2>
+    <div class='tech-wrap'>{tech_html}</div>
+  </div>
+  <div class='card'>
+    <h2>Open Jobs ({len(jobs)})</h2>
+    {jobs_html}
+  </div>
+</div>
+</body>
+</html>"""
+    return HTMLResponse(html)
 @app.get("/scrape")
 async def scrape_redirect(request: Request, domain: str = None, x_api_key: str = Header(None)):
     """Backward-compat redirect to /v1/enrich"""
