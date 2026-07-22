@@ -4,16 +4,14 @@ import httpx, os
 
 BASE_URL = os.environ.get("BASE_URL", "https://stacksight.org")
 
-def get_session_email(request: Request):
+def get_session_email(request: Request, sessions: dict = {}):
     token = request.cookies.get("session")
     if not token:
         return None
-    # Import from main app
-    from scraper import SESSIONS
-    return SESSIONS.get(token)
+    return sessions.get(token)
 
 async def demo_page(domain: str, request: Request, sessions: dict = {}):
-    email = get_session_email(request)
+    email = get_session_email(request, sessions)
     if not email:
         return RedirectResponse(f"/login?next=/demo/{domain}")
 
