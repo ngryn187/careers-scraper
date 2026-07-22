@@ -527,12 +527,12 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
   <a href="#errors">Error Codes</a>
   <a href="#examples">Code Examples</a>
   <div style="padding:24px 20px 0;margin-top:auto">
-    <a href="/" style="font-size:13px;color:#6b7280">â Back to Home</a>
+    <a href="/" style="font-size:13px;color:#6b7280">Ã¢ÂÂ Back to Home</a>
   </div>
 </nav>
 <main class="main">
   <h1>API Documentation</h1>
-  <p>Turn any domain into a complete company profile â hiring signals, tech stack, and enrichment data in one REST API call.</p>
+  <p>Turn any domain into a complete company profile Ã¢ÂÂ hiring signals, tech stack, and enrichment data in one REST API call.</p>
 
   <h2 id="quickstart">Quick Start</h2>
   <p>Get your free API key at <a href="/">stacksight.org</a>, then make your first call:</p>
@@ -556,17 +556,17 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <div class="plan-card">
       <div class="plan-name">Starter</div>
       <div class="plan-limit">500</div>
-      <div class="plan-sub">per month Â· 60/min</div>
+      <div class="plan-sub">per month ÃÂ· 60/min</div>
     </div>
     <div class="plan-card pro">
       <div class="plan-name">Pro</div>
       <div class="plan-limit">5,000</div>
-      <div class="plan-sub">per month Â· 300/min</div>
+      <div class="plan-sub">per month ÃÂ· 300/min</div>
     </div>
     <div class="plan-card">
       <div class="plan-name">Business</div>
       <div class="plan-limit">50,000</div>
-      <div class="plan-sub">per month Â· 1,000/min</div>
+      <div class="plan-sub">per month ÃÂ· 1,000/min</div>
     </div>
   </div>
   <p>When you exceed the rate limit you'll receive a <span class="inline-code">429 Too Many Requests</span> response. Retry after the window resets (60 seconds).</p>
@@ -603,7 +603,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <span class="endpoint-path">/bulk</span>
     <span style="font-size:12px;color:#a855f7;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:4px;padding:2px 8px">Pro &amp; Business</span>
   </div>
-  <p>Enrich up to 50 domains in a single request. Runs concurrently â same speed as one. Each domain counts as 1 request against your monthly quota.</p>
+  <p>Enrich up to 50 domains in a single request. Runs concurrently Ã¢ÂÂ same speed as one. Each domain counts as 1 request against your monthly quota.</p>
   <table>
     <tr><th>Body Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
     <tr><td>domains</td><td>array</td><td>Yes</td><td>List of domains to enrich. Max 50.</td></tr>
@@ -665,7 +665,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
 }</code></pre>
   <table>
     <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    <tr><td>source</td><td>string</td><td>"cache" or "live" â whether data was served from cache or freshly scraped</td></tr>
+    <tr><td>source</td><td>string</td><td>"cache" or "live" Ã¢ÂÂ whether data was served from cache or freshly scraped</td></tr>
     <tr><td>data.company_name</td><td>string</td><td>Resolved company name</td></tr>
     <tr><td>data.is_hiring</td><td>boolean</td><td>Whether the company is actively hiring</td></tr>
     <tr><td>data.engineering_roles</td><td>array</td><td>Engineering job titles detected</td></tr>
@@ -678,7 +678,7 @@ td:first-child{color:#a855f7;font-family:monospace;font-size:13px}
     <tr><th>Status</th><th>Meaning</th></tr>
     <tr><td>400</td><td>Missing or invalid domain parameter</td></tr>
     <tr><td>401</td><td>Missing or invalid API key</td></tr>
-    <tr><td>429</td><td>Rate limit exceeded â retry after 60s</td></tr>
+    <tr><td>429</td><td>Rate limit exceeded Ã¢ÂÂ retry after 60s</td></tr>
     <tr><td>500</td><td>Scrape failed, please retry</td></tr>
   </table>
 
@@ -1643,120 +1643,9 @@ h1{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
 # 
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
-async def demo(domain: str):
-    clean = domain.lower().strip().rstrip("/").replace("https://", "").replace("http://", "")
-    esc = html.escape(clean)
-    from urllib.parse import quote as _urlquote
-    url_clean = _urlquote(clean, safe="")
-    data = DEMO_DATA.get(clean, {"company_name": clean.split(".")[0].title(), "is_hiring": True, "engineering_roles": ["Software Engineer"], "sales_roles": ["Account Executive"], "detected_tech_stack": ["JavaScript", "AWS"]})
-    return HTMLResponse(f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Demo: {esc} - StackSight</title>
-<meta name="description" content="See real-time hiring data and tech stack for {esc} via the StackSight API. Free demo -- no signup required.">
-<meta name="robots" content="index,follow">
-<meta property="og:title" content="StackSight Demo: {esc}">
-<meta property="og:description" content="Live hiring intent and tech stack data for {esc}. Powered by StackSight.">
-<meta property="og:url" content="https://stacksight.org/demo/{url_clean}">
-<meta property="og:type" content="website">
-<link rel="canonical" href="https://stacksight.org/demo/{url_clean}">
-<style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
-nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:fixed;top:0;left:0;right:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}}
-.logo{{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}}
-.nav-links a{{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px}}.nav-links a:hover{{color:#fff}}
-.nav-links .btn-login{{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px}}
-.wrap{{max-width:900px;margin:0 auto;padding:110px 20px 60px}}
-.hero{{text-align:center;margin-bottom:40px}}
-h1{{font-size:36px;font-weight:800;margin-bottom:10px}}
-h1 span{{color:#a855f7}}
-.sub{{color:#999;font-size:16px}}
-.sub a{{color:#a855f7;text-decoration:none}}
-.card{{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:24px}}
-.company-card{{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px}}
-.company-name{{font-size:26px;font-weight:800}}
-.company-domain{{color:#777;font-size:14px;font-family:monospace}}
-.badge-hiring{{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}}
-.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:16px}}
-.card h3{{font-size:13px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}}
-.role-list{{list-style:none}}
-.role-list li{{padding:6px 0;color:#b0b0b0;border-bottom:1px solid #0f0f0f;font-size:14px}}
-.role-list li:last-child{{border-bottom:none}}
-.pill{{background:#1a0a2e;color:#a855f7;border:1px solid #3b1a6e;padding:4px 12px;border-radius:20px;font-size:13px;display:inline-block;margin:3px}}
-.raw-label{{font-size:13px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.8px;margin:24px 0 8px}}
-pre{{background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:20px;padding-top:44px;overflow-x:auto;font-size:13px;color:#ccc;line-height:1.7;margin:12px 0;position:relative}}
-pre::before{{content:"";position:absolute;top:0;left:0;right:0;height:30px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;border-radius:7px 7px 0 0}}
-pre::after{{content:"";position:absolute;top:11px;left:14px;width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:14px 0 0 #eab308,28px 0 0 #22c55e}}
-.cta{{text-align:center;padding:48px 20px 20px}}
-.cta h2{{font-size:28px;font-weight:800;margin-bottom:20px}}
-.btn-primary{{display:inline-block;background:#a855f7;color:#fff;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin:6px}}
-.btn-primary:hover{{background:#9333ea}}
-.btn-secondary{{display:inline-block;border:1px solid #333;color:#e5e5e5;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin:6px}}
-.btn-secondary:hover{{border-color:#555}}
-footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#666;font-size:13px}}
-footer a{{color:#888;text-decoration:none}}
-footer a:hover{{color:#fff}}
-@media(max-width:640px){{h1{{font-size:28px}}nav{{padding:14px 20px}}}}
-</style></head>
-<body>
-<nav><a href="/" class="logo">StackSight</a><div class="nav-links"><a href="/">Home</a><a href="/docs">Docs</a><a href="/#pricing">Pricing</a><a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a></div></nav>
-<script>
-(function(){{
-  fetch('/usage',{{'credentials':'include'}}).then(r=>{{
-    if(r.ok){{r.json().then(d=>{{
-      var btn=document.getElementById('nav-auth-btn');
-      if(btn){{btn.textContent='My Account';btn.href='/dashboard';}}
-    }});}}
-  }}).catch(function(){{}});
-}})();
-</script>
-<div class="wrap">
-  <div class="hero">
-    <h1>Live Demo: <span>{esc}</span></h1>
-    <p class="sub">This is cached demo data. <a href="/#signup">Sign up free</a> to analyze any domain live.</p>
-  </div>
-  <div class="card company-card">
-    <div>
-      <div class="company-name">{html.escape(str(data.get('company_name', clean)))}</div>
-      <div class="company-domain">{esc}</div>
-    </div>
-    <div class="badge-hiring" style="color:{"#22c55e" if data.get('is_hiring') else "#ef4444"};background:{"#0a1f0a" if data.get('is_hiring') else "#1f0a0a"};border:1px solid {"#22c55e" if data.get('is_hiring') else "#ef4444"}">{"-- Hiring" if data.get('is_hiring') else "-- Not Hiring"}</div>
-  </div>
-  <div class="grid">
-    <div class="card">
-      <h3>Engineering Roles</h3>
-      <ul class="role-list">{"".join(f'<li>{r}</li>' for r in data.get("engineering_roles", [])) or '<li>None detected</li>'}</ul>
-    </div>
-    <div class="card">
-      <h3>Sales Roles</h3>
-      <ul class="role-list">{"".join(f'<li>{r}</li>' for r in data.get("sales_roles", [])) or '<li>None detected</li>'}</ul>
-    </div>
-    <div class="card">
-      <h3>Tech Stack</h3>
-      <div>{"".join(f'<span class="pill">{t}</span>' for t in data.get("detected_tech_stack", [])) or '<span class="pill">Unknown</span>'}</div>
-    </div>
-  </div>
-  <div class="raw-label">Raw API Response</div>
-  <pre>{json.dumps({"source": "demo", "data": data}, indent=2)}</pre>
-  <div class="cta">
-    <h2>Ready to integrate?</h2>
-    <a href="/#signup" class="btn-primary">Get Free API Key</a>
-    <a href="/docs" class="btn-secondary">View API Docs</a>
-  </div>
-</div>
-<footer>
-  <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
-  <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
-  </div>
-  <div style="margin-bottom:8px">
-    <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
-  </div>
-  <div>&copy; 2026 StackSight &nbsp;&nbsp; <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
-</footer>
-</body></html>""")
-
-
+async def demo(domain: str, request: Request):
+    from demo_route import demo_page
+    return await demo_page(domain, request)
 @app.get("/scrape")
 async def scrape_redirect(request: Request, domain: str = None, x_api_key: str = Header(None)):
     """Backward-compat redirect to /v1/enrich"""
