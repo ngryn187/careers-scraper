@@ -988,10 +988,1252 @@ footer a:hover{{color:#fff}}
   fetch("/session-check",{{credentials:"include"}}).then(r=>r.json()).then(d=>{{
     if(d.logged_in){{
       var btn=document.getElementById("nav-auth-btn");
-      if(btn){{btn.outerHTML="<a href='/dashboard' id='nav-auth-btn' title='My Account' style='display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#a855f7' stroke-width='2'><circle cx='12' cy='8' r='4'/><path d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/></svg></a>";}}
+      if(btn){{btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}}
     }}
   }}).catch(function(){{}});
 }})();
+</script>
+<div class="hero">
+  <div class="badge">Live Data</div>
+  <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
+  <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment  all in one REST API.</p>
+  <div class="cta-group">
+    <a href="#signup" class="btn-primary"> Start for Free</a>
+    <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
+  </div>
+  <div style="margin-top:48px;text-align:center">
+    <div <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;margin-top:12px">Try any domain</p>
+    <div "hero-demo-row" style="display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;max-width:480px;margin:0 auto">
+      <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off"
+        style="flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none"
+        onfocus="this.closest('#hero-demo-row').style.borderColor='#7c3aed'"
+        onblur="this.closest('#hero-demo-row').style.borderColor='#2a2a2a'">
+      <button id="hero-demo-btn" onclick="heroDemo()"
+        style="padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap">Analyze -></button>
+    </div>
+  </div>
+  <script>
+  async function heroDemo() {{
+    var domain = document.getElementById('hero-domain-input').value.trim() || 'stripe.com';
+    var btn = document.getElementById('hero-demo-btn');
+    btn.textContent = 'Checking...'; btn.disabled = true;
+    try {{
+      var r = await fetch('/usage', {{credentials:'include'}});
+      if (!r.ok) {{ window.location.href = '/login?next=/demo/' + encodeURIComponent(domain); return; }}
+      window.location.href = '/demo/' + encodeURIComponent(domain);
+    }} catch(e) {{
+      window.location.href = '/login?next=/demo/' + encodeURIComponent(domain);
+    }} finally {{
+      btn.disabled = false; btn.textContent = 'Analyze ->';;
+    }}
+  }}
+  document.addEventListener('DOMContentLoaded', function() {{
+    var inp = document.getElementById('hero-domain-input');
+    if (inp) inp.addEventListener('keydown', function(e) {{ if (e.key==='Enter') heroDemo(); }});
+  }});
+  </script>
+</div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">Any</div><div class="stat-label">domain, analyzed live</div></div>
+  <div class="stat"><div class="stat-num">&lt;100ms</div><div class="stat-label">cached response time</div></div>
+  <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Tech signals detected</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Lines to integrate</div></div>
+</div>
+<div class="use-cases">
+  <h2>Built for teams that move fast</h2>
+  <p class="sub">From sales to engineering -- StackSight gives every team the domain intelligence they need.</p>
+  <div class="use-grid">
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h3>Hiring Intent</h3><p>When a company posts 10 new sales roles, that's a buying signal. StackSight surfaces it instantly.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><h3>Tech Stack Intel</h3><p>Know what frontend frameworks, analytics, and marketing tech your prospect runs before your first call.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><h3>Bulk Enrichment</h3><p>Enrich your entire CRM overnight. 50 domains per request, Redis-cached for speed.</p></div>
+    <div class="use-card"><div class="use-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div><h3>CRM Automation</h3><p>Pipe signals directly into your CRM or Slack. Trigger sequences when companies show intent.</p></div>
+  </div>
+</div>
+<div class="how">
+  <h2>Up and running in minutes</h2>
+  <p class="sub">No complex setup. No sales call required.</p>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h4>Get your API key</h4><p>Sign up with your email. Instant delivery, no credit card.</p></div>
+    <div class="step"><div class="step-num">2</div><h4>Make your first call</h4><p>Pass any domain to our REST endpoint. Get structured JSON back.</p></div>
+    <div class="step"><div class="step-num">3</div><h4>Pipe it into your stack</h4><p>Connect to your CRM, Slack, or data warehouse in minutes.</p></div>
+  </div>
+</div>
+<div class="code-section">
+  <h2>Simple REST API</h2>
+  <p class="sub">One endpoint. Structured JSON. Works with any language.</p>
+  <div class="code-tabs"><div class="tab active">cURL</div></div>
+  <pre>curl -X GET "https://stacksight.org/scrape?domain=stripe.com" \
+     -H "X-API-Key: YOUR_API_KEY"
+
+<span class="k">"company_name"</span>: <span class="s">"Stripe"</span>,
+<span class="k">"is_hiring"</span>: <span class="n">true</span>,
+<span class="k">"engineering_roles"</span>: [<span class="s">"Backend Engineer"</span>, <span class="s">"ML Engineer"</span>],
+<span class="k">"sales_roles"</span>: [<span class="s">"Account Executive"</span>],
+<span class="k">"detected_tech_stack"</span>: [<span class="s">"React"</span>, <span class="s">"AWS"</span>, <span class="s">"Cloudflare"</span>]</pre>
+</div>
+<div class="signup-section" id="signup">
+  <h2>Start for free</h2>
+  <p>25 lookups &nbsp;&bull;&nbsp; no credit card &nbsp;&bull;&nbsp; instant delivery</p>
+  <div class="form-row">
+    <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
+    <button onclick="signup()">Get My Free Key</button>
+  </div>
+  <div class="msg" id="signup-msg"></div>
+  <div class="trust-badges">
+    <span class="trust-badge"> No credit card</span>
+    <span class="trust-badge"> Instant delivery</span>
+    <span class="trust-badge"> No spam ever</span>
+  </div>
+</div>
+
+<div class="why-section" id="why">
+  <h2>Why developers choose StackSight</h2>
+  <p class="sub">We're not the biggest. We're the fastest, cheapest, and simplest.</p>
+  <div class="why-grid">
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Real-time data</strong><p>We scrape live -- days-fresh data -- not a months-old database. What you get is what's on their site today.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>10x cheaper</strong><p>No enterprise pricing. No annual contracts. No minimum seats. Pay for what you use.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Zero friction</strong><p>Sign up, get a key, make a call. No sales calls, no demos, no approval process.</p></div></div>
+    <div class="why-item"><span class="why-check">&#10003;</span><div><strong>Simple API</strong><p>One endpoint, clean JSON, works in minutes. No SDKs required, no complex setup.</p></div></div>
+  </div>
+  <p class="why-footer">Our competitors have broader data -- contact info, firmographics, CRM integrations. If you need all that, use them. If you need fast, fresh, affordable hiring signals and tech stack data -- that's us.</p>
+</div>
+<div class="pricing" id="pricing">
+  <h2>Simple Pricing</h2>
+  <p class="sub">Scale as you grow. Cancel any time.</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-limit">25 requests total</div>
+      <ul><li>25 API requests</li><li>JSON responses</li><li>Tech stack detection</li><li>Community support</li></ul>
+      <a href="#signup" class="btn-ps">Get Started Free</a>
+    </div>
+        <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$12<span>/mo</span></div>
+      <div class="plan-limit">500 requests/month</div>
+      <ul><li>500 API requests/month</li><li>JSON responses</li><li>Tech stack detection</li><li>Hiring intent signals</li><li>Email support</li></ul>
+      <a href="/checkout/starter" class="btn-pp">Get Starter </a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">MOST POPULAR</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$39<span>/mo</span></div>
+      <div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:10px">billed annually &bull; save 20%</div>
+      <div class="plan-limit">5,000 requests/month</div>
+      <ul><li>5,000 API requests/month</li><li>300 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Redis-cached responses</li><li>Priority support</li></ul>
+      <a href="/choose/pro" class="btn-pp">Get Pro</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">$166<span>/mo</span></div>
+      <div style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:10px">billed annually &bull; save 20%</div>
+      <div class="plan-limit">50,000 requests/month</div>
+      <ul><li>50,000 API requests/month</li><li>1,000 req/min rate limit</li><li>Bulk API (50 domains)</li><li>Webhook support</li><li>Dedicated support</li></ul>
+      <a href="/choose/business" class="btn-pp">Get Business</a>
+    </div>
+  </div>
+</div>
+<div class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What is hiring intent data?</span><span>+</span></div><div class="faq-a">Hiring intent data tells you when a company is actively growing by tracking their job postings. When a company posts multiple new roles it is a strong signal they have budget and momentum. StackSight captures this in real time.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the tech stack detection?</span><span>+</span></div><div class="faq-a">Very accurate. We parse actual HTML script tags and headers, not guesses. If a company uses React, we see the React bundle in their page source. 100% deterministic.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How fresh is the data?</span><span>+</span></div><div class="faq-a">Results are cached for 7 days in Redis. For most use cases this is ideal. Cache misses trigger a live scrape that returns in seconds.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I use this in my CRM?</span><span>+</span></div><div class="faq-a">Yes. Our REST API returns structured JSON that integrates with any CRM, data warehouse, or automation tool. Many customers pipe signals directly into Salesforce, HubSpot, or Clay.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What happens when I hit my limit?</span><span>+</span></div><div class="faq-a">You will get a 429 response with a clear error message. Upgrade any time from your dashboard. Your API key stays the same.</div></div>
+</div>
+<div class="final-cta">
+  <h2>Know who is growing.<br>Before your competitors do.</h2>
+  <p>Free tier available. No credit card required.</p>
+  <a href="#signup" class="btn-primary" style="font-size:18px;padding:16px 40px"> Get Free API Key</a>
+</div>
+<footer>
+  <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
+  <div style="margin-bottom:12px">
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
+  </div>
+  <div style="margin-bottom:8px">
+    <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
+  </div>
+  <div>&copy; 2026 StackSight &nbsp;&nbsp; <a href="https://x.com/StackSightOrg">@StackSightOrg</a></div>
+</footer>
+<script>
+async function signup() {{
+  const email = document.getElementById('email-input').value.trim();
+  const msg = document.getElementById('signup-msg');
+  if (!email || !email.includes('@')) {{ msg.className='msg error'; msg.style.display='block'; msg.textContent='Please enter a valid email.'; return; }}
+  const btn = document.querySelector('.form-row button');
+  btn.textContent='Sending...'; btn.disabled=true;
+  msg.className='msg'; msg.style.display='block'; msg.textContent='Sending...';
+  try {{
+    const r = await fetch('/signup', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify({{email}})}});
+    const d = await r.json();
+    if (r.ok) {{ msg.className='msg success'; msg.textContent='Check your inbox! Click the link to get your API key.'; btn.textContent='Sent!'; }}
+    else {{ msg.className='msg error'; msg.textContent=d.detail||'Something went wrong.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
+  }} catch(e) {{ msg.className='msg error'; msg.textContent='Network error. Please try again.'; btn.textContent='Get My Free Key'; btn.disabled=false; }}
+}}
+document.getElementById('email-input').addEventListener('keypress', e => {{ if(e.key==='Enter') signup(); }});
+function toggleFaq(el) {{
+  const a = el.nextElementSibling;
+  const icon = el.querySelector('span:last-child');
+  const open = a.classList.toggle('open');
+  icon.textContent = open ? '-' : '+';
+}}
+</script>
+</body></html>""")
+
+
+@app.get("/vs/builtwith", response_class=HTMLResponse)
+async def vs_builtwith():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>StackSight vs BuiltWith (2026) - API, Pricing & Features Compared</title>
+<meta name="description" content="StackSight vs BuiltWith: real-time hiring intent + tech detection API from $0 vs BuiltWith's $295/month data export tool. See the full comparison.">
+<meta property="og:title" content="StackSight vs BuiltWith (2026)">
+<meta property="og:description" content="Compare StackSight and BuiltWith on pricing, API access, hiring intent signals, and real-time data freshness.">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0015;color:#e0e0e0;line-height:1.6}}
+.container{{max-width:900px;margin:0 auto;padding:60px 24px}}
+h1{{font-size:42px;font-weight:800;margin-bottom:16px;letter-spacing:-1px}}
+h1 span{{color:#a855f7}}
+.subtitle{{font-size:18px;color:#b0b0b0;margin-bottom:48px;max-width:640px}}
+h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
+.comparison-table{{width:100%;border-collapse:collapse;margin-bottom:48px}}
+.comparison-table th{{background:#1a0a2e;padding:14px 20px;text-align:left;font-size:13px;font-weight:600;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px}}
+.comparison-table td{{padding:14px 20px;border-bottom:1px solid #1a0a2e;font-size:14px}}
+.comparison-table tr:hover td{{background:#0d0020}}
+.yes{{color:#4ade80;font-weight:600}}
+.no{{color:#f87171}}
+.partial{{color:#fb923c}}
+.winner{{background:#1a0a2e!important}}
+.cta-box{{background:linear-gradient(135deg,#1a0a2e,#0d0020);border:1px solid #3b1a6e;border-radius:16px;padding:40px;text-align:center;margin-top:48px}}
+.cta-box h2{{margin-top:0}}
+.cta-box p{{color:#b0b0b0;margin-bottom:24px}}
+.btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
+.btn:hover{{background:#9333ea}}
+.verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
+footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+</style>
+</head>
+<body>
+<nav style="background:#0a0015;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a0a2e">
+  <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
+  <div style="display:flex;gap:24px;align-items:center">
+    <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
+    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
+    <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
+  </div>
+</nav>
+<div class="container">
+<h1>StackSight vs <span>BuiltWith</span></h1>
+<p class="subtitle">BuiltWith is the category veteran for tech profiling. StackSight is a real-time API built for developers and revenue teams who need fresh data, not exports.</p>
+
+<h2>Pricing</h2>
+<table class="comparison-table">
+<tr><th>Plan</th><th>StackSight</th><th>BuiltWith</th></tr>
+<tr><td>Free tier</td><td class="yes winner">25 lookups/month</td><td class="partial">Public widget only</td></tr>
+<tr><td>Starter</td><td class="yes winner">$12/mo -- 500 req</td><td class="no">Not available</td></tr>
+<tr><td>Pro</td><td class="yes winner">$49/mo -- 5,000 req</td><td class="no">$295/mo</td></tr>
+<tr><td>Business</td><td class="yes winner">$199/mo -- 50,000 req</td><td class="no">$495--$995/mo</td></tr>
+<tr><td>API access</td><td class="yes winner">All paid plans</td><td class="partial">Pro+ only</td></tr>
+</table>
+
+<h2>Features</h2>
+<table class="comparison-table">
+<tr><th>Feature</th><th>StackSight</th><th>BuiltWith</th></tr>
+<tr><td>Tech stack detection</td><td class="yes">--</td><td class="yes">-- (larger DB)</td></tr>
+<tr><td>Hiring intent signals</td><td class="yes winner">-- Real-time</td><td class="no">--</td></tr>
+<tr><td>Live scrape (not cached DB)</td><td class="yes winner">-- Days-fresh</td><td class="no">-- Historical DB</td></tr>
+<tr><td>REST API</td><td class="yes winner">-- Developer-first</td><td class="partial">-- Complex</td></tr>
+<tr><td>Bulk enrichment</td><td class="yes winner">-- 50 domains/req</td><td class="yes">-- CSV export</td></tr>
+<tr><td>JSON responses</td><td class="yes winner">--</td><td class="partial">-- (verbose)</td></tr>
+<tr><td>No-code UI</td><td class="no">API-only</td><td class="yes">-- Full UI</td></tr>
+</table>
+
+<div class="verdict">
+<strong>Bottom line:</strong> BuiltWith has a larger technology database built from years of crawling. StackSight is the better choice if you need a developer API, real-time hiring signals, or a price point that doesn't start at $295/month.
+</div>
+
+<div class="cta-box">
+<h2>Try StackSight Free</h2>
+<p>25 free lookups. No credit card. Live hiring intent + tech stack in one API call.</p>
+<a href="/#signup" class="btn">Get Free API Key</a>
+</div>
+</div>
+<footer>-- 2026 StackSight -- <a href="/vs/wappalyzer" style="color:#a855f7">vs Wappalyzer</a> -- <a href="/vs/theirstack" style="color:#a855f7">vs TheirStack</a></footer>
+</body></html>""")
+
+@app.get("/vs/wappalyzer", response_class=HTMLResponse)
+async def vs_wappalyzer():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>StackSight vs Wappalyzer (2026) - API, Pricing & Features Compared</title>
+<meta name="description" content="StackSight vs Wappalyzer: hiring intent + tech detection from $12/mo vs Wappalyzer's $250/month. Compare API access, data freshness, and pricing.">
+<meta property="og:title" content="StackSight vs Wappalyzer (2026)">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0015;color:#e0e0e0;line-height:1.6}}
+.container{{max-width:900px;margin:0 auto;padding:60px 24px}}
+h1{{font-size:42px;font-weight:800;margin-bottom:16px;letter-spacing:-1px}}
+h1 span{{color:#a855f7}}
+.subtitle{{font-size:18px;color:#b0b0b0;margin-bottom:48px;max-width:640px}}
+h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
+.comparison-table{{width:100%;border-collapse:collapse;margin-bottom:48px}}
+.comparison-table th{{background:#1a0a2e;padding:14px 20px;text-align:left;font-size:13px;font-weight:600;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px}}
+.comparison-table td{{padding:14px 20px;border-bottom:1px solid #1a0a2e;font-size:14px}}
+.comparison-table tr:hover td{{background:#0d0020}}
+.yes{{color:#4ade80;font-weight:600}}
+.no{{color:#f87171}}
+.partial{{color:#fb923c}}
+.winner{{background:#1a0a2e!important}}
+.cta-box{{background:linear-gradient(135deg,#1a0a2e,#0d0020);border:1px solid #3b1a6e;border-radius:16px;padding:40px;text-align:center;margin-top:48px}}
+.cta-box h2{{margin-top:0}}
+.cta-box p{{color:#b0b0b0;margin-bottom:24px}}
+.btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
+.btn:hover{{background:#9333ea}}
+.verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
+footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+</style>
+</head>
+<body>
+<nav style="background:#0a0015;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a0a2e">
+  <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
+  <div style="display:flex;gap:24px;align-items:center">
+    <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
+    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
+    <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
+  </div>
+</nav>
+<div class="container">
+<h1>StackSight vs <span>Wappalyzer</span></h1>
+<p class="subtitle">Wappalyzer pioneered browser-based tech detection. StackSight extends that with real-time hiring signals and a developer-first API at a fraction of the cost.</p>
+
+<h2>Pricing</h2>
+<table class="comparison-table">
+<tr><th>Plan</th><th>StackSight</th><th>Wappalyzer</th></tr>
+<tr><td>Free tier</td><td class="yes winner">25 lookups/month</td><td class="partial">50 lookups/month (no API)</td></tr>
+<tr><td>Starter</td><td class="yes winner">$12/mo -- 500 req</td><td class="no">Not available</td></tr>
+<tr><td>Pro</td><td class="yes winner">$49/mo -- 5,000 req</td><td class="no">$250/mo -- 10K results</td></tr>
+<tr><td>Business</td><td class="yes winner">$199/mo -- 50,000 req</td><td class="no">$450/mo</td></tr>
+<tr><td>Credits expire</td><td class="yes winner">Never</td><td class="no">60 days</td></tr>
+</table>
+
+<h2>Features</h2>
+<table class="comparison-table">
+<tr><th>Feature</th><th>StackSight</th><th>Wappalyzer</th></tr>
+<tr><td>Tech stack detection</td><td class="yes">--</td><td class="yes">-- (extensive DB)</td></tr>
+<tr><td>Hiring intent signals</td><td class="yes winner">-- Real-time job data</td><td class="no">--</td></tr>
+<tr><td>Browser extension</td><td class="no">API only</td><td class="yes">--</td></tr>
+<tr><td>REST API</td><td class="yes winner">-- Simple JSON</td><td class="yes">--</td></tr>
+<tr><td>Bulk enrichment</td><td class="yes winner">-- 50 domains/req</td><td class="yes">--</td></tr>
+<tr><td>Real-time scrape</td><td class="yes winner">-- Days-fresh</td><td class="partial">Varies</td></tr>
+<tr><td>No credit expiry</td><td class="yes winner">--</td><td class="no">-- 60-day expiry</td></tr>
+</table>
+
+<div class="verdict">
+<strong>Bottom line:</strong> Wappalyzer is excellent for pure tech profiling and has a strong browser extension. StackSight wins on hiring intent, price per lookup, and credits that never expire.
+</div>
+
+<div class="cta-box">
+<h2>Try StackSight Free</h2>
+<p>25 free lookups. No credit card. Hiring intent + tech stack in one call.</p>
+<a href="/#signup" class="btn">Get Free API Key</a>
+</div>
+</div>
+<footer>-- 2026 StackSight -- <a href="/vs/builtwith" style="color:#a855f7">vs BuiltWith</a> -- <a href="/vs/theirstack" style="color:#a855f7">vs TheirStack</a></footer>
+</body></html>""")
+
+@app.get("/vs/theirstack", response_class=HTMLResponse)
+async def vs_theirstack():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>StackSight vs TheirStack (2026) - API, Pricing & Features Compared</title>
+<meta name="description" content="StackSight vs TheirStack: compare hiring intent signals, tech detection, API pricing and data freshness. StackSight starts free, TheirStack from $59/mo.">
+<meta property="og:title" content="StackSight vs TheirStack (2026)">
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0015;color:#e0e0e0;line-height:1.6}}
+.container{{max-width:900px;margin:0 auto;padding:60px 24px}}
+h1{{font-size:42px;font-weight:800;margin-bottom:16px;letter-spacing:-1px}}
+h1 span{{color:#a855f7}}
+.subtitle{{font-size:18px;color:#b0b0b0;margin-bottom:48px;max-width:640px}}
+h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
+.comparison-table{{width:100%;border-collapse:collapse;margin-bottom:48px}}
+.comparison-table th{{background:#1a0a2e;padding:14px 20px;text-align:left;font-size:13px;font-weight:600;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px}}
+.comparison-table td{{padding:14px 20px;border-bottom:1px solid #1a0a2e;font-size:14px}}
+.comparison-table tr:hover td{{background:#0d0020}}
+.yes{{color:#4ade80;font-weight:600}}
+.no{{color:#f87171}}
+.partial{{color:#fb923c}}
+.winner{{background:#1a0a2e!important}}
+.cta-box{{background:linear-gradient(135deg,#1a0a2e,#0d0020);border:1px solid #3b1a6e;border-radius:16px;padding:40px;text-align:center;margin-top:48px}}
+.cta-box h2{{margin-top:0}}
+.cta-box p{{color:#b0b0b0;margin-bottom:24px}}
+.btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
+.btn:hover{{background:#9333ea}}
+.verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
+footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+</style>
+</head>
+<body>
+<nav style="background:#0a0015;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1a0a2e">
+  <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
+  <div style="display:flex;gap:24px;align-items:center">
+    <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
+    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
+    <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
+  </div>
+</nav>
+<div class="container">
+<h1>StackSight vs <span>TheirStack</span></h1>
+<p class="subtitle">TheirStack mines 172M+ job postings for hiring signals and technographics. StackSight takes a simpler approach -- real-time domain enrichment via REST API, starting free.</p>
+
+<h2>Pricing</h2>
+<table class="comparison-table">
+<tr><th>Plan</th><th>StackSight</th><th>TheirStack</th></tr>
+<tr><td>Free tier</td><td class="yes winner">25 lookups/month</td><td class="partial">50 company + 200 API credits</td></tr>
+<tr><td>Starter</td><td class="yes winner">$12/mo -- 500 req</td><td class="no">Not available</td></tr>
+<tr><td>Entry paid</td><td class="yes winner">$49/mo -- 5,000 req</td><td class="partial">$59/mo (limited)</td></tr>
+<tr><td>Pro</td><td class="yes winner">$49/mo -- 5,000 req</td><td class="no">$169/mo -- 10K credits</td></tr>
+<tr><td>API pricing model</td><td class="yes winner">Per request, flat</td><td class="no">Credit-based (varies by type)</td></tr>
+</table>
+
+<h2>Features</h2>
+<table class="comparison-table">
+<tr><th>Feature</th><th>StackSight</th><th>TheirStack</th></tr>
+<tr><td>Hiring intent signals</td><td class="yes">-- Real-time</td><td class="yes">-- 172M+ job postings DB</td></tr>
+<tr><td>Tech stack detection</td><td class="yes">--</td><td class="yes">-- 32K+ technologies</td></tr>
+<tr><td>Simple REST API</td><td class="yes winner">-- One endpoint</td><td class="partial">-- More complex</td></tr>
+<tr><td>Bulk enrichment</td><td class="yes winner">-- 50 domains/req</td><td class="yes">--</td></tr>
+<tr><td>Historical job data</td><td class="no">Live only</td><td class="yes">-- Deep archive</td></tr>
+<tr><td>Predictable pricing</td><td class="yes winner">-- Flat per request</td><td class="no">Credit cost varies by record type</td></tr>
+</table>
+
+<div class="verdict">
+<strong>Bottom line:</strong> TheirStack has a far deeper job posting archive and more technographic breadth. StackSight is the better fit if you want a dead-simple API, predictable pricing, and don't need to query historical job data.
+</div>
+
+<div class="cta-box">
+<h2>Try StackSight Free</h2>
+<p>25 free lookups. No credit card. One API call returns hiring intent + tech stack.</p>
+<a href="/#signup" class="btn">Get Free API Key</a>
+</div>
+</div>
+<footer>-- 2026 StackSight -- <a href="/vs/builtwith" style="color:#a855f7">vs BuiltWith</a> -- <a href="/vs/wappalyzer" style="color:#a855f7">vs Wappalyzer</a></footer>
+</body></html>""")
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    if get_session_email(request):
+        next_url = request.query_params.get("next", "/dashboard")
+        return RedirectResponse(next_url if next_url.startswith("/") else "/dashboard")
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>Sign In - StackSight</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.15) 0%,transparent 60%)}
+.wrap{width:100%;max-width:420px}
+.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:block;text-align:center;margin-bottom:48px}
+.card{background:#111;border:1.5px solid #1f1f1f;border-radius:20px;padding:40px 36px}
+h1{font-size:26px;font-weight:700;margin-bottom:8px;text-align:center}
+.sub{color:#6b7280;font-size:14px;text-align:center;margin-bottom:32px;line-height:1.5}
+.sub span{color:#a78bfa}
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}
+input[type=email]{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}
+input[type=email]:focus{border-color:#7c3aed}
+input[type=email]::placeholder{color:#374151}
+.btn{width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn:hover{opacity:.9}.btn:disabled{opacity:.5;cursor:not-allowed}
+.msg{margin-top:20px;padding:14px 16px;border-radius:10px;font-size:14px;text-align:center;display:none}
+.msg.success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#22c55e}
+.msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#ef4444}
+.divider{display:flex;align-items:center;gap:12px;margin:28px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1f1f1f}
+.divider span{color:#4b5563;font-size:12px}
+.footer{text-align:center;font-size:13px;color:#4b5563}
+.footer a{color:#7c3aed;text-decoration:none}
+.demo-note{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:#a78bfa;text-align:center;margin-bottom:24px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="logo">StackSight</a>
+  <div class="card">
+    <div class="demo-note" id="demo-note">Sign in to run your free domain analysis</div>
+    <h1>Welcome back</h1>
+    <p class="sub">Enter your email and we'll send a magic link.<br><span>No password needed.</span></p>
+    <label for="email">Email address</label>
+    <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
+    <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
+    <div class="msg" id="msg"></div>
+    <div class="divider"><span>New to StackSight?</span></div>
+    <div class="footer">Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br><a href="/#signup" style="display:inline-block;margin-top:12px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">Create free account</a><br><br><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
+  </div>
+</div>
+<script>
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('next')) document.getElementById('demo-note').style.display = 'block';
+})();
+async function doLogin() {
+  var email = document.getElementById('email').value.trim();
+  var btn = document.getElementById('submit-btn');
+  var msg = document.getElementById('msg');
+  if (!email || !email.includes('@')) {
+    msg.className = 'msg error'; msg.style.display = 'block';
+    msg.textContent = 'Please enter a valid email.'; return;
+  }
+  btn.disabled = true; btn.textContent = 'Sending...'; msg.style.display = 'none';
+  var next = new URLSearchParams(window.location.search).get('next') || '';
+  try {
+    var r = await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,next})});
+    var d = await r.json();
+    if (r.ok) { msg.className='msg success'; msg.style.display='block'; msg.textContent='Magic link sent! Check your inbox.'; btn.textContent='Link sent!'; }
+    else { msg.className='msg error'; msg.style.display='block'; msg.textContent=d.detail||'Something went wrong.'; btn.disabled=false; btn.textContent='Send magic link'; }
+  } catch(e) {
+    msg.className='msg error'; msg.style.display='block'; msg.textContent='Request failed. Try again.'; btn.disabled=false; btn.textContent='Send magic link';
+  }
+}
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('email').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+});
+</script>
+</body></html>""")
+
+
+@app.post("/login")
+async def login_post(request: Request, background_tasks: BackgroundTasks):
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    has_key = cur.fetchone()
+    if not has_key:
+        # Also accept users who signed up but haven't verified yet
+        cur.execute("SELECT 1 FROM pending_signups WHERE email=%s", (email,))
+        has_pending = cur.fetchone()
+        if not has_pending:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="No account found for this email. Sign up first.")
+    token = secrets.token_urlsafe(48)
+    expires = datetime.utcnow() + timedelta(minutes=15)
+    cur.execute(
+        "INSERT INTO magic_links (token, email, expires_at) VALUES (%s, %s, %s)",
+        (token, email, expires)
+    )
+    conn.commit()
+    cur.close(); conn.close()
+    next_url = body.get("next", "")
+    safe_next = next_url if next_url.startswith("/") else ""
+    background_tasks.add_task(send_magic_link_email, email, token, safe_next)
+    return {"message": "Login link sent"}
+
+
+@app.get("/auth")
+async def auth(token: str, request: Request, next: str = "/dashboard"):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT email, used, expires_at FROM magic_links WHERE token=%s", (token,))
+    row = cur.fetchone()
+    if not row:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>Invalid or expired login link. <a href='/login'>Request a new one</a>.</h2>", status_code=400)
+    email, used, expires_at = row
+    if used or datetime.utcnow() > expires_at:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>This login link has expired or already been used. <a href='/login'>Request a new one</a>.</h2>", status_code=400)
+    cur.execute("UPDATE magic_links SET used=TRUE WHERE token=%s", (token,))
+    conn.commit()
+    cur.close(); conn.close()
+    safe_next = next if next.startswith("/") else "/dashboard"
+    response = RedirectResponse(safe_next, status_code=302)
+    create_session(email, response)
+    return response
+
+
+@app.get("/logout")
+async def logout(request: Request):
+    token = request.cookies.get("ss_session")
+    if token:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("UPDATE sessions SET active=FALSE WHERE session_token=%s", (token,))
+        conn.commit()
+        conn.close()
+    response = RedirectResponse(url="/", status_code=302)
+    response.delete_cookie("ss_session")
+    return response
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
+    if not ss_session:
+        return RedirectResponse(url="/login", status_code=302)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_session,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return RedirectResponse(url="/login", status_code=302)
+    email = row[0]
+    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    key_row = cur.fetchone()
+    conn.close()
+    if not key_row or not key_row[0]:
+        return HTMLResponse("""<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Dashboard - StackSight</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111;border:1px solid #222;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%}h2{font-size:1.5rem;margin-bottom:12px}p{color:#888;margin-bottom:24px}a{display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class='card'><h2>No API Key Found</h2><p>Contact support or generate a new key.</p><a href='/'>Go Home</a></div></body></html>""")
+    api_key, plan, requests_used, requests_limit, created_at = key_row
+    plan_color = {"free": "#6b7280", "starter": "#2563eb", "pro": "#7c3aed", "business": "#059669"}.get(plan, "#6b7280")
+    plan_limits = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
+    monthly_limit = plan_limits.get(plan, 25)
+    usage_pct = min(100, round((requests_used / monthly_limit) * 100)) if monthly_limit > 0 else 0
+    bar_color = "#ef4444" if usage_pct >= 90 else "#f59e0b" if usage_pct >= 70 else "#22c55e"
+    upgrade_html = ""
+    if plan == "free":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Starter - $29/mo</a>"
+    elif plan == "starter":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Pro - $99/mo</a>"
+    elif plan == "pro":
+        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Business - $299/mo</a>"
+    created_str = created_at.strftime("%B %d, %Y") if created_at else "N/A"
+    html = f"""<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Dashboard - StackSight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#09090b;color:#fafafa;min-height:100vh}}
+nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}}
+.logo{{font-size:1.25rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:-0.5px}}
+.logo span{{color:#2563eb}}
+.nav-right{{display:flex;align-items:center;gap:16px}}
+.nav-email{{color:#71717a;font-size:0.875rem}}
+.logout-btn{{color:#71717a;font-size:0.875rem;text-decoration:none;padding:6px 12px;border:1px solid #27272a;border-radius:6px;transition:color 0.2s,border-color 0.2s}}
+.logout-btn:hover{{color:#fff;border-color:#52525b}}
+.container{{max-width:900px;margin:0 auto;padding:40px 24px}}
+h1{{font-size:1.875rem;font-weight:700;margin-bottom:4px}}
+.subtitle{{color:#71717a;margin-bottom:32px;font-size:0.9375rem}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:24px}}
+.card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px}}
+.card-label{{font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#71717a;margin-bottom:8px}}
+.card-value{{font-size:1.5rem;font-weight:700;color:#fff}}
+.card-sub{{font-size:0.8125rem;color:#52525b;margin-top:4px}}
+.plan-badge{{display:inline-flex;align-items:center;gap:6px;background:{plan_color}22;border:1px solid {plan_color}44;color:{plan_color};padding:4px 12px;border-radius:20px;font-size:0.875rem;font-weight:600;text-transform:capitalize}}
+.usage-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.usage-header{{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px}}
+.usage-title{{font-size:1rem;font-weight:600}}
+.usage-count{{font-size:0.875rem;color:#71717a}}
+.bar-bg{{background:#1f1f23;border-radius:99px;height:8px;overflow:hidden}}
+.bar-fill{{height:8px;border-radius:99px;background:{bar_color};width:{usage_pct}%;transition:width 0.6s ease}}
+.usage-footer{{display:flex;justify-content:space-between;margin-top:8px;font-size:0.75rem;color:#52525b}}
+.key-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.key-label{{font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#71717a;margin-bottom:12px}}
+.key-row{{display:flex;gap:8px;align-items:center}}
+.key-input{{flex:1;background:#0d0d0f;border:1px solid #27272a;border-radius:8px;padding:10px 14px;color:#a1a1aa;font-family:'Courier New',monospace;font-size:0.875rem;outline:none}}
+.copy-btn{{background:#1f1f23;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#a1a1aa;cursor:pointer;font-size:0.875rem;white-space:nowrap;transition:all 0.2s}}
+.copy-btn:hover{{background:#27272a;color:#fff}}
+.code-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
+.code-card h3{{font-size:1rem;font-weight:600;margin-bottom:16px}}
+.code-tabs{{display:flex;gap:2px;background:#0d0d0f;border-radius:8px;padding:4px;margin-bottom:16px;width:fit-content}}
+.code-tab{{padding:6px 14px;border-radius:6px;font-size:0.8125rem;cursor:pointer;color:#71717a;border:none;background:transparent;transition:all 0.2s}}
+.code-tab.active{{background:#1f1f23;color:#fff}}
+pre{{background:#0d0d0f;border:1px solid #1f1f23;border-radius:8px;padding:16px;overflow-x:auto;font-size:0.8125rem;line-height:1.6;color:#a1a1aa}}
+code .key{{color:#22c55e}}
+code .str{{color:#f59e0b}}
+code .kw{{color:#60a5fa}}
+.upgrade-section{{text-align:center;padding:32px;background:#111113;border:1px solid #1f1f23;border-radius:12px;margin-bottom:24px}}
+.upgrade-section p{{color:#71717a;margin-bottom:16px;font-size:0.9375rem}}
+.upgrade-btn{{display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9375rem;transition:background 0.2s}}
+.upgrade-btn:hover{{background:#1d4ed8}}
+</style>
+</head>
+<body>
+<nav>
+  <a class='logo' href='/'>Stack<span>Sight</span></a>
+  <div class='nav-right'>
+    <span class='nav-email'>{email}</span>
+    <a href='/logout' class='logout-btn'>Sign out</a>
+  </div>
+</nav>
+<div class='container'>
+  <h1>Dashboard</h1>
+  <p class='subtitle'>Manage your API key and monitor usage</p>
+  <div class='grid'>
+    <div class='card'>
+      <div class='card-label'>Current Plan</div>
+      <div style='margin-top:4px'><span class='plan-badge'>{plan}</span></div>
+      <div class='card-sub'>Member since {created_str}</div>
+    </div>
+    <div class='card'>
+      <div class='card-label'>Requests This Month</div>
+      <div class='card-value'>{requests_used:,}</div>
+      <div class='card-sub'>of {monthly_limit:,} included</div>
+    </div>
+    <div class='card'>
+      <div class='card-label'>Monthly Reset</div>
+      <div class='card-value' id='reset-countdown'>--</div>
+      <div class='card-sub'>days remaining</div>
+    </div>
+  </div>
+  <div class='usage-card'>
+    <div class='usage-header'>
+      <span class='usage-title'>Monthly Usage</span>
+      <span class='usage-count'>{requests_used:,} / {monthly_limit:,} requests</span>
+    </div>
+    <div class='bar-bg'><div class='bar-fill'></div></div>
+    <div class='usage-footer'><span>0</span><span>{usage_pct}% used</span><span>{monthly_limit:,}</span></div>
+  </div>
+  <div class='key-card'>
+    <div class='key-label'>Your API Key</div>
+    <div class='key-row'>
+      <input class='key-input' id='apikey' type='password' value='{api_key}' readonly>
+      <button class='copy-btn' id='toggleBtn' onclick='toggleKey()'>Show</button>
+      <button class='copy-btn' id='copyBtn' onclick='copyKey()'>Copy</button>
+    </div>
+  </div>
+  <div class='code-card'>
+    <h3>Quick Start</h3>
+    <div class='code-tabs'>
+      <button class='code-tab active' onclick='showTab(this,"curl")'>cURL</button>
+      <button class='code-tab' onclick='showTab(this,"python")'>Python</button>
+      <button class='code-tab' onclick='showTab(this,"js")'>JavaScript</button>
+    </div>
+    <div id='tab-curl'>
+<pre><code>curl "https://stacksight.org/scrape?domain=stripe.com" \
+  -H "<span class='kw'>X-API-Key</span>: <span class='key'>YOUR_KEY</span>"</code></pre>
+    </div>
+    <div id='tab-python' style='display:none'>
+<pre><code><span class='kw'>import</span> requests
+
+resp = requests.get(
+    <span class='str'>"https://stacksight.org/scrape"</span>,
+    params={{<span class='str'>"domain"</span>: <span class='str'>"stripe.com"</span>}},
+    headers={{<span class='str'>"X-API-Key"</span>: <span class='str'>"<span class='key'>YOUR_KEY</span>"</span>}}
+)
+<span class='kw'>print</span>(resp.json())</code></pre>
+    </div>
+    <div id='tab-js' style='display:none'>
+<pre><code><span class='kw'>const</span> res = <span class='kw'>await</span> fetch(
+  <span class='str'>"https://stacksight.org/scrape?domain=stripe.com"</span>,
+  {{headers: {{<span class='str'>"X-API-Key"</span>: <span class='str'>"<span class='key'>YOUR_KEY</span>"</span>}}}}
+);
+<span class='kw'>const</span> data = <span class='kw'>await</span> res.json();</code></pre>
+    </div>
+  </div>
+  {upgrade_html and f"<div class='upgrade-section'><p>Unlock more requests and higher rate limits</p>{upgrade_html}</div>" or ""}
+</div>
+<script>
+function toggleKey() {{
+  const inp = document.getElementById('apikey');
+  const btn = document.getElementById('toggleBtn');
+  if (inp.type === 'password') {{ inp.type = 'text'; btn.textContent = 'Hide'; }}
+  else {{ inp.type = 'password'; btn.textContent = 'Show'; }}
+}}
+function copyKey() {{
+  const val = document.getElementById('apikey').value;
+  navigator.clipboard.writeText(val).then(() => {{
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }});
+}}
+function showTab(el, name) {{
+  document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['curl','python','js'].forEach(t => {{
+    document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
+  }});
+}}
+// Days until end of month
+(function() {{
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  const days = Math.ceil((end - now) / 86400000);
+  document.getElementById('reset-countdown').textContent = days;
+}})();
+// Replace YOUR_KEY placeholders with masked key
+document.querySelectorAll('code').forEach(el => {{
+  el.innerHTML = el.innerHTML.replace(/YOUR_KEY/g, '{api_key[:8]}...');
+}});
+</script>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+@app.post("/signup")
+async def signup(request: Request, background_tasks: BackgroundTasks):
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND plan='free'", (email,))
+    if cur.fetchone():
+        cur.close(); conn.close()
+        raise HTTPException(status_code=400, detail="An API key already exists for this email. Sign in to view it.")
+    cur.execute("SELECT 1 FROM pending_signups WHERE email=%s AND used=FALSE", (email,))
+    if cur.fetchone():
+        cur.close(); conn.close()
+        raise HTTPException(status_code=400, detail="Verification email already sent. Please check your inbox.")
+    token = secrets.token_urlsafe(32)
+    cur.execute(
+        "INSERT INTO pending_signups (email, token) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET token=%s, used=FALSE, created_at=NOW()",
+        (email, token, token)
+    )
+    conn.commit()
+    cur.close(); conn.close()
+    background_tasks.add_task(send_verification_email, email, token)
+    return {"message": "Verification email sent"}
+
+
+@app.get("/verify-email", response_class=HTMLResponse)
+async def verify_email(token: str, background_tasks: BackgroundTasks):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT email, used FROM pending_signups WHERE token=%s", (token,))
+    row = cur.fetchone()
+    if not row:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2 style='font-family:sans-serif;padding:40px'>Invalid or expired link.</h2>", status_code=400)
+    email, used = row
+    if used:
+        cur.close(); conn.close()
+        return HTMLResponse("<h2 style='font-family:sans-serif;padding:40px'>This link has already been used. <a href='/login'>Sign in here</a>.</h2>", status_code=400)
+    cur.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
+    conn.commit()
+    cur.close(); conn.close()
+    # Provision key synchronously so it exists before we redirect
+    provision_api_key(email, "free")
+    # Log them straight in
+    response = RedirectResponse("/dashboard", status_code=302)
+    create_session(email, response)
+    return response
+
+
+# 
+# ROUTES  API
+# 
+
+@app.get("/demo/{domain}", response_class=HTMLResponse)
+async def demo(domain: str, request: Request):
+    # Auth check - try in-memory session first, then DB session
+    token = request.cookies.get("session")
+    email = SESSIONS.get(token) if token else None
+    if not email:
+        ss_token = request.cookies.get("ss_session")
+        if ss_token:
+            try:
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_token,))
+                row = cur.fetchone()
+                conn.close()
+                if row:
+                    email = row[0]
+            except Exception:
+                pass
+    if not email:
+        return RedirectResponse(f"/login?next=/demo/{domain}")
+
+    # Look up user's API key from DB
+    import httpx as _httpx
+    base = os.environ.get("BASE_URL", "https://stacksight.org")
+    data, src = {}, "error"
+    user_api_key = None
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            user_api_key = row[0]
+    except Exception:
+        pass
+    try:
+        domain_clean = validate_domain(domain)
+        # Check Redis cache first
+        cache_key = f"domain:{domain_clean}"
+        cached = redis_client.get(cache_key)
+        if cached:
+            data = json.loads(cached)
+            src = "cache"
+        else:
+            raw_text, url, status = await scrape_page(domain_clean)
+            data = extract_with_openai(raw_text)
+            redis_client.setex(cache_key, 604800, json.dumps(data))
+            src = "live"
+        if user_api_key:
+            increment_usage(user_api_key)
+    except Exception as _ex:
+        src = f"error: {_ex}"
+
+    eng_roles = data.get("engineering_roles", [])
+    sales_roles = data.get("sales_roles", [])
+    other_roles = data.get("other_roles", [])
+    jobs = [{"title": r, "department": "Engineering"} for r in eng_roles] + [{"title": r, "department": "Sales"} for r in sales_roles] + [{"title": r, "department": "Other"} for r in other_roles]
+    tech = data.get("detected_tech_stack", [])
+    is_hiring = data.get("is_hiring")
+    if is_hiring is True:
+        hiring_badge = "<span style='background:#052e16;color:#22c55e;border:1px solid #166534;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Actively Hiring</span>"
+    elif is_hiring is False:
+        hiring_badge = "<span style='background:#1f0a0a;color:#ef4444;border:1px solid #991b1b;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Not Hiring</span>"
+    else:
+        hiring_badge = "<span style='background:#1c1c1e;color:#71717a;border:1px solid #27272a;padding:4px 12px;border-radius:20px;font-size:.875rem;font-weight:600'>Unknown</span>"
+
+    jobs_html = "".join(f"<div style='padding:12px 0;border-bottom:1px solid #1f1f23'><div style='font-weight:600'>{j.get('title','')}</div><div style='color:#71717a;font-size:.875rem'>{j.get('department','')}</div></div>" for j in jobs) or "<p style='color:#52525b'>No open jobs found.</p>"
+    tech_html = "".join(f"<span style='background:#1f1f23;border:1px solid #27272a;padding:4px 10px;border-radius:6px;font-size:.8125rem'>{t}</span>" for t in tech[:20]) or "<span style='color:#52525b'>None detected</span>"
+
+    html = f"""<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Demo: {domain} - StackSight</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#fafafa;min-height:100vh}}
+nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between}}
+.logo{{font-size:1.25rem;font-weight:700;color:#fff;text-decoration:none}}
+.logo span{{color:#2563eb}}
+.container{{max-width:860px;margin:0 auto;padding:40px 24px}}
+.search-bar{{display:flex;gap:8px;margin-bottom:32px}}
+.search-bar input{{flex:1;background:#111113;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#fff;font-size:1rem;outline:none}}
+.search-bar input:focus{{border-color:#2563eb}}
+.search-bar button{{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:600}}
+.card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:20px}}
+.card h2{{font-size:1rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#71717a;margin-bottom:16px}}
+.meta{{display:flex;align-items:center;gap:12px;margin-bottom:8px}}
+.source{{font-size:.75rem;color:#52525b}}
+.tech-wrap{{display:flex;flex-wrap:wrap;gap:8px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class='logo' href='/'>Stack<span>Sight</span></a>
+  <a href='/dashboard' style='color:#71717a;font-size:.875rem;text-decoration:none'>Dashboard</a>
+</nav>
+<div class='container'>
+  <form class='search-bar' onsubmit='event.preventDefault();const b=this.querySelector("button");b.textContent="Analyzing...";b.disabled=true;window.location="/demo/"+encodeURIComponent(document.getElementById("d").value.trim())'>
+    <input id='d' value='{domain}' placeholder='Enter a domain...' required>
+    <button type='submit'>Analyze</button>
+  </form>
+  <div class='card'>
+    <h2>Overview</h2>
+    <div class='meta'><strong style='font-size:1.25rem'>{domain}</strong> {hiring_badge}</div>
+    <div class='source'>Source: {src}</div>
+  </div>
+  <div class='card'>
+    <h2>Tech Stack</h2>
+    <div class='tech-wrap'>{tech_html}</div>
+  </div>
+  <div class='card'>
+    <h2>Open Jobs ({len(jobs)})</h2>
+    {jobs_html}
+  </div>
+</div>
+</body>
+</html>"""
+    return HTMLResponse(html)
+@app.get("/scrape")
+async def scrape_redirect(request: Request, domain: str = None, x_api_key: str = Header(None)):
+    """Backward-compat redirect to /v1/enrich"""
+    from fastapi.responses import RedirectResponse
+    url = request.url.path.replace("/scrape", "/v1/enrich")
+    return RedirectResponse(url=str(request.url).replace("/scrape", "/v1/enrich"), status_code=301)
+
+@app.post("/bulk")
+async def bulk_redirect(request: Request):
+    """Backward-compat redirect to /v1/bulk"""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=str(request.url).replace("/bulk", "/v1/bulk"), status_code=308)
+
+@app.get("/v1/enrich")
+async def scrape(domain: str, x_api_key: str = Header(None)):
+    domain = validate_domain(domain)
+    api_key, plan = verify_api_key(x_api_key)
+    cache_key = f"domain:{domain}"
+    cached = redis_client.get(cache_key)
+    if cached:
+        increment_usage(api_key)
+        return {"source": "cache", "data": json.loads(cached)}
+    raw_text, url, status = await scrape_page(domain)
+    extracted = extract_with_openai(raw_text)
+    redis_client.setex(cache_key, 604800, json.dumps(extracted))
+    increment_usage(api_key)
+    return {"source": "live", "scrape_metadata": {"url": url, "status": status}, "data": extracted}
+
+
+@app.get("/analyze/{domain}")
+async def analyze(domain: str, x_api_key: str = Header(None), api_key: str = None):
+    return await scrape(domain=domain, x_api_key=x_api_key or api_key)
+@app.post("/v1/bulk")
+async def bulk(request: Request, x_api_key: str = Header(None)):
+    api_key, plan = verify_api_key(x_api_key)
+    body = await request.json()
+    domains = body.get("domains", [])
+    if not domains:
+        raise HTTPException(status_code=400, detail="Provide a list of domains")
+    if len(domains) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 domains per request")
+
+    # Check they have enough quota for all domains
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT requests_used, requests_limit FROM api_keys WHERE api_key=%s", (api_key,))
+    row = cur.fetchone()
+    cur.close(); conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    used, limit = row
+    remaining = limit - used
+    if remaining < len(domains):
+        raise HTTPException(status_code=429, detail=f"Not enough quota: {remaining} requests remaining, {len(domains)} needed")
+
+    async def process_domain(domain: str):
+        try:
+            clean = validate_domain(domain)
+        except HTTPException as e:
+            return {"domain": str(domain), "source": "error", "error": e.detail}
+        cache_key = f"domain:{clean}"
+        cached = redis_client.get(cache_key)
+        if cached:
+            increment_usage(api_key)
+            return {"domain": clean, "source": "cache", "data": json.loads(cached)}
+        try:
+            raw_text, url, status = await scrape_page(clean)
+            extracted = extract_with_openai(raw_text)
+            redis_client.setex(cache_key, 604800, json.dumps(extracted))
+            increment_usage(api_key)
+            return {"domain": clean, "source": "live", "data": extracted}
+        except Exception as e:
+            return {"domain": clean, "source": "error", "error": str(e)}
+
+    results = await asyncio.gather(*[process_domain(d) for d in domains])
+    return {"results": list(results), "count": len(results)}
+
+
+
+
+@app.get("/usage")
+async def usage(x_api_key: str = Header(None), key: str = None):
+    k = x_api_key or key
+    if not k:
+        raise HTTPException(status_code=401, detail="Missing API key")
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT plan, requests_used, requests_limit, created_at FROM api_keys WHERE api_key=%s", (k,))
+    row = cur.fetchone()
+    cur.close(); conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    plan, used, limit, created = row
+    return {"plan": plan, "requests_used": used, "requests_limit": limit, "requests_remaining": limit - used, "created_at": str(created)}
+
+
+@app.get("/me")
+async def me(x_api_key: str = Header(None)):
+    return await usage(x_api_key=x_api_key)
+
+
+@app.get("/choose/pro", response_class=HTMLResponse)
+async def choose_pro():
+    return HTMLResponse("""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico"><title>Pro Plan - Choose Billing | StackSight</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}.wrap{max-width:520px;width:100%;text-align:center}.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}.tag{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}h1{font-size:30px;font-weight:700;margin-bottom:10px}.sub{color:#6b7280;font-size:15px;margin-bottom:40px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.card{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}.card:hover{border-color:#4c1d95;transform:translateY(-2px)}.card.best{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}.lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}.card.best .lbl{color:#a78bfa}.price{font-size:40px;font-weight:800;line-height:1}.price span{font-size:15px;font-weight:400;color:#6b7280}.card.best .price span{color:#a78bfa}.psub{font-size:12px;color:#4b5563;margin-top:8px}.card.best .psub{color:#7c3aed}.save{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}.cancel{font-size:12px;color:#4b5563;margin-top:10px}.back{color:#4b5563;font-size:13px;text-decoration:none}.back:hover{color:#9ca3af}</style></head><body><div class="wrap"><a href="/" class="logo">StackSight</a><div class="tag">Pro Plan</div><h1>Choose your billing</h1><p class="sub">Same features, same API. Pick what works for you.</p><div class="cards"><a href="/checkout/pro" class="card"><div class="lbl">Monthly</div><div class="price">$49<span>/mo</span></div><div class="psub">billed monthly</div><div class="cancel">Cancel anytime</div></a><a href="/checkout/pro_annual" class="card best"><div class="badge">BEST VALUE</div><div class="lbl">Annual</div><div class="price">$39<span>/mo</span></div><div class="psub">billed $468/yr</div><div class="save">Save 20%</div></a></div><a href="/#pricing" class="back">Back to pricing</a></div></body></html>""")
+
+
+@app.get("/choose/business", response_class=HTMLResponse)
+async def choose_business():
+    return HTMLResponse("""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico"><title>Business Plan - Choose Billing | StackSight</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background-image:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,0.12) 0%,transparent 60%)}.wrap{max-width:520px;width:100%;text-align:center}.logo{font-size:22px;font-weight:800;color:#7c3aed;text-decoration:none;display:inline-block;margin-bottom:48px}.tag{display:inline-block;background:rgba(124,58,237,0.15);color:#a78bfa;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid rgba(124,58,237,0.3);margin-bottom:20px}h1{font-size:30px;font-weight:700;margin-bottom:10px}.sub{color:#6b7280;font-size:15px;margin-bottom:40px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.card{border:1.5px solid #1f1f1f;border-radius:18px;padding:28px 20px;text-decoration:none;color:#fff;display:block;transition:all .2s;position:relative;background:#111}.card:hover{border-color:#4c1d95;transform:translateY(-2px)}.card.best{border-color:#7c3aed;background:linear-gradient(135deg,#130f1e,#1a1033);box-shadow:0 0 32px rgba(124,58,237,0.2)}.badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap}.lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:14px}.card.best .lbl{color:#a78bfa}.price{font-size:40px;font-weight:800;line-height:1}.price span{font-size:15px;font-weight:400;color:#6b7280}.card.best .price span{color:#a78bfa}.psub{font-size:12px;color:#4b5563;margin-top:8px}.card.best .psub{color:#7c3aed}.save{display:inline-block;background:rgba(34,197,94,0.12);color:#22c55e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;margin-top:10px;border:1px solid rgba(34,197,94,0.2)}.cancel{font-size:12px;color:#4b5563;margin-top:10px}.back{color:#4b5563;font-size:13px;text-decoration:none}.back:hover{color:#9ca3af}</style></head><body><div class="wrap"><a href="/" class="logo">StackSight</a><div class="tag">Business Plan</div><h1>Choose your billing</h1><p class="sub">Same features, same API. Pick what works for you.</p><div class="cards"><a href="/checkout/business" class="card"><div class="lbl">Monthly</div><div class="price">$199<span>/mo</span></div><div class="psub">billed monthly</div><div class="cancel">Cancel anytime</div></a><a href="/checkout/business_annual" class="card best"><div class="badge">BEST VALUE</div><div class="lbl">Annual</div><div class="price">$166<span>/mo</span></div><div class="psub">billed $1,992/yr</div><div class="save">Save 20%</div></a></div><a href="/#pricing" class="back">Back to pricing</a></div></body></html>""")
+
+
+@app.get("/checkout/{plan}")
+async def checkout(plan: str, request: Request, ss_session: str = Cookie(default=None)):
+    if not ss_session:
+        return RedirectResponse(url=f"/login?next=/checkout/{plan}", status_code=302)
+    if plan not in STRIPE_PRICES:
+        raise HTTPException(status_code=400, detail="Invalid plan")
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{"price": STRIPE_PRICES[plan], "quantity": 1}],
+        mode="subscription",
+        success_url=f"{BASE_URL}/success?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{BASE_URL}/#pricing",
+        metadata={"plan": plan},
+    )
+    return RedirectResponse(session.url)
+
+
+@app.get("/success", response_class=HTMLResponse)
+async def success():
+    return HTMLResponse("""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Payment Successful - StackSight</title>
+<style>body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:48px;text-align:center;max-width:500px}
+h1{color:#22c55e;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
+a{background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
+<body><div class="box">
+<h1>Payment Successful!</h1>
+<p>Your API key is being generated and will arrive in your inbox within a minute.</p>
+<a href="/login">Sign In to Dashboard</a>
+</div></body></html>""")
+
+
+@app.post("/webhooks/stripe")
+async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
+    payload = await request.body()
+    sig = request.headers.get("stripe-signature", "")
+    try:
+        event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+        plan = session.get("metadata", {}).get("plan", "pro")
+        customer_id = session.get("customer")
+        session_id = session.get("id")
+        if email:
+            background_tasks.add_task(provision_api_key, email, plan, customer_id, session_id)
+
+    elif event["type"] == "invoice.payment_succeeded":
+        # Subscription renewed -- reset usage for this customer
+        invoice = event["data"]["object"]
+        customer_id = invoice.get("customer")
+        billing_reason = invoice.get("billing_reason", "")
+        # Only reset on renewals, not the initial payment (that's handled by checkout.session.completed)
+        if customer_id and billing_reason == "subscription_cycle":
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE api_keys SET requests_used = 0, usage_reset_at = NOW() WHERE stripe_customer_id = %s AND active = TRUE",
+                (customer_id,)
+            )
+            conn.commit()
+            cur.close(); conn.close()
+
+    elif event["type"] == "customer.subscription.deleted":
+        # Subscription cancelled -- downgrade to free
+        subscription = event["data"]["object"]
+        customer_id = subscription.get("customer")
+        if customer_id:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE api_keys SET plan = 'free', requests_limit = 10, requests_used = 0 WHERE stripe_customer_id = %s",
+                (customer_id,)
+            )
+            conn.commit()
+            cur.close(); conn.close()
+
+    elif event["type"] == "invoice.payment_failed":
+        # Payment failed -- leave access for now but could notify user
+        # Stripe will retry; subscription.deleted fires if all retries fail
+        pass
+
+    return {"status": "ok"}
+
+
+@app.get("/trending")
+async def trending():
+    results = []
+    for domain, data in DEMO_DATA.items():
+        results.append({
+            "domain": domain,
+            "company_name": data.get("company_name", domain.split(".")[0].title()),
+            "is_hiring": data.get("is_hiring", False),
+            "engineering_roles": data.get("engineering_roles", []),
+            "sales_roles": data.get("sales_roles", []),
+            "detected_tech_stack": data.get("detected_tech_stack", []),
+            "open_roles": len(data.get("engineering_roles", [])) + len(data.get("sales_roles", []))
+        })
+    # Sort by open roles descending
+    results.sort(key=lambda x: x["open_roles"], reverse=True)
+    return {"trending": results, "count": len(results)}
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms():
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>Terms of Service - StackSight</title>
+<meta name="description" content="Terms of Service for the StackSight API - B2B hiring intent signals and tech stack detection.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://stacksight.org/terms">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}
+nav{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}
+.logo{font-size:22px;font-weight:700;color:#a855f7;text-decoration:none}
+.nav-links a{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-links .btn-login{background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500}
+.container{max-width:760px;margin:0 auto;padding:60px 24px 90px}
+h1{font-size:38px;font-weight:800;letter-spacing:-1px;margin-bottom:10px}
+h1 span{color:#a855f7}
+.updated{color:#888;font-size:14px;margin-bottom:44px}
+h2{font-size:20px;font-weight:700;letter-spacing:-0.5px;margin:40px 0 14px;color:#f5f5f5}
+p{color:#b0b0b0;margin-bottom:16px;line-height:1.75}
+ul{color:#b0b0b0;padding-left:22px;margin-bottom:16px;line-height:1.75}
+ul li{margin-bottom:8px}
+a{color:#a855f7}
+strong{color:#e5e5e5}
+code{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:1px 6px;font-size:13px;color:#c084fc}
+footer{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#666;font-size:13px}
+footer a{color:#888;text-decoration:none}
+footer a:hover{color:#fff}
+@media(max-width:640px){nav{padding:14px 20px}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">StackSight</a>
+  <div class="nav-links">
+    <a href="/docs">Docs</a>
+    <a href="/demo/stripe.com">Demo</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
+  </div>
+</nav>
+<script>
+(function(){
+  fetch("/session-check",{credentials:"include"}).then(r=>r.json()).then(d=>{
+    if(d.logged_in){
+      var btn=document.getElementById("nav-auth-btn");
+      if(btn){btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}
+    }
+  }).catch(function(){});
+})();
 </script>
 <div class="container">
 <h1>Terms of <span>Service</span></h1>
@@ -1121,7 +2363,7 @@ footer a:hover{color:#fff}
   fetch("/session-check",{credentials:"include"}).then(r=>r.json()).then(d=>{
     if(d.logged_in){
       var btn=document.getElementById("nav-auth-btn");
-      if(btn){btn.outerHTML="<a href='/dashboard' id='nav-auth-btn' title='My Account' style='display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='#a855f7' stroke-width='2'><circle cx='12' cy='8' r='4'/><path d='M4 20c0-4 3.6-7 8-7s8 3 8 7'/></svg></a>";}
+      if(btn){btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}
     }
   }).catch(function(){});
 })();
@@ -1208,13 +2450,6 @@ footer a:hover{color:#fff}
 </footer>
 </body></html>""")
 
-
-@app.get("/session-check")
-async def session_check(request: Request):
-    email = get_session_email(request)
-    if email:
-        return JSONResponse({"logged_in": True, "email": email})
-    return JSONResponse({"logged_in": False})
 
 @app.get("/health")
 async def health():
