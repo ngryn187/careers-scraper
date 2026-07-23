@@ -181,7 +181,7 @@ def init_db():
             email VARCHAR(255) NOT NULL,
             plan VARCHAR(20) NOT NULL DEFAULT 'free',
             requests_used INTEGER NOT NULL DEFAULT 0,
-            requests_limit INTEGER NOT NULL DEFAULT 10,
+            requests_limit INTEGER NOT NULL DEFAULT 25,
             stripe_customer_id VARCHAR(100),
             stripe_session_id VARCHAR(100),
             created_at TIMESTAMP DEFAULT NOW(),
@@ -222,7 +222,8 @@ def init_db():
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS plan VARCHAR(20) DEFAULT 'free'")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS requests_used INTEGER DEFAULT 0")
-    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS requests_limit INTEGER DEFAULT 10")
+    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS requests_limit INTEGER DEFAULT 25")
+    cur.execute("UPDATE api_keys SET requests_limit=25 WHERE plan='free' AND requests_limit=10")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(100)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(100)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()")
@@ -2889,7 +2890,22 @@ async function deleteUser(btn) {{
 }}
 document.querySelectorAll('.btn-toggle').forEach(b => b.addEventListener('click', () => toggleKey(b)));
 document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', () => deleteUser(b)));
+async function flushAllCache() {{
+  if (!confirm('Flush ALL Redis cache? All domains will be re-scraped on next request.')) return;
+  const r = await fetch('/admin/flush-cache', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{}})}});
+  const d = await r.json();
+  alert('Flushed ' + d.deleted + ' cached domains.');
+}}
+async function flushEmptyTech() {{
+  const r = await fetch('/admin/flush-empty-tech', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{}})}});
+  const d = await r.json();
+  alert('Flushed ' + d.flushed + ' domains with empty tech stacks: ' + (d.domains || []).join(', '));
+}}
 </script>
+<div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap">
+  <button onclick="flushEmptyTech()" style="background:#7c3aed;color:#fff;border:none;padding:10px 20px;border-radius:7px;cursor:pointer;font-weight:600">Flush Empty Tech Stacks</button>
+  <button onclick="flushAllCache()" style="background:#1f1f1f;color:#ef4444;border:1px solid #ef4444;padding:10px 20px;border-radius:7px;cursor:pointer;font-weight:600">Flush All Cache</button>
+</div>
 </body></html>""")
 
 @app.post("/admin/toggle-key")
