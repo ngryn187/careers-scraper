@@ -1485,7 +1485,7 @@ input[type=email]::placeholder{color:#374151}
     <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
     <div class="msg" id="msg"></div>
     <div class="divider"><span>New to StackSight?</span></div>
-    <div class="footer">Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
+    <div class="footer">Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br><a href="/#signup" style="display:inline-block;margin-top:12px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">Create free account</a><br><br><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
   </div>
 </div>
 <script>
@@ -1528,9 +1528,14 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND active=TRUE", (email,))
-    if not cur.fetchone():
-        cur.close(); conn.close()
-        raise HTTPException(status_code=404, detail="No account found for this email. Sign up first.")
+    has_key = cur.fetchone()
+    if not has_key:
+        # Also accept users who signed up but haven't verified yet
+        cur.execute("SELECT 1 FROM pending_signups WHERE email=%s", (email,))
+        has_pending = cur.fetchone()
+        if not has_pending:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="No account found for this email. Sign up first.")
     token = secrets.token_urlsafe(48)
     expires = datetime.utcnow() + timedelta(minutes=15)
     cur.execute(
@@ -1553,7 +1558,7 @@ async def auth(token: str, request: Request, next: str = "/dashboard"):
     row = cur.fetchone()
     if not row:
         cur.close(); conn.close()
-        return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>Invalid or expired login link.</h2>", status_code=400)
+        return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>Invalid or expired login link. <a href='/login'>Request a new one</a>.</h2>", status_code=400)
     email, used, expires_at = row
     if used or datetime.utcnow() > expires_at:
         cur.close(); conn.close()
@@ -1561,7 +1566,8 @@ async def auth(token: str, request: Request, next: str = "/dashboard"):
     cur.execute("UPDATE magic_links SET used=TRUE WHERE token=%s", (token,))
     conn.commit()
     cur.close(); conn.close()
-    response = RedirectResponse("/dashboard", status_code=302)
+    safe_next = next if next.startswith("/") else "/dashboard"
+    response = RedirectResponse(safe_next, status_code=302)
     create_session(email, response)
     return response
 
