@@ -70,7 +70,7 @@ Interactive Swagger UI documentation.
 | Tier | Price | Requests/Month | Rate Limit |
 |------|-------|----------------|------------|
 | Free | $0 | 25 | 10 req/sec |
-| Starter | $19/mo | 500 | 60 req/sec |
+| Starter | $12/mo | 500 | 60 req/sec |
 | Pro | $49/mo | 5,000 | 300 req/sec |
 | Business | $199/mo | 50,000 | 1,000 req/sec |
 
