@@ -76,8 +76,16 @@ EXTRACTION_PROMPT = (
     "\"engineering_roles\": [list all engineering/tech/developer/data job titles found], "
     "\"sales_roles\": [list all sales/marketing/growth/bizdev job titles found], "
     "\"other_roles\": [list all other job titles found - design, ops, finance, legal, HR, etc], "
-    "\"detected_tech_stack\": [list all technologies, frameworks, languages, tools, platforms mentioned anywhere on the page OR inferred from job requirements and role descriptions]}. "
-    "Extract every job title and technology you can find. If no jobs exist set is_hiring to false."
+    "\"detected_tech_stack\": [array of strings]}. "
+    "For detected_tech_stack: extract ANY technology mentioned explicitly AND make strong inferences "
+    "from job titles and role names. Rules: if you see 'iOS Engineer' infer Swift/Xcode/iOS; "
+    "'Android Engineer' infer Kotlin/Android; 'React' or 'Frontend Engineer' infer React/JavaScript/TypeScript; "
+    "'Rails' infer Ruby on Rails/Ruby; 'Django' or 'Python Engineer' infer Python/Django; "
+    "'Go Engineer' infer Go; 'Java Engineer' infer Java/Spring; 'ML Engineer' or 'AI' infer Python/PyTorch/TensorFlow; "
+    "'Data Engineer' infer SQL/Spark/Airflow; 'DevOps' or 'SRE' or 'Infrastructure' infer Kubernetes/Terraform/AWS; "
+    "'Fullstack' infer React/Node.js/TypeScript; 'Backend Engineer' infer the most likely server stack based on company context. "
+    "Also look for any technology keywords anywhere in the text including in job descriptions, requirements, or about sections. "
+    "Return at least 3-8 technologies if ANY engineering roles exist. Never return an empty array if there are engineering jobs."
 )
 
 #  Database 
@@ -420,7 +428,7 @@ def extract_with_openai(raw_text: str):
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": EXTRACTION_PROMPT},
-            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:10000]},
+            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:20000]},
         ],
         temperature=0,
     )
@@ -2563,6 +2571,24 @@ async def admin_reset_usage(request: Request):
     cur.close(); conn.close()
     return {"ok": True, "keys_reset": reset_count}
 
+
+@app.post("/admin/flush-cache")
+async def admin_flush_cache(request: Request):
+    """Flush Redis cache for a specific domain or all domains."""
+    _tok = request.cookies.get("admin_verified")
+    if not (_tok and redis_client.get(f"admin_session:{_tok}")):
+        raise HTTPException(status_code=403)
+    body = await request.json()
+    domain = body.get("domain")
+    if domain:
+        key = f"domain:{domain.strip().lower()}"
+        deleted = redis_client.delete(key)
+        return {"ok": True, "deleted": deleted, "key": key}
+    else:
+        keys = redis_client.keys("domain:*")
+        if keys:
+            redis_client.delete(*keys)
+        return {"ok": True, "deleted": len(keys)}
 
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
