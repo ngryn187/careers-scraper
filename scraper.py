@@ -2219,22 +2219,143 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     return {"status": "ok"}
 
 
-@app.get("/trending")
+@app.get("/trending", response_class=HTMLResponse)
 async def trending():
+    # Pull all cached domain results from Redis
     results = []
-    for domain, data in DEMO_DATA.items():
-        results.append({
-            "domain": domain,
-            "company_name": data.get("company_name", domain.split(".")[0].title()),
-            "is_hiring": data.get("is_hiring", False),
-            "engineering_roles": data.get("engineering_roles", []),
-            "sales_roles": data.get("sales_roles", []),
-            "detected_tech_stack": data.get("detected_tech_stack", []),
-            "open_roles": len(data.get("engineering_roles", [])) + len(data.get("sales_roles", []))
-        })
-    # Sort by open roles descending
+    try:
+        keys = redis_client.keys("domain:*")
+        for key in keys[:200]:
+            try:
+                raw = redis_client.get(key)
+                if not raw:
+                    continue
+                data = json.loads(raw)
+                domain = key.replace("domain:", "")
+                if not data.get("is_hiring"):
+                    continue
+                eng = data.get("engineering_roles", [])
+                sales = data.get("sales_roles", [])
+                other = data.get("other_roles", [])
+                tech = data.get("detected_tech_stack", [])
+                open_roles = len(eng) + len(sales) + len(other)
+                if open_roles == 0:
+                    continue
+                results.append({
+                    "domain": domain,
+                    "company_name": data.get("company_name", domain.split(".")[0].title()),
+                    "open_roles": open_roles,
+                    "eng_count": len(eng),
+                    "sales_count": len(sales),
+                    "tech": tech[:6],
+                    "sample_roles": (eng + sales + other)[:3],
+                })
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    # Fall back to demo data if Redis is empty
+    if not results:
+        for domain, data in DEMO_DATA.items():
+            eng = data.get("engineering_roles", [])
+            sales = data.get("sales_roles", [])
+            tech = data.get("detected_tech_stack", [])
+            results.append({
+                "domain": domain,
+                "company_name": data.get("company_name", domain.split(".")[0].title()),
+                "open_roles": len(eng) + len(sales),
+                "eng_count": len(eng),
+                "sales_count": len(sales),
+                "tech": tech[:6],
+                "sample_roles": (eng + sales)[:3],
+            })
+
     results.sort(key=lambda x: x["open_roles"], reverse=True)
-    return {"trending": results, "count": len(results)}
+
+    cards_html = ""
+    for r in results[:50]:
+        tech_pills = "".join(f"<span style='background:#1a0a2e;border:1px solid #3b1a6e;color:#c084fc;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600'>{t}</span> " for t in r["tech"])
+        role_list = "".join(f"<li style='color:#aaa;font-size:13px;padding:2px 0'>{role}</li>" for role in r["sample_roles"])
+        cards_html += f"""
+<a href='/demo/{r["domain"]}' style='text-decoration:none;color:inherit;display:block'>
+<div style='background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:20px 24px;margin-bottom:14px;transition:border-color .2s' onmouseover='this.style.borderColor="#7c3aed"' onmouseout='this.style.borderColor="#1f1f1f"'>
+  <div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px'>
+    <div>
+      <span style='font-size:16px;font-weight:700;color:#fff'>{r["company_name"]}</span>
+      <span style='color:#555;font-size:13px;margin-left:8px'>{r["domain"]}</span>
+    </div>
+    <span style='background:#052e16;color:#22c55e;border:1px solid #166534;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600'>{r["open_roles"]} open roles</span>
+  </div>
+  <div style='margin-bottom:10px;display:flex;gap:14px'>
+    <span style='font-size:12px;color:#888'>⚙ {r["eng_count"]} engineering</span>
+    <span style='font-size:12px;color:#888'>💼 {r["sales_count"]} sales</span>
+  </div>
+  {'<ul style="margin-bottom:10px;padding-left:16px">' + role_list + '</ul>' if role_list else ''}
+  <div style='display:flex;flex-wrap:wrap;gap:5px'>{tech_pills}</div>
+</div>
+</a>"""
+
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
+<title>Companies Actively Hiring Now - StackSight</title>
+<meta name="description" content="Live feed of companies actively hiring engineers, sales reps, and more. Updated daily from real job postings. Powered by StackSight.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://stacksight.org/trending">
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;min-height:100vh}}
+nav{{padding:16px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}}
+.logo{{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}}
+.nav-links a{{color:#c0c0c0;text-decoration:none;margin-left:20px;font-size:14px}}
+.nav-links a:hover{{color:#fff}}
+.container{{max-width:760px;margin:0 auto;padding:48px 20px 80px}}
+h1{{font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-1px}}
+.sub{{color:#888;font-size:15px;margin-bottom:36px}}
+.badge{{display:inline-flex;align-items:center;gap:6px;background:#1a0a2e;color:#a855f7;border:1px solid #3b1a6e;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}}
+.cta-box{{background:linear-gradient(135deg,#1a0a2e,#0f0520);border:1px solid #7c3aed;border-radius:12px;padding:28px;text-align:center;margin-top:32px}}
+.cta-box h3{{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}}
+.cta-box p{{color:#aaa;font-size:14px;margin-bottom:20px}}
+.btn{{display:inline-block;background:#a855f7;color:#fff;padding:11px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px}}
+.btn:hover{{background:#9333ea}}
+@media(max-width:640px){{nav{{padding:14px 16px}}.nav-links a:not(:last-child){{display:none}}h1{{font-size:26px}}}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">StackSight</a>
+  <div class="nav-links">
+    <a href="/docs">Docs</a>
+    <a href="/demo/stripe.com">Demo</a>
+    <a href="/login" id="nav-auth-btn" style="background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500">Sign In</a>
+  </div>
+</nav>
+<script>
+(function(){{
+  fetch("/session-check",{{credentials:"include"}}).then(r=>r.json()).then(d=>{{
+    if(d.logged_in){{
+      var btn=document.getElementById("nav-auth-btn");
+      if(btn){{btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}}
+    }}
+  }}).catch(function(){{}});
+}})();
+</script>
+<div class="container">
+  <div class="badge">&#x1f525; Live Data</div>
+  <h1>Companies Hiring Now</h1>
+  <p class="sub">{len(results)} companies actively hiring &mdash; updated from real job postings. Click any to see roles &amp; tech stack.</p>
+  {cards_html if cards_html else '<p style="color:#555;text-align:center;padding:40px">No results cached yet. Try the <a href="/demo/stripe.com" style="color:#a855f7">demo</a> first.</p>'}
+  <div class="cta-box">
+    <h3>Get this data via API</h3>
+    <p>Pull hiring signals for any domain instantly &mdash; structured JSON, 25 free requests, no credit card.</p>
+    <a href="/#signup" class="btn">Get free API key</a>
+  </div>
+</div>
+</body>
+</html>""")
 
 
 @app.get("/terms", response_class=HTMLResponse)
