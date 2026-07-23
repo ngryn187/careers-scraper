@@ -400,7 +400,7 @@ def send_magic_link_email(to_email: str, token: str, next_url: str = ""):
     send_email(to_email, subject, html, text)
 
 def send_api_key_email(to_email: str, api_key: str, plan: str):
-    limit = PLAN_LIMITS.get(plan, 10)
+    limit = PLAN_LIMITS.get(plan, 25)
     subject = "Your StackSight API key is ready 🚀"
     upgrade_section = "" if plan != "free" else f"""
       <div style="background:#1a0a2e;border:1px solid #7c3aed;border-radius:8px;padding:20px;margin-top:24px">
@@ -487,7 +487,7 @@ def send_verification_email(email: str, token: str):
     _send_email_sync(email, subject, html_body, text_body)
 def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, stripe_session_id: str = None):
     api_key = "ss_" + secrets.token_urlsafe(32)
-    limit = PLAN_LIMITS.get(plan, 10)
+    limit = PLAN_LIMITS.get(plan, 25)
     conn = get_db()
     cur = conn.cursor()
     if plan != "free":
@@ -1938,11 +1938,18 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
     if used:
         cur.close(); conn.close()
         return HTMLResponse("<h2 style='font-family:sans-serif;padding:40px'>This link has already been used. <a href='/login'>Sign in here</a>.</h2>", status_code=400)
-    cur.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
-    conn.commit()
     cur.close(); conn.close()
-    # Provision key synchronously so it exists before we redirect
-    provision_api_key(email, "free")
+    # Provision key first — only mark token used if it succeeds
+    try:
+        provision_api_key(email, "free")
+    except Exception as e:
+        return HTMLResponse(f"<h2 style='font-family:sans-serif;padding:40px;color:#ef4444'>Setup error: {e}<br><br><a href='/login' style='color:#a855f7'>Try signing in</a></h2>", status_code=500)
+    # Mark token used only after successful provisioning
+    conn2 = get_db()
+    cur2 = conn2.cursor()
+    cur2.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
+    conn2.commit()
+    cur2.close(); conn2.close()
     # Log them straight in
     response = RedirectResponse("/dashboard", status_code=302)
     create_session(email, response)
