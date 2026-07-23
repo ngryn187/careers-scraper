@@ -1089,7 +1089,7 @@ footer a:hover{{color:#fff}}
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
-    <a href="/demo/stripe.com">Demo</a>
+    <a href="/demo/vercel.com">Demo</a>
     <a href="/trending">Trending</a>
     <a href="#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
@@ -1111,7 +1111,7 @@ footer a:hover{{color:#fff}}
   <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment  all in one REST API.</p>
   <div class="cta-group">
     <a href="#signup" class="btn-primary"> Start for Free</a>
-    <a href="/demo/stripe.com" class="btn-secondary">See Example</a>
+    <a href="/demo/vercel.com" class="btn-secondary">See Example</a>
   </div>
   <div style="margin-top:48px;text-align:center">
     <div <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;margin-top:12px">Try any domain</p>
@@ -1262,7 +1262,7 @@ footer a:hover{{color:#fff}}
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/vercel.com">Demo</a> &nbsp;&nbsp; <a href="#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -1337,7 +1337,7 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
   <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
   <div style="display:flex;gap:24px;align-items:center">
     <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
-    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/demo/vercel.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
     <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
     <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
   </div>
@@ -1422,7 +1422,7 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
   <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
   <div style="display:flex;gap:24px;align-items:center">
     <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
-    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/demo/vercel.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
     <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
     <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
   </div>
@@ -1507,7 +1507,7 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
   <a href="/" style="color:#a855f7;font-weight:800;font-size:18px;text-decoration:none">StackSight</a>
   <div style="display:flex;gap:24px;align-items:center">
     <a href="/docs" style="color:#b0b0b0;text-decoration:none;font-size:14px">Docs</a>
-    <a href="/demo/stripe.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
+    <a href="/demo/vercel.com" style="color:#b0b0b0;text-decoration:none;font-size:14px">Demo</a>
     <a href="/#pricing" style="color:#b0b0b0;text-decoration:none;font-size:14px">Pricing</a>
     <a href="/login" style="background:#a855f7;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">Sign In</a>
   </div>
@@ -1952,45 +1952,44 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
 # ROUTES  API
 # 
 
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing_redirect():
+    return RedirectResponse("/#pricing", status_code=301)
+
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo(domain: str, request: Request):
-    # Auth check - try in-memory session first, then DB session
-    token = request.cookies.get("session")
-    email = SESSIONS.get(token) if token else None
-    if not email:
-        ss_token = request.cookies.get("ss_session")
-        if ss_token:
-            try:
-                conn = get_db()
-                cur = conn.cursor()
-                cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_token,))
-                row = cur.fetchone()
-                conn.close()
-                if row:
-                    email = row[0]
-            except Exception:
-                pass
-    if not email:
-        return RedirectResponse(f"/login?next=/demo/{domain}")
+    # Demo is public — no login required
+    # Optionally track usage if user is logged in
+    email = None
+    ss_token = request.cookies.get("ss_session")
+    if ss_token:
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_token,))
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                email = row[0]
+        except Exception:
+            pass
 
-    # Look up user's API key from DB
-    import httpx as _httpx
-    base = os.environ.get("BASE_URL", "https://stacksight.org")
-    data, src = {}, "error"
     user_api_key = None
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
-        row = cur.fetchone()
-        conn.close()
-        if row:
-            user_api_key = row[0]
-    except Exception:
-        pass
+    if email:
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                user_api_key = row[0]
+        except Exception:
+            pass
+
+    data, src, scrape_error = {}, "error", None
     try:
         domain_clean = validate_domain(domain)
-        # Check Redis cache first
         cache_key = f"domain:{domain_clean}"
         cached = redis_client.get(cache_key)
         if cached:
@@ -1999,12 +1998,36 @@ async def demo(domain: str, request: Request):
         else:
             raw_text, url, status = await scrape_page(domain_clean)
             data = extract_with_openai(raw_text)
+            if not data.get("detected_tech_stack"):
+                all_roles = data.get("engineering_roles", []) + data.get("sales_roles", []) + data.get("other_roles", [])
+                data["detected_tech_stack"] = infer_tech_from_roles(all_roles)
             redis_client.setex(cache_key, 604800, json.dumps(data))
             src = "live"
         if user_api_key:
             increment_usage(user_api_key)
+    except HTTPException as he:
+        scrape_error = he.detail
     except Exception as _ex:
-        src = f"error: {_ex}"
+        scrape_error = "Could not scrape this domain. It may be blocking automated requests."
+
+    if scrape_error:
+        return HTMLResponse(f"""<!DOCTYPE html>
+<html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+<link rel='icon' type='image/png' href='/favicon.png'>
+<title>Demo: {domain} - StackSight</title>
+<style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}}
+.card{{background:#111;border:1px solid #1f1f23;border-radius:16px;padding:40px;max-width:480px;width:100%}}
+h2{{font-size:20px;font-weight:700;margin-bottom:12px;color:#fff}}
+p{{color:#888;font-size:14px;line-height:1.6;margin-bottom:24px}}
+a{{display:inline-block;background:#a855f7;color:#fff;padding:11px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:4px}}
+.sec{{background:transparent;border:1px solid #333;color:#ccc}}</style></head>
+<body><div class='card'>
+<div style='font-size:40px;margin-bottom:16px'>⚠️</div>
+<h2>Couldn't scrape {domain}</h2>
+<p>{scrape_error}<br><br>Try a different domain, or use the API directly with your own key.</p>
+<a href='/demo/vercel.com'>Try vercel.com</a>
+<a href='/#signup' class='sec'>Get API key</a>
+</div></body></html>""", status_code=200)
 
     eng_roles = data.get("engineering_roles", [])
     sales_roles = data.get("sales_roles", [])
@@ -2052,10 +2075,30 @@ nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60
   <a href='/dashboard' style='color:#71717a;font-size:.875rem;text-decoration:none'>Dashboard</a>
 </nav>
 <div class='container'>
-  <form class='search-bar' onsubmit='event.preventDefault();const b=this.querySelector("button");b.textContent="Analyzing...";b.disabled=true;window.location="/demo/"+encodeURIComponent(document.getElementById("d").value.trim())'>
+  <form class='search-bar' onsubmit='event.preventDefault();analyzeDomain()'>
     <input id='d' value='{domain}' placeholder='Enter a domain...' required>
     <button type='submit'>Analyze</button>
   </form>
+  <script>
+  async function analyzeDomain(){{
+    var d=document.getElementById("d").value.trim();
+    if(!d)return;
+    var btn=document.querySelector(".search-bar button");
+    btn.textContent="Checking...";btn.disabled=true;
+    try{{
+      var r=await fetch("/session-check",{{credentials:"include"}});
+      var j=await r.json();
+      if(j.logged_in){{
+        btn.textContent="Analyzing...";
+        window.location="/demo/"+encodeURIComponent(d);
+      }}else{{
+        window.location="/login?next=/demo/"+encodeURIComponent(d);
+      }}
+    }}catch(e){{
+      window.location="/login?next=/demo/"+encodeURIComponent(d);
+    }}
+  }}
+  </script>
   <div class='card'>
     <h2>Overview</h2>
     <div class='meta'><strong style='font-size:1.25rem'>{domain}</strong> {hiring_badge}</div>
@@ -2399,7 +2442,7 @@ h1{{font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
-    <a href="/demo/stripe.com">Demo</a>
+    <a href="/demo/vercel.com">Demo</a>
     <a href="/trending">Trending</a>
     <a href="/login" id="nav-auth-btn" style="background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500">Sign In</a>
   </div>
@@ -2418,7 +2461,7 @@ h1{{font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-
   <div class="badge">&#x1f525; Live Data</div>
   <h1>Companies Hiring Now</h1>
   <p class="sub">{len(results)} companies actively hiring &mdash; updated from real job postings. Click any to see roles &amp; tech stack.</p>
-  {cards_html if cards_html else '<p style="color:#555;text-align:center;padding:40px">No results cached yet. Try the <a href="/demo/stripe.com" style="color:#a855f7">demo</a> first.</p>'}
+  {cards_html if cards_html else '<p style="color:#555;text-align:center;padding:40px">No results cached yet. Try the <a href="/demo/vercel.com" style="color:#a855f7">demo</a> first.</p>'}
   <div class="cta-box">
     <h3>Get this data via API</h3>
     <p>Pull hiring signals for any domain instantly &mdash; structured JSON, 25 free requests, no credit card.</p>
@@ -2470,7 +2513,7 @@ footer a:hover{color:#fff}
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
-    <a href="/demo/stripe.com">Demo</a>
+    <a href="/demo/vercel.com">Demo</a>
     <a href="/trending">Trending</a>
     <a href="/#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
@@ -2553,7 +2596,7 @@ footer a:hover{color:#fff}
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/vercel.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
@@ -2604,7 +2647,7 @@ footer a:hover{color:#fff}
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
     <a href="/docs">Docs</a>
-    <a href="/demo/stripe.com">Demo</a>
+    <a href="/demo/vercel.com">Demo</a>
     <a href="/trending">Trending</a>
     <a href="/#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
@@ -2693,7 +2736,7 @@ footer a:hover{color:#fff}
 <footer>
   <div style="margin-bottom:14px;font-size:16px;font-weight:700;color:#a855f7;letter-spacing:-0.5px">Stack<span style="color:#e5e5e5">Sight</span></div>
   <div style="margin-bottom:12px">
-    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/stripe.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
+    <a href="/docs">Docs</a> &nbsp;&nbsp; <a href="/demo/vercel.com">Demo</a> &nbsp;&nbsp; <a href="/#pricing">Pricing</a> &nbsp;&nbsp; <a href="/login">Sign In</a> &nbsp;&nbsp; <a href="mailto:support@stacksight.org">Contact</a>
   </div>
   <div style="margin-bottom:8px">
     <a href="/terms">Terms of Service</a> &nbsp;&nbsp; <a href="/privacy">Privacy Policy</a>
