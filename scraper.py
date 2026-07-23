@@ -55,7 +55,41 @@ RATE_LIMITS = {"free": 10, "starter": 60, "pro": 300, "business": 1000}
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
-#  Demo data 
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/favicon.png">
+<title>404 - Page Not Found | StackSight</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.code{font-size:120px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:8px}
+h1{font-size:24px;font-weight:600;color:#fff;margin-bottom:12px}
+p{color:#888;font-size:15px;margin-bottom:36px;max-width:400px}
+.btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;transition:background .2s;margin:6px}
+.btn:hover{background:#9333ea}
+.btn-sec{background:transparent;border:1px solid #333;color:#ccc}
+.btn-sec:hover{background:#1a1a1a;border-color:#555}
+nav{position:fixed;top:0;left:0;right:0;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;background:rgba(10,10,10,0.95)}
+.logo{font-size:20px;font-weight:700;color:#a855f7;text-decoration:none}
+</style>
+</head>
+<body>
+<nav><a href="/" class="logo">StackSight</a></nav>
+<div class="code">404</div>
+<h1>Page not found</h1>
+<p>The page you&rsquo;re looking for doesn&rsquo;t exist or has been moved.</p>
+<div>
+  <a href="/" class="btn">Go Home</a>
+  <a href="/docs" class="btn btn-sec">API Docs</a>
+</div>
+</body>
+</html>""", status_code=404)
+
+#  Demo data
 DEMO_DATA = {
     "stripe.com": {"company_name": "Stripe", "is_hiring": True, "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"], "sales_roles": ["Account Executive", "Solutions Engineer"], "detected_tech_stack": ["React", "AWS", "Stripe", "Cloudflare", "Sentry"]},
     "openai.com": {"company_name": "OpenAI", "is_hiring": True, "engineering_roles": ["Research Engineer", "Infrastructure Engineer", "Safety Engineer"], "sales_roles": ["Enterprise Account Executive"], "detected_tech_stack": ["Python", "Kubernetes", "Azure", "React", "PostgreSQL"]},
