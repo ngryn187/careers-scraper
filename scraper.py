@@ -321,16 +321,74 @@ def send_magic_link_email(to_email: str, token: str, next_url: str = ""):
 
 def send_api_key_email(to_email: str, api_key: str, plan: str):
     limit = PLAN_LIMITS.get(plan, 10)
-    subject = "Your StackSight API Key"
-    html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#fff;padding:40px;border-radius:12px">
-      <h1 style="color:#a855f7">StackSight API</h1>
-      <h2>Your API Key is Ready</h2>
-      <p>Plan: <strong style="color:#a855f7">{plan.title()}</strong> | Limit: <strong>{limit:,} requests</strong></p>
-      <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:20px;font-family:monospace;font-size:16px;color:#a855f7;word-break:break-all">{api_key}</div>
-      <p style="margin-top:20px">View your dashboard: <a href="{BASE_URL}/dashboard" style="color:#a855f7">{BASE_URL}/dashboard</a></p>
-      <p>Docs: <a href="{BASE_URL}/docs" style="color:#a855f7">{BASE_URL}/docs</a></p>
+    subject = "Your StackSight API key is ready 🚀"
+    upgrade_section = "" if plan != "free" else f"""
+      <div style="background:#1a0a2e;border:1px solid #7c3aed;border-radius:8px;padding:20px;margin-top:24px">
+        <p style="margin:0 0 8px;color:#a855f7;font-weight:bold">⚡ Need more requests?</p>
+        <p style="margin:0 0 12px;color:#ccc;font-size:14px">Upgrade to Starter for 500 requests/month at just $12/mo.</p>
+        <a href="{BASE_URL}/checkout/starter" style="display:inline-block;background:#7c3aed;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:14px">Upgrade Now →</a>
+      </div>"""
+    html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:12px;border:1px solid #1f1f1f">
+      <h1 style="color:#a855f7;margin:0 0 4px">StackSight</h1>
+      <p style="color:#666;margin:0 0 32px;font-size:14px">B2B Hiring Intent & Tech Stack API</p>
+
+      <h2 style="color:#fff;margin:0 0 8px">Your API key is ready</h2>
+      <p style="color:#aaa;margin:0 0 16px">Plan: <strong style="color:#a855f7">{plan.title()}</strong> &nbsp;·&nbsp; <strong>{limit:,} requests/month</strong></p>
+
+      <div style="background:#111;border:1px solid #333;border-radius:8px;padding:16px 20px;font-family:monospace;font-size:15px;color:#a855f7;word-break:break-all;margin-bottom:32px">{api_key}</div>
+
+      <h3 style="color:#fff;margin:0 0 12px">Make your first call</h3>
+      <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px 20px;font-family:monospace;font-size:13px;color:#ccc;margin-bottom:32px;overflow-x:auto">
+        <span style="color:#666">curl</span> "https://stacksight.org/scrape?domain=stripe.com" \<br>
+        &nbsp;&nbsp;<span style="color:#666">-H</span> "X-API-Key: <span style="color:#a855f7">{api_key}</span>"
+      </div>
+
+      <h3 style="color:#fff;margin:0 0 12px">What you get back</h3>
+      <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px 20px;font-family:monospace;font-size:13px;color:#ccc;margin-bottom:32px">
+        {{"company_name": "Stripe",<br>
+        &nbsp;"is_hiring": true,<br>
+        &nbsp;"engineering_roles": ["Backend Engineer", "ML Engineer"],<br>
+        &nbsp;"sales_roles": ["Account Executive", "Solutions Engineer"],<br>
+        &nbsp;"detected_tech_stack": ["React", "Go", "AWS", "Kubernetes"]}}
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:32px">
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #1f1f1f">
+            <a href="{BASE_URL}/dashboard" style="color:#a855f7;text-decoration:none">📊 Dashboard</a>
+            <span style="color:#555;font-size:13px;margin-left:8px">View usage & manage your key</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #1f1f1f">
+            <a href="{BASE_URL}/docs" style="color:#a855f7;text-decoration:none">📖 Docs</a>
+            <span style="color:#555;font-size:13px;margin-left:8px">Full API reference & examples</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0">
+            <a href="{BASE_URL}/demo/stripe.com" style="color:#a855f7;text-decoration:none">🔍 Try the Demo</a>
+            <span style="color:#555;font-size:13px;margin-left:8px">See live results for any domain</span>
+          </td>
+        </tr>
+      </table>
+      {upgrade_section}
+      <p style="color:#444;font-size:12px;margin-top:32px">You're receiving this because you signed up at stacksight.org. Reply to this email if you need help.</p>
     </div>"""
-    text = f"Your StackSight API Key\n\nPlan: {plan.title()}\nLimit: {limit:,} requests\n\nAPI Key: {api_key}\n\nDashboard: {BASE_URL}/dashboard"
+    text = f"""Welcome to StackSight!
+
+Your API Key: {api_key}
+Plan: {plan.title()} | {limit:,} requests/month
+
+Quick start:
+curl "https://stacksight.org/scrape?domain=stripe.com" -H "X-API-Key: {api_key}"
+
+Dashboard: {BASE_URL}/dashboard
+Docs: {BASE_URL}/docs
+Demo: {BASE_URL}/demo/stripe.com
+
+Reply to this email if you need help.
+"""
     send_email(to_email, subject, html, text)
 
 def send_verification_email(email: str, token: str):
