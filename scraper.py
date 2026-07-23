@@ -551,16 +551,33 @@ async def scrape_page(domain: str):
 def extract_with_openai(raw_text: str):
     if not openai.api_key:
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set")
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": EXTRACTION_PROMPT},
-            {"role": "user", "content": "Careers page text:\n\n" + raw_text[:20000]},
-        ],
-        temperature=0,
-    )
-    return json.loads(response.choices[0].message.content)
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": EXTRACTION_PROMPT},
+                {"role": "user", "content": "Careers page text:\n\n" + raw_text[:20000]},
+            ],
+            temperature=0,
+        )
+        content = response.choices[0].message.content.strip()
+        # Strip markdown code fences if present
+        if content.startswith("```"):
+            content = content.split("```")[1]
+            if content.startswith("json"):
+                content = content[4:]
+            content = content.strip()
+        # Find JSON object boundaries
+        start = content.find("{")
+        end = content.rfind("}") + 1
+        if start != -1 and end > start:
+            content = content[start:end]
+        return json.loads(content)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse extraction response")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Extraction error: {str(e)}")
 
 #  Startup 
 @app.on_event("startup")
