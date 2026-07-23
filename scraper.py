@@ -1613,11 +1613,11 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
     bar_color = "#ef4444" if usage_pct >= 90 else "#f59e0b" if usage_pct >= 70 else "#22c55e"
     upgrade_html = ""
     if plan == "free":
-        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Starter - $29/mo</a>"
+        upgrade_html = "<a href='/checkout/starter' class='upgrade-btn'>Upgrade to Starter &mdash; $12/mo</a>"
     elif plan == "starter":
-        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Pro - $99/mo</a>"
+        upgrade_html = "<a href='/choose/pro' class='upgrade-btn'>Upgrade to Pro &mdash; $49/mo</a>"
     elif plan == "pro":
-        upgrade_html = "<a href='/pricing' class='upgrade-btn'>Upgrade to Business - $299/mo</a>"
+        upgrade_html = "<a href='/choose/business' class='upgrade-btn'>Upgrade to Business &mdash; $199/mo</a>"
     created_str = created_at.strftime("%B %d, %Y") if created_at else "N/A"
     html = f"""<!DOCTYPE html>
 <html lang='en'>
