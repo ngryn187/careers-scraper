@@ -71,14 +71,13 @@ DEMO_DATA = {
 EXTRACTION_PROMPT = (
     "You are a B2B data extraction engine. Given raw text from a company careers page, "
     "extract structured data and return ONLY valid JSON with this exact schema: "
-    "{"
-    ""company_name": string, "
-    ""is_hiring": boolean (true if any open roles exist), "
-    ""engineering_roles": [list all engineering/tech/developer/data job titles found], "
-    ""sales_roles": [list all sales/marketing/growth/bizdev job titles found], "
-    ""other_roles": [list all other job titles found - design, ops, finance, legal, HR, etc], "
-    ""detected_tech_stack": [list all technologies, frameworks, languages, tools, platforms mentioned anywhere on the page OR inferred from job requirements and role descriptions]"
-    "}. Extract every job title and technology you can find. If no jobs exist set is_hiring to false."
+    "{\"company_name\": string, "
+    "\"is_hiring\": boolean (true if any open roles exist), "
+    "\"engineering_roles\": [list all engineering/tech/developer/data job titles found], "
+    "\"sales_roles\": [list all sales/marketing/growth/bizdev job titles found], "
+    "\"other_roles\": [list all other job titles found - design, ops, finance, legal, HR, etc], "
+    "\"detected_tech_stack\": [list all technologies, frameworks, languages, tools, platforms mentioned anywhere on the page OR inferred from job requirements and role descriptions]}. "
+    "Extract every job title and technology you can find. If no jobs exist set is_hiring to false."
 )
 
 #  Database 
