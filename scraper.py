@@ -153,6 +153,7 @@ def init_db():
     cur.execute("ALTER TABLE pending_signups ADD COLUMN IF NOT EXISTS used BOOLEAN DEFAULT FALSE")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT TRUE")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS usage_reset_at TIMESTAMP")
+    cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS alert_80_sent BOOLEAN DEFAULT FALSE")
     conn.commit()
     cur.close()
     conn.close()
@@ -237,10 +238,43 @@ def verify_api_key(x_api_key: str):
 def increment_usage(api_key: str):
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("UPDATE api_keys SET requests_used = requests_used + 1 WHERE api_key=%s", (api_key,))
+    cur.execute(
+        "UPDATE api_keys SET requests_used = requests_used + 1 WHERE api_key=%s RETURNING email, requests_used, requests_limit, alert_80_sent",
+        (api_key,)
+    )
+    row = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
+    if row:
+        email, used, limit, alert_sent = row
+        if limit and not alert_sent and used >= int(limit * 0.8):
+            # Send 80% usage alert and mark it sent
+            try:
+                conn2 = get_db()
+                cur2 = conn2.cursor()
+                cur2.execute("UPDATE api_keys SET alert_80_sent=TRUE WHERE api_key=%s", (api_key,))
+                conn2.commit()
+                cur2.close(); conn2.close()
+            except Exception:
+                pass
+            pct = int(used / limit * 100)
+            _send_usage_alert(email, used, limit, pct)
+
+def _send_usage_alert(email: str, used: int, limit: int, pct: int):
+    subject = f"StackSight: You've used {pct}% of your monthly quota"
+    html = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f0f0f;color:#fff;padding:40px;border-radius:12px">
+      <h1 style="color:#a855f7;margin-bottom:4px">StackSight</h1>
+      <p style="color:#bbb;margin-top:0;margin-bottom:24px">B2B Hiring Intent API</p>
+      <h2 style="color:#fff">Usage Alert: {pct}% of quota used</h2>
+      <p style="color:#ccc">You've used <strong style="color:#a855f7">{used:,} of {limit:,}</strong> requests this month.</p>
+      <p style="color:#ccc">You have <strong>{limit - used:,} requests</strong> remaining. Consider upgrading to avoid hitting your limit.</p>
+      <a href="https://stacksight.org/#pricing" style="display:inline-block;background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0;font-size:16px">Upgrade Plan</a>
+      <p style="color:#888;font-size:12px;margin-top:24px">You're receiving this because you have an active StackSight account.</p>
+    </div>"""
+    text = f"You've used {pct}% ({used:,} of {limit:,}) of your StackSight quota this month. {limit - used:,} requests remaining. Upgrade at https://stacksight.org/#pricing"
+    import threading
+    threading.Thread(target=_send_email_sync, args=(email, subject, html, text), daemon=True).start()
 
 #  Email 
 def _send_email_sync(to_email: str, subject: str, html_body: str, text_body: str):
