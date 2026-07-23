@@ -102,6 +102,51 @@ DEMO_DATA = {
     "datadog.com": {"company_name": "Datadog", "is_hiring": True, "engineering_roles": ["Go Engineer", "Agent Engineer", "ML Engineer"], "sales_roles": ["Enterprise AE", "Solutions Engineer", "SDR"], "detected_tech_stack": ["Go", "Python", "AWS", "Kubernetes", "Cassandra"]},
 }
 
+TECH_INFERENCE_MAP = [
+    (["ios", "swift", "xcode", "apple"], ["Swift", "Xcode", "iOS"]),
+    (["android", "kotlin"], ["Kotlin", "Android"]),
+    (["react native", "mobile engineer"], ["React Native", "TypeScript"]),
+    (["react", "frontend", "front-end", "ui engineer", "web engineer"], ["React", "TypeScript", "JavaScript"]),
+    (["next.js", "nextjs"], ["Next.js", "React", "TypeScript"]),
+    (["vue", "nuxt"], ["Vue.js", "TypeScript"]),
+    (["angular"], ["Angular", "TypeScript"]),
+    (["node", "node.js"], ["Node.js", "JavaScript"]),
+    (["python", "django", "flask", "fastapi"], ["Python"]),
+    (["ml engineer", "machine learning", "deep learning", "ai engineer", "llm"], ["Python", "PyTorch", "TensorFlow"]),
+    (["data engineer", "data pipeline", "etl"], ["Python", "Spark", "Airflow", "SQL"]),
+    (["data scientist", "data analyst"], ["Python", "SQL", "pandas"]),
+    (["rails", "ruby"], ["Ruby on Rails", "Ruby"]),
+    (["go engineer", "golang", "go developer"], ["Go"]),
+    (["java engineer", "java developer", "spring"], ["Java", "Spring"]),
+    (["scala", "spark"], ["Scala", "Spark"]),
+    (["rust engineer", "rust developer"], ["Rust"]),
+    (["c++ engineer", "c++", "cpp"], ["C++"]),
+    (["devops", "sre", "site reliability", "infrastructure engineer", "platform engineer"], ["Kubernetes", "Terraform", "AWS"]),
+    (["cloud", "aws", "amazon web services"], ["AWS"]),
+    (["gcp", "google cloud"], ["GCP"]),
+    (["azure", "microsoft cloud"], ["Azure"]),
+    (["kubernetes", "k8s"], ["Kubernetes"]),
+    (["terraform"], ["Terraform"]),
+    (["backend engineer", "backend developer", "server-side"], ["Python", "Go", "AWS"]),
+    (["fullstack", "full stack", "full-stack"], ["React", "Node.js", "TypeScript"]),
+    (["database", "postgres", "postgresql"], ["PostgreSQL"]),
+    (["mysql"], ["MySQL"]),
+    (["mongodb", "mongo"], ["MongoDB"]),
+    (["redis"], ["Redis"]),
+    (["kafka"], ["Kafka"]),
+    (["graphql"], ["GraphQL"]),
+    (["blockchain", "web3", "solidity", "smart contract"], ["Solidity", "Ethereum", "Web3"]),
+]
+
+def infer_tech_from_roles(roles: list) -> list:
+    """Infer tech stack from job titles when GPT returns empty array."""
+    roles_text = " ".join(roles).lower()
+    tech = set()
+    for keywords, techs in TECH_INFERENCE_MAP:
+        if any(kw in roles_text for kw in keywords):
+            tech.update(techs)
+    return list(tech)[:10]
+
 EXTRACTION_PROMPT = (
     "You are a B2B data extraction engine. Given raw text from a company careers page, "
     "extract structured data and return ONLY valid JSON with this exact schema: "
@@ -1044,6 +1089,7 @@ footer a:hover{{color:#fff}}
   <div class="nav-links">
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
+    <a href="/trending">Trending</a>
     <a href="#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
   </div>
@@ -2060,6 +2106,9 @@ async def scrape(domain: str, x_api_key: str = Header(None)):
         return {"source": "cache", "data": json.loads(cached)}
     raw_text, url, status = await scrape_page(domain)
     extracted = extract_with_openai(raw_text)
+    if not extracted.get("detected_tech_stack"):
+        all_roles = extracted.get("engineering_roles", []) + extracted.get("sales_roles", []) + extracted.get("other_roles", [])
+        extracted["detected_tech_stack"] = infer_tech_from_roles(all_roles)
     redis_client.setex(cache_key, 604800, json.dumps(extracted))
     increment_usage(api_key)
     return {"source": "live", "scrape_metadata": {"url": url, "status": status}, "data": extracted}
@@ -2104,6 +2153,9 @@ async def bulk(request: Request, x_api_key: str = Header(None)):
         try:
             raw_text, url, status = await scrape_page(clean)
             extracted = extract_with_openai(raw_text)
+            if not extracted.get("detected_tech_stack"):
+                all_roles = extracted.get("engineering_roles", []) + extracted.get("sales_roles", []) + extracted.get("other_roles", [])
+                extracted["detected_tech_stack"] = infer_tech_from_roles(all_roles)
             redis_client.setex(cache_key, 604800, json.dumps(extracted))
             increment_usage(api_key)
             return {"domain": clean, "source": "live", "data": extracted}
@@ -2347,6 +2399,7 @@ h1{{font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-
   <div class="nav-links">
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
+    <a href="/trending">Trending</a>
     <a href="/login" id="nav-auth-btn" style="background:#1a1a1a;border:1px solid #333;color:#fff;padding:7px 16px;border-radius:7px;font-weight:500">Sign In</a>
   </div>
 </nav>
@@ -2417,6 +2470,7 @@ footer a:hover{color:#fff}
   <div class="nav-links">
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
+    <a href="/trending">Trending</a>
     <a href="/#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
   </div>
@@ -2550,6 +2604,7 @@ footer a:hover{color:#fff}
   <div class="nav-links">
     <a href="/docs">Docs</a>
     <a href="/demo/stripe.com">Demo</a>
+    <a href="/trending">Trending</a>
     <a href="/#pricing">Pricing</a>
     <a href="/login" class="btn-login" id="nav-auth-btn">Sign In</a>
   </div>
@@ -2911,6 +2966,26 @@ async def admin_flush_cache(request: Request):
         if keys:
             redis_client.delete(*keys)
         return {"ok": True, "deleted": len(keys)}
+
+@app.post("/admin/flush-empty-tech")
+async def admin_flush_empty_tech(request: Request):
+    """Flush cache entries that have empty detected_tech_stack so they get re-scraped."""
+    _tok = request.cookies.get("admin_verified")
+    if not (_tok and redis_client.get(f"admin_session:{_tok}")):
+        raise HTTPException(status_code=403)
+    keys = redis_client.keys("domain:*")
+    flushed = []
+    for key in keys:
+        try:
+            raw = redis_client.get(key)
+            if raw:
+                data = json.loads(raw)
+                if not data.get("detected_tech_stack"):
+                    redis_client.delete(key)
+                    flushed.append(key.replace("domain:", ""))
+        except Exception:
+            continue
+    return {"ok": True, "flushed": len(flushed), "domains": flushed}
 
 @app.post("/admin/create-key")
 async def admin_create_key(request: Request):
