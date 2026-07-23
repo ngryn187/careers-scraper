@@ -1004,7 +1004,21 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 footer{{border-top:1px solid #1a1a1a;padding:32px 20px;text-align:center;color:#666;font-size:13px}}
 footer a{{color:#888;text-decoration:none}}
 footer a:hover{{color:#fff}}
-@media(max-width:640px){{h1{{font-size:36px}}.stats-bar{{gap:28px}}nav{{padding:14px 20px}}.step::after{{display:none}}}}
+@media(max-width:640px){{
+  h1{{font-size:32px}}
+  .stats-bar{{gap:20px;padding:28px 16px}}
+  nav{{padding:14px 16px}}
+  .nav-links a:not(.btn-login){{display:none}}
+  .hero{{padding:60px 16px 40px}}
+  .hero p{{font-size:16px}}
+  .cta-group{{flex-direction:column;align-items:center}}
+  .plans{{grid-template-columns:1fr !important}}
+  .plan{{margin-bottom:0}}
+  .step::after{{display:none}}
+  .why-grid{{grid-template-columns:1fr}}
+  .faq{{padding:0 12px}}
+  .final-cta h2{{font-size:28px}}
+}}
 </style>
 </head>
 <body>
@@ -1990,6 +2004,16 @@ nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60
   <div class='card'>
     <h2>Open Jobs ({len(jobs)})</h2>
     {jobs_html}
+  </div>
+  <div style='background:linear-gradient(135deg,#1a0a2e,#0f0520);border:1px solid #7c3aed;border-radius:16px;padding:36px;text-align:center;margin-top:8px'>
+    <div style='font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a855f7;margin-bottom:12px'>StackSight API</div>
+    <h2 style='font-size:24px;font-weight:800;color:#fff;margin-bottom:10px'>Get this data via API</h2>
+    <p style='color:#aaa;font-size:15px;margin-bottom:24px;max-width:460px;margin-left:auto;margin-right:auto'>Enrich any domain instantly. Hiring signals, tech stack, open roles &mdash; structured JSON in one call. Free tier available.</p>
+    <div style='background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:14px 20px;font-family:monospace;font-size:13px;color:#a855f7;text-align:left;max-width:480px;margin:0 auto 24px'>
+      curl "https://stacksight.org/scrape?domain={domain}"<br>&nbsp;&nbsp;-H "X-API-Key: YOUR_KEY"
+    </div>
+    <a href='/#signup' style='display:inline-block;background:#a855f7;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-right:10px'>Get free API key</a>
+    <a href='/docs' style='display:inline-block;background:transparent;color:#ccc;padding:13px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;border:1px solid #333'>View docs</a>
   </div>
 </div>
 </body>
