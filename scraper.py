@@ -394,14 +394,16 @@ Reply to this email if you need help.
 def send_verification_email(email: str, token: str):
     verify_url = f"https://stacksight.org/verify-email?token={token}"
     subject = "Verify your email - StackSight"
-    html_body = f"""<html><body>
-<p>Hi,</p>
-<p>Thanks for signing up for StackSight! Click the link below to verify your email and get your free API key:</p>
-<p><a href="{verify_url}">{verify_url}</a></p>
-<p>This link expires in 24 hours.</p>
-<p>- The StackSight Team</p>
-</body></html>"""
-    text_body = f"Verify your email: {verify_url}"
+    html_body = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:40px;border-radius:12px;border:1px solid #1f1f1f">
+      <h1 style="color:#a855f7;margin:0 0 4px">StackSight</h1>
+      <p style="color:#666;margin:0 0 32px;font-size:14px">B2B Hiring Intent & Tech Stack API</p>
+      <h2 style="color:#fff">Verify your email</h2>
+      <p style="color:#aaa">Click the button below to verify your email and get your free API key. You'll be signed in automatically.</p>
+      <a href="{verify_url}" style="display:inline-block;background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0;font-size:16px">Verify Email & Get API Key</a>
+      <p style="color:#555;font-size:13px">Or paste this link:<br><span style="color:#a855f7">{verify_url}</span></p>
+      <p style="color:#444;font-size:12px;margin-top:24px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
+    </div>"""
+    text_body = f"Verify your StackSight email:\n\n{verify_url}\n\nExpires in 24 hours."
     _send_email_sync(email, subject, html_body, text_body)
 def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, stripe_session_id: str = None):
     api_key = "ss_" + secrets.token_urlsafe(32)
@@ -1826,20 +1828,12 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
     cur.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
     conn.commit()
     cur.close(); conn.close()
-    background_tasks.add_task(provision_api_key, email, "free")
-    return HTMLResponse("""<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Email Verified - StackSight</title>
-<style>body{font-family:-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
-.box{background:#111;border:1px solid #1f1f1f;border-radius:12px;padding:48px;text-align:center;max-width:480px}
-h1{color:#a855f7;margin-bottom:12px}p{color:#b0b0b0;margin-bottom:24px}
-.btn{display:inline-block;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px}
-.btn2{display:inline-block;background:transparent;border:1px solid #333;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;margin:8px}</style></head>
-<body><div class="box">
-<h1>Email Verified!</h1>
-<p>Your free API key is on its way. Check your inbox - it should arrive within a minute.</p>
-<a href="/login" class="btn">Sign In to Dashboard</a>
-<a href="/" class="btn2">Back to Home</a>
-</div></body></html>""")
+    # Provision key synchronously so it exists before we redirect
+    provision_api_key(email, "free")
+    # Log them straight in
+    response = RedirectResponse("/dashboard", status_code=302)
+    create_session(email, response)
+    return response
 
 
 # 
