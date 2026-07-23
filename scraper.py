@@ -1598,8 +1598,9 @@ input[type=email]::placeholder{color:#374151}
     <input type="email" id="email" placeholder="you@company.com" autocomplete="email">
     <button class="btn" id="submit-btn" onclick="doLogin()">Send magic link</button>
     <div class="msg" id="msg"></div>
-    <div class="divider"><span>New to StackSight?</span></div>
-    <div class="footer">Get <strong style="color:#fff">25 free lookups</strong> instantly &mdash; no credit card.<br><br><a href="/#signup" style="display:inline-block;margin-top:12px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">Create free account</a><br><br><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
+    <div class="divider"><span>Don't have an account?</span></div>
+    <a href="/#signup" style="display:block;text-align:center;background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin-bottom:16px">Create free account &rarr;</a>
+    <div class="footer"><a href="/#pricing">View pricing</a> &nbsp;&middot;&nbsp; <a href="/docs">API docs</a></div>
   </div>
 </div>
 <script>
