@@ -988,7 +988,9 @@ footer a:hover{{color:#fff}}
   fetch("/usage",{{credentials:"include"}}).then(r=>{{
     if(r.ok){{r.json().then(d=>{{
       var btn=document.getElementById("nav-auth-btn");
-      if(btn){{btn.textContent="My Account";btn.href="/dashboard";}}
+      if(btn){{
+        btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';
+      }}
     }});}}  
   }}).catch(function(){{}});
 }})();
@@ -2230,7 +2232,7 @@ footer a:hover{color:#fff}
   fetch("/usage",{credentials:"include"}).then(r=>{
     if(r.ok){r.json().then(d=>{
       var btn=document.getElementById("nav-auth-btn");
-      if(btn){btn.textContent="My Account";btn.href="/dashboard";}
+      if(btn){btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}
     });}
   }).catch(function(){});
 })();
@@ -2363,7 +2365,7 @@ footer a:hover{color:#fff}
   fetch("/usage",{credentials:"include"}).then(r=>{
     if(r.ok){r.json().then(d=>{
       var btn=document.getElementById("nav-auth-btn");
-      if(btn){btn.textContent="My Account";btn.href="/dashboard";}
+      if(btn){btn.outerHTML='<a href="/dashboard" id="nav-auth-btn" title="My Account" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#2a1a4a;border:2px solid #7c3aed;cursor:pointer;text-decoration:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></a>';}
     });}
   }).catch(function(){});
 })();
