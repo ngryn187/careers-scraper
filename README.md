@@ -1,61 +1,38 @@
-![API Tests](https://github.com/ngryn187/careers-scraper/actions/workflows/tests.yml/badge.svg)
-# StackSight API — Real-time B2B Hiring Intent & Tech Stack Detection
+# StackSight API
 
-## 🚀 Try It Instantly
+> Real-time hiring intent signals, tech stack detection, and bulk domain enrichment via a simple REST API.
 
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://github.com/ngryn187/careers-scraper/blob/main/stacksight_postman_collection.json)
+**[stacksight.org](https://stacksight.org)**
 
-Don't want to write code? Import our Postman Collection for 1-click API testing.
+---
 
-> Can't use the button? Manually import `stacksight_postman_collection.json` from this repo into Postman.
+## What It Does
 
+StackSight scrapes company careers pages and extracts structured B2B sales intelligence:
 
-> Know which companies are hiring engineers and what tech they use — before your competitors do.
-
-[![API Status](https://img.shields.io/badge/API-Live-brightgreen)](https://careers-scraper-production.up.railway.app)
-[![RapidAPI](https://img.shields.io/badge/RapidAPI-Listed-blue)](https://rapidapi.com/search/stacksight)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
-## What is StackSight?
-
-StackSight is a B2B data API that scrapes company career pages in real-time to detect:
-
-- **Hiring intent** — Is the company actively hiring? Which roles?
-- **Tech stack** — What technologies does the company use based on job postings?
-- **Growth signals** — Which departments are expanding?
-- **Sales intelligence** — Find companies at the exact moment they need your product
-
-**Perfect for:** Sales teams, recruiters, VC firms, market researchers, and developer tools.
+- **Hiring intent** — is the company actively hiring?
+- **Open roles** — engineering, sales, and other job titles
+- **Tech stack** — languages, frameworks, and tools detected from job descriptions
+- **Cached results** — 7-day Redis cache for fast repeated lookups
 
 ---
 
 ## Quick Start
 
-### 1. Get a Free API Key
-
-Visit [https://careers-scraper-production.up.railway.app](https://careers-scraper-production.up.railway.app) and enter your email to get 50 free requests instantly.
-
-Or subscribe on [RapidAPI](https://rapidapi.com/search/stacksight) for higher limits.
-
-### 2. Make Your First Request
-
 ```bash
-curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=stripe.com" \
-     -H "X-API-Key: YOUR_API_KEY"
+curl "https://stacksight.org/scrape?domain=stripe.com" \
+  -H "X-API-Key: YOUR_API_KEY"
 ```
 
-### 3. Parse the Response
-
+**Response:**
 ```json
 {
   "company_name": "Stripe",
   "is_hiring": true,
-  "engineering_roles": ["Backend Engineer", "ML Engineer", "Platform Engineer"],
+  "engineering_roles": ["Backend Engineer", "iOS Engineer", "ML Engineer"],
   "sales_roles": ["Account Executive", "Solutions Engineer"],
-  "detected_tech_stack": ["Go", "Ruby", "AWS", "Kubernetes", "Kafka"],
-  "departments": ["Engineering", "Sales", "Design"],
-  "hiring_signals": ["Aggressive growth in Sales team"],
-  "sample_job_titles": ["Solutions Engineer", "Senior Product Designer"]
+  "other_roles": ["Product Designer", "Finance Manager"],
+  "detected_tech_stack": ["Ruby", "Go", "Java", "React", "AWS"]
 }
 ```
 
@@ -63,46 +40,28 @@ curl -X GET "https://careers-scraper-production.up.railway.app/scrape?domain=str
 
 ## API Reference
 
-### Base URL
+### `GET /scrape`
 
-```
-https://careers-scraper-production.up.railway.app
-```
-
-### Authentication
-
-All requests require an `X-API-Key` header:
-
-```
-X-API-Key: sk_your_api_key_here
-```
-
-### Endpoints
-
-#### `GET /scrape`
-
-Scrape hiring intent and tech stack for a company domain.
-
-**Query Parameters:**
+Scrape and extract structured data for a domain.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `domain` | string | ✅ | Company domain (e.g., `stripe.com`) |
+| `domain` | string | Yes | Domain to analyze (e.g. `stripe.com`) |
 
-**Example:**
+**Headers:**
+- `X-API-Key` — your API key (required)
 
-```bash
-curl "https://careers-scraper-production.up.railway.app/scrape?domain=notion.so" \
-     -H "X-API-Key: YOUR_KEY"
-```
+---
 
-#### `GET /docs`
-
-Interactive Swagger UI documentation.
-
-#### `GET /health`
+### `GET /health`
 
 Health check endpoint.
+
+---
+
+### `GET /docs`
+
+Interactive Swagger UI documentation.
 
 ---
 
@@ -110,70 +69,29 @@ Health check endpoint.
 
 | Tier | Price | Requests/Month | Rate Limit |
 |------|-------|----------------|------------|
-| **Free** | $0 | 50 | 1 req/sec |
-| **Pro** | $49/mo | 2,500 | 10 req/sec |
-| **Business** | $199/mo | 15,000 | Unlimited |
+| Free | $0 | 25 | 10 req/sec |
+| Starter | $19/mo | 500 | 60 req/sec |
+| Pro | $49/mo | 5,000 | 300 req/sec |
+| Business | $199/mo | 50,000 | 1,000 req/sec |
 
-[Subscribe on RapidAPI →](https://rapidapi.com/search/stacksight)
+[Get started free →](https://stacksight.org)
 
 ---
 
 ## Use Cases
 
-### 🎯 Sales Prospecting
-Identify companies actively hiring in a department that needs your product. If a company is hiring 5 DevOps engineers, they probably need infrastructure tooling.
-
-### 🔍 Competitive Intelligence
-Monitor competitor hiring patterns to understand their product roadmap and expansion plans.
-
-### 🤝 Recruiting
-Find companies that are scaling fast and reach out before they post on LinkedIn.
-
-### 📊 Market Research
-Aggregate hiring signals across thousands of companies to spot industry trends.
+- **Sales prospecting** — find companies hiring in your ICP and reach out at the right moment
+- **Competitor monitoring** — track which companies are scaling engineering or sales teams
+- **CRM enrichment** — enrich leads with real-time hiring and tech stack data
+- **Market research** — identify companies adopting specific technologies
 
 ---
 
 ## Tech Stack
 
-- **FastAPI** — High-performance async Python API
-- **Playwright** — Headless browser for dynamic career page scraping
-- **OpenAI GPT-4o-mini** — Structured data extraction from raw job postings
-- **Redis** — Response caching for instant repeat lookups
-- **Railway** — Auto-scaling cloud deployment
-
----
-
-## Self-Hosting
-
-```bash
-git clone https://github.com/ngryn187/careers-scraper.git
-cd careers-scraper
-pip install -r requirements.txt
-
-# Set environment variables
-export OPENAI_API_KEY=your_key
-export REDIS_URL=redis://localhost:6379
-
-# Run
-uvicorn scraper:app --host 0.0.0.0 --port 8000
-```
-
-Or deploy with Docker:
-
-```bash
-docker build -t stacksight .
-docker run -p 8000:8000 -e OPENAI_API_KEY=your_key stacksight
-```
-
----
-
-## Support
-
-- 📧 Email: [ngrynai@gmail.com](mailto:ngrynai@gmail.com)
-- 📖 Docs: [https://careers-scraper-production.up.railway.app/docs](https://careers-scraper-production.up.railway.app/docs)
-- 🚀 RapidAPI: [https://rapidapi.com/search/stacksight](https://rapidapi.com/search/stacksight)
-
----
-
-*Built with ❤️ for sales teams, recruiters, and developers who need real-time hiring intelligence.*
+- **FastAPI** — Python web framework
+- **Playwright** — headless browser scraping
+- **GPT-4o-mini** — structured data extraction
+- **Redis** — 7-day result caching
+- **PostgreSQL** — user and API key storage
+- **Railway** — hosting and deployment
