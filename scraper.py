@@ -15,6 +15,19 @@ from email.mime.text import MIMEText
 import openai
 import psycopg2
 import pyotp
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
+
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[StarletteIntegration(), FastApiIntegration()],
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.0,
+        send_default_pii=False,
+    )
 import redis as redis_lib
 import stripe
 import uvicorn
