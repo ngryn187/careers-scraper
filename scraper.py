@@ -498,20 +498,31 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
     conn = get_db()
     cur = conn.cursor()
     if plan != "free":
-        # Paid provisioning: upgrade the existing row for this email if one exists.
+        # Try to find existing account: first by email, then by stripe_customer_id.
+        # This handles the case where a user checks out with a different email in Stripe.
+        matched_email = email
+        if stripe_customer_id:
+            cur.execute("SELECT email FROM api_keys WHERE stripe_customer_id=%s LIMIT 1", (stripe_customer_id,))
+            row = cur.fetchone()
+            if row:
+                matched_email = row[0]
+                print(f"[PROVISION] Matched by customer_id {stripe_customer_id}: using email {matched_email} (checkout email was {email})")
+
         cur.execute("""
             UPDATE api_keys
             SET plan=%s, requests_limit=%s, requests_used=0, usage_reset_at=NOW(), active=TRUE,
                 stripe_customer_id=COALESCE(%s, stripe_customer_id),
                 stripe_session_id=COALESCE(%s, stripe_session_id)
             WHERE email=%s
-        """, (plan, limit, stripe_customer_id, stripe_session_id, email))
+        """, (plan, limit, stripe_customer_id, stripe_session_id, matched_email))
         if cur.rowcount > 0:
-            cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (email,))
+            cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (matched_email,))
             row = cur.fetchone()
             if row and row[0]:
                 api_key = row[0]
+            email = matched_email  # send welcome email to the correct address
         else:
+            # No existing account — create one under the checkout email
             cur.execute("""
                 INSERT INTO api_keys ("key", api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id, active)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE)
@@ -2271,13 +2282,15 @@ async def checkout(plan: str, request: Request, ss_session: str = Cookie(default
         return RedirectResponse(url=f"/login?next=/checkout/{plan}", status_code=302)
     if plan not in STRIPE_PRICES:
         raise HTTPException(status_code=400, detail="Invalid plan")
+    email = get_session_email(request)
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         line_items=[{"price": STRIPE_PRICES[plan], "quantity": 1}],
         mode="subscription",
+        customer_email=email if email else None,
         success_url=f"{BASE_URL}/success?session_id={{CHECKOUT_SESSION_ID}}",
         cancel_url=f"{BASE_URL}/#pricing",
-        metadata={"plan": plan},
+        metadata={"plan": plan, "email": email or ""},
     )
     return RedirectResponse(session.url)
 
@@ -2317,9 +2330,10 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             # StripeObject — convert to plain dict for safe .get() access
             if hasattr(session, "to_dict"):
                 session = session.to_dict()
+            metadata = session.get("metadata") or {}
             customer_details = session.get("customer_details") or {}
-            email = customer_details.get("email") or session.get("customer_email")
-            plan = (session.get("metadata") or {}).get("plan", "starter")
+            email = metadata.get("email") or customer_details.get("email") or session.get("customer_email")
+            plan = metadata.get("plan", "starter")
             customer_id = session.get("customer")
             session_id = session.get("id")
             print(f"[WEBHOOK] checkout.session.completed: email={email}, plan={plan}, customer={customer_id}")
