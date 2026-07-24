@@ -2014,7 +2014,7 @@ async def demo(domain: str, request: Request):
         try:
             conn = get_db()
             cur = conn.cursor()
-            cur.execute("SELECT api_key FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
+            cur.execute("SELECT COALESCE(api_key, \"key\") FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
             row = cur.fetchone()
             conn.close()
             if row:
@@ -2038,6 +2038,8 @@ async def demo(domain: str, request: Request):
                 data["detected_tech_stack"] = infer_tech_from_roles(all_roles)
             redis_client.setex(cache_key, 604800, json.dumps(data))
             src = "live"
+        # Count every lookup against the user's quota (cached or live)
+        print(f"[DEMO] email={email} user_api_key={'SET' if user_api_key else 'NONE'} domain={domain_clean} src={src}")
         if user_api_key:
             increment_usage(user_api_key)
     except HTTPException as he:
