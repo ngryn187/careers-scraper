@@ -28,7 +28,7 @@ try:
             profiles_sample_rate=0.0,
             send_default_pii=False,
         )
-except ImportError:
+except Exception:
     pass
 import redis as redis_lib
 import stripe
