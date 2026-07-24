@@ -20,6 +20,7 @@ import stripe
 import uvicorn
 from fastapi import BackgroundTasks, Cookie, FastAPI, Header, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.middleware.gzip import GZipMiddleware
 from playwright.async_api import async_playwright
 
 VERSION = "9.7.4"
@@ -56,6 +57,7 @@ RATE_LIMITS = {"free": 10, "starter": 60, "pro": 300, "business": 1000}
 #  Redis / App 
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 @app.middleware("http")
 async def security_and_analytics(request: Request, call_next):
@@ -191,9 +193,28 @@ EXTRACTION_PROMPT = (
     "Return at least 3-8 technologies if ANY engineering roles exist. Never return an empty array if there are engineering jobs."
 )
 
-#  Database 
+#  Database
+import psycopg2.pool as _pg_pool
+_db_pool = None
+
+def get_db_pool():
+    global _db_pool
+    if _db_pool is None:
+        _db_pool = _pg_pool.ThreadedConnectionPool(2, 20, DATABASE_URL)
+    return _db_pool
+
 def get_db():
-    return psycopg2.connect(DATABASE_URL)
+    try:
+        return get_db_pool().getconn()
+    except Exception:
+        return psycopg2.connect(DATABASE_URL)
+
+def release_db(conn):
+    try:
+        get_db_pool().putconn(conn)
+    except Exception:
+        try: conn.close()
+        except Exception: pass
 
 def init_db():
     conn = get_db()
@@ -632,7 +653,10 @@ async def scrape_page(domain: str):
             try:
                 resp = await page.goto(url, wait_until="domcontentloaded", timeout=15000)
                 if resp and resp.status < 400:
-                    await asyncio.sleep(2)
+                    try:
+                        await page.wait_for_load_state("networkidle", timeout=3000)
+                    except Exception:
+                        await asyncio.sleep(0.5)
                     text = await page.inner_text("body")
                     await browser.close()
                     return text, url, resp.status
@@ -691,12 +715,12 @@ async def og_image():
 @app.get("/favicon.ico")
 async def favicon_ico():
     import base64 as _b64
-    return Response(content=_b64.b64decode("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"), media_type="image/x-icon")
+    return Response(content=_b64.b64decode("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"), media_type="image/x-icon", headers={"Cache-Control": "public, max-age=2592000"})
 
 @app.get("/favicon.png")
 async def favicon_png():
     import base64 as _b64
-    return Response(content=_b64.b64decode("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"), media_type="image/png")
+    return Response(content=_b64.b64decode("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"), media_type="image/png", headers={"Cache-Control": "public, max-age=2592000"})
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
@@ -721,6 +745,14 @@ async def sitemap():
   <url><loc>https://stacksight.org/demo/vercel.com</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://stacksight.org/demo/stripe.com</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://stacksight.org/login</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://stacksight.org/terms</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
+  <url><loc>https://stacksight.org/privacy</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
+  <url><loc>https://stacksight.org/vs/builtwith</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://stacksight.org/vs/wappalyzer</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://stacksight.org/vs/theirstack</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://stacksight.org/demo/vercel.com</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://stacksight.org/demo/stripe.com</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://stacksight.org/demo/github.com</loc><priority>0.6</priority><changefreq>weekly</changefreq></url>
 </urlset>"""
     return Response(content=xml, media_type="application/xml")
 
@@ -1027,6 +1059,9 @@ async def landing():
 <!-- Schema.org -->
 <script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"SoftwareApplication","name":"StackSight","url":"https://stacksight.org","description":"Real-time B2B hiring intent API. Know which companies are actively growing before your competitors do.","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":[{{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"}},{{"@type":"Offer","name":"Pro","price":"49","priceCurrency":"USD","billingIncrement":"P1M"}},{{"@type":"Offer","name":"Business","price":"199","priceCurrency":"USD","billingIncrement":"P1M"}}]}}
+</script>
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{{"@type":"Question","name":"What is hiring intent data?","acceptedAnswer":{{"@type":"Answer","text":"Hiring intent data tells you when a company is actively growing by tracking their job postings. When a company posts multiple new roles it is a strong signal they have budget and momentum. StackSight captures this in real time."}}}},{{"@type":"Question","name":"How accurate is the tech stack detection?","acceptedAnswer":{{"@type":"Answer","text":"Very accurate. We scrape each company’s public careers page and use AI to extract technologies mentioned in job descriptions, plus signal detection from page source."}}}},{{"@type":"Question","name":"How fresh is the data?","acceptedAnswer":{{"@type":"Answer","text":"Results are cached for 7 days. For most use cases this is ideal. Cache misses trigger a live scrape that returns in seconds."}}}},{{"@type":"Question","name":"What happens when I hit my limit?","acceptedAnswer":{{"@type":"Answer","text":"You will get a 429 response with a clear error message. Upgrade any time from your dashboard. Your API key stays the same."}}}}]}}
 </script>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -2023,7 +2058,8 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
     try:
         provision_api_key(email, "free")
     except Exception as e:
-        return HTMLResponse(f"<h2 style='font-family:sans-serif;padding:40px;color:#ef4444'>Setup error: {e}<br><br><a href='/login' style='color:#a855f7'>Try signing in</a></h2>", status_code=500)
+        print(f"[VERIFY] Provisioning error for {email}: {e}")
+        return HTMLResponse("<h2 style='font-family:sans-serif;padding:40px;color:#ef4444'>Something went wrong setting up your account. Please try signing in or contact support@stacksight.org<br><br><a href='/login' style='color:#a855f7'>Try signing in</a></h2>", status_code=500)
     # Mark token used only after successful provisioning
     conn2 = get_db()
     cur2 = conn2.cursor()
@@ -2113,6 +2149,7 @@ async def demo(domain: str, request: Request):
         return HTMLResponse(f"""<!DOCTYPE html>
 <html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
 <link rel='icon' type='image/png' href='/favicon.png'>
+<meta name='robots' content='noindex,nofollow'>
 <title>Demo: {domain} - StackSight</title>
 <style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#09090b;color:#fafafa;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}}
 .card{{background:#111;border:1px solid #1f1f23;border-radius:16px;padding:40px;max-width:480px;width:100%}}
@@ -2149,6 +2186,7 @@ a{{display:inline-block;background:#a855f7;color:#fff;padding:11px 24px;border-r
 <head>
 <meta charset='UTF-8'>
 <meta name='viewport' content='width=device-width,initial-scale=1'>
+<meta name='robots' content='noindex,nofollow'>
 <title>Demo: {domain} - StackSight</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -2403,7 +2441,7 @@ a{background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decorat
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
-    print(f"[WEBHOOK] Received stripe event. sig present: {bool(sig)}, secret set: {bool(STRIPE_WEBHOOK_SECRET)}, secret prefix: {STRIPE_WEBHOOK_SECRET[:10] if STRIPE_WEBHOOK_SECRET else 'NONE'}")
+    print(f"[WEBHOOK] Received stripe event. sig present: {bool(sig)}, secret set: {bool(STRIPE_WEBHOOK_SECRET)}")
     try:
         event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
     except stripe.error.SignatureVerificationError as e:
