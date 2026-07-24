@@ -2314,8 +2314,12 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     try:
         if event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
-            email = session.get("customer_details", {}).get("email") or session.get("customer_email")
-            plan = session.get("metadata", {}).get("plan", "starter")
+            # StripeObject — convert to plain dict for safe .get() access
+            if hasattr(session, "to_dict"):
+                session = session.to_dict()
+            customer_details = session.get("customer_details") or {}
+            email = customer_details.get("email") or session.get("customer_email")
+            plan = (session.get("metadata") or {}).get("plan", "starter")
             customer_id = session.get("customer")
             session_id = session.get("id")
             print(f"[WEBHOOK] checkout.session.completed: email={email}, plan={plan}, customer={customer_id}")
@@ -2327,6 +2331,8 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         elif event["type"] == "invoice.payment_succeeded":
             # Subscription renewed -- reset usage for this customer
             invoice = event["data"]["object"]
+            if hasattr(invoice, "to_dict"):
+                invoice = invoice.to_dict()
             customer_id = invoice.get("customer")
             billing_reason = invoice.get("billing_reason", "")
             # Only reset on renewals, not the initial payment (that's handled by checkout.session.completed)
@@ -2343,6 +2349,8 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         elif event["type"] == "customer.subscription.deleted":
             # Subscription cancelled -- downgrade to free
             subscription = event["data"]["object"]
+            if hasattr(subscription, "to_dict"):
+                subscription = subscription.to_dict()
             customer_id = subscription.get("customer")
             if customer_id:
                 conn = get_db()
