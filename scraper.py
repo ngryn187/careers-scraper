@@ -50,7 +50,7 @@ PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 GA_TAG = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-LKSSZ6SK9E"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-LKSSZ6SK9E");</script>'
 
 #  Rate limiting 
-_rate_limit: dict = {}
+# in-memory rate limit replaced by Redis sliding window
 RATE_LIMIT_WINDOW = 60
 RATE_LIMITS = {"free": 10, "starter": 60, "pro": 300, "business": 1000}
 
@@ -213,7 +213,7 @@ def release_db(conn):
     try:
         get_db_pool().putconn(conn)
     except Exception:
-        try: conn.close()
+        try: release_db(conn)
         except Exception: pass
 
 def init_db():
@@ -288,7 +288,7 @@ def init_db():
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS alert_80_sent BOOLEAN DEFAULT FALSE")
     conn.commit()
     cur.close()
-    conn.close()
+    release_db(conn)
 
 #  Session auth 
 def get_session_email(request: Request) -> str | None:
@@ -303,7 +303,7 @@ def get_session_email(request: Request) -> str | None:
     )
     row = cur.fetchone()
     cur.close()
-    conn.close()
+    release_db(conn)
     return row[0] if row else None
 
 def require_session(request: Request) -> str:
@@ -323,7 +323,7 @@ def create_session(email: str, response: Response) -> str:
     )
     conn.commit()
     cur.close()
-    conn.close()
+    release_db(conn)
     response.set_cookie(
         key="ss_session",
         value=token,
@@ -337,15 +337,24 @@ def create_session(email: str, response: Response) -> str:
 
 #  Rate limiting 
 def check_rate_limit(api_key: str, plan: str = "free"):
-    now = time.time()
-    window_start = now - RATE_LIMIT_WINDOW
-    if api_key not in _rate_limit:
-        _rate_limit[api_key] = []
-    _rate_limit[api_key] = [t for t in _rate_limit[api_key] if t > window_start]
-    limit = RATE_LIMITS.get(plan, 10)
-    if len(_rate_limit[api_key]) >= limit:
-        raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {limit} requests/minute.")
-    _rate_limit[api_key].append(now)
+    try:
+        now = time.time()
+        window_start = now - RATE_LIMIT_WINDOW
+        limit = RATE_LIMITS.get(plan, 10)
+        rkey = f"rl:{api_key}"
+        pipe = redis_client.pipeline()
+        pipe.zremrangebyscore(rkey, 0, window_start)
+        pipe.zcard(rkey)
+        pipe.zadd(rkey, {str(now): now})
+        pipe.expire(rkey, RATE_LIMIT_WINDOW + 1)
+        results = pipe.execute()
+        count = results[1]
+        if count >= limit:
+            raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Max {limit} requests/minute.")
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # Redis unavailable — fail open rather than blocking legitimate requests
 
 #  API key auth 
 def verify_api_key(x_api_key: str):
@@ -356,7 +365,7 @@ def verify_api_key(x_api_key: str):
     cur.execute("SELECT plan, requests_used, requests_limit, active FROM api_keys WHERE api_key=%s OR \"key\"=%s", (x_api_key, x_api_key))
     row = cur.fetchone()
     cur.close()
-    conn.close()
+    release_db(conn)
     if not row:
         raise HTTPException(status_code=401, detail="Invalid API key")
     plan, used, limit, active = row
@@ -377,7 +386,7 @@ def increment_usage(api_key: str):
     row = cur.fetchone()
     conn.commit()
     cur.close()
-    conn.close()
+    release_db(conn)
     if row:
         email, used, limit, alert_sent = row
         if limit and not alert_sent and used >= int(limit * 0.8):
@@ -387,7 +396,7 @@ def increment_usage(api_key: str):
                 cur2 = conn2.cursor()
                 cur2.execute("UPDATE api_keys SET alert_80_sent=TRUE WHERE api_key=%s", (api_key,))
                 conn2.commit()
-                cur2.close(); conn2.close()
+                cur2.close(); release_db(conn2)
             except Exception:
                 pass
             pct = int(used / limit * 100)
@@ -569,7 +578,7 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
             # Don't resend welcome email if this session was already provisioned
             if row and row[1] == stripe_session_id and stripe_session_id:
                 print(f"[PROVISION] Skipping duplicate welcome email for {email} session {stripe_session_id}")
-                conn.commit(); cur.close(); conn.close()
+                conn.commit(); cur.close(); release_db(conn)
                 return api_key
         else:
             # No existing account — create one under the checkout email
@@ -590,7 +599,7 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
             """, (api_key, api_key, email, plan, limit))
     conn.commit()
     cur.close()
-    conn.close()
+    release_db(conn)
     send_api_key_email(email, api_key, plan)
     return api_key
 
@@ -1767,7 +1776,7 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
         cur.execute("SELECT 1 FROM pending_signups WHERE email=%s", (email,))
         has_pending = cur.fetchone()
         if not has_pending:
-            cur.close(); conn.close()
+            cur.close(); release_db(conn)
             raise HTTPException(status_code=404, detail="No account found for this email. Sign up first.")
     token = secrets.token_urlsafe(48)
     expires = datetime.utcnow() + timedelta(minutes=15)
@@ -1776,7 +1785,7 @@ async def login_post(request: Request, background_tasks: BackgroundTasks):
         (token, email, expires)
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     next_url = body.get("next", "")
     safe_next = next_url if next_url.startswith("/") else ""
     background_tasks.add_task(send_magic_link_email, email, token, safe_next)
@@ -1790,15 +1799,15 @@ async def auth(token: str, request: Request, next: str = "/dashboard"):
     cur.execute("SELECT email, used, expires_at FROM magic_links WHERE token=%s", (token,))
     row = cur.fetchone()
     if not row:
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>Invalid or expired login link. <a href='/login'>Request a new one</a>.</h2>", status_code=400)
     email, used, expires_at = row
     if used or datetime.utcnow() > expires_at:
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         return HTMLResponse("<h2 style='font-family:sans-serif;color:#ef4444;padding:40px'>This login link has expired or already been used. <a href='/login'>Request a new one</a>.</h2>", status_code=400)
     cur.execute("UPDATE magic_links SET used=TRUE WHERE token=%s", (token,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     safe_next = next if next.startswith("/") else "/dashboard"
     response = RedirectResponse(safe_next, status_code=302)
     create_session(email, response)
@@ -1813,7 +1822,7 @@ async def logout(request: Request):
         cur = conn.cursor()
         cur.execute("UPDATE sessions SET active=FALSE WHERE session_token=%s", (token,))
         conn.commit()
-        conn.close()
+        release_db(conn)
     response = RedirectResponse(url="/", status_code=302)
     response.delete_cookie("ss_session")
     return response
@@ -1828,12 +1837,12 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
     cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_session,))
     row = cur.fetchone()
     if not row:
-        conn.close()
+        release_db(conn)
         return RedirectResponse(url="/login", status_code=302)
     email = row[0]
     cur.execute("SELECT COALESCE(api_key, \"key\"), plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     key_row = cur.fetchone()
-    conn.close()
+    release_db(conn)
     if not key_row or not key_row[0]:
         return HTMLResponse("""<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Dashboard - StackSight</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111;border:1px solid #222;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%}h2{font-size:1.5rem;margin-bottom:12px}p{color:#888;margin-bottom:24px}a{display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class='card'><h2>No API Key Found</h2><p>Contact support or generate a new key.</p><a href='/'>Go Home</a></div></body></html>""")
     api_key, plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id = key_row
@@ -2037,11 +2046,11 @@ async def signup(request: Request, background_tasks: BackgroundTasks):
     cur = conn.cursor()
     cur.execute("SELECT 1 FROM api_keys WHERE email=%s AND plan='free'", (email,))
     if cur.fetchone():
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         raise HTTPException(status_code=400, detail="An API key already exists for this email. Sign in to view it.")
     cur.execute("SELECT 1 FROM pending_signups WHERE email=%s AND used=FALSE", (email,))
     if cur.fetchone():
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         raise HTTPException(status_code=400, detail="Verification email already sent. Please check your inbox.")
     token = secrets.token_urlsafe(32)
     cur.execute(
@@ -2049,7 +2058,7 @@ async def signup(request: Request, background_tasks: BackgroundTasks):
         (email, token, token)
     )
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     background_tasks.add_task(send_verification_email, email, token)
     return {"message": "Verification email sent"}
 
@@ -2061,13 +2070,13 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
     cur.execute("SELECT email, used FROM pending_signups WHERE token=%s", (token,))
     row = cur.fetchone()
     if not row:
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         return HTMLResponse("<!DOCTYPE html><html><head><meta name='robots' content='noindex,nofollow'></head><body><h2 style='font-family:sans-serif;padding:40px'>Invalid or expired link.</h2></body></html>", status_code=400)
     email, used = row
     if used:
-        cur.close(); conn.close()
+        cur.close(); release_db(conn)
         return HTMLResponse("<h2 style='font-family:sans-serif;padding:40px'>This link has already been used. <a href='/login'>Sign in here</a>.</h2>", status_code=400)
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     # Provision key first — only mark token used if it succeeds
     try:
         provision_api_key(email, "free")
@@ -2079,7 +2088,7 @@ async def verify_email(token: str, background_tasks: BackgroundTasks):
     cur2 = conn2.cursor()
     cur2.execute("UPDATE pending_signups SET used=TRUE WHERE token=%s", (token,))
     conn2.commit()
-    cur2.close(); conn2.close()
+    cur2.close(); release_db(conn2)
     # Log them straight in
     response = RedirectResponse("/dashboard", status_code=302)
     create_session(email, response)
@@ -2116,7 +2125,7 @@ async def demo(domain: str, request: Request):
             cur = conn.cursor()
             cur.execute("SELECT email FROM sessions WHERE session_token=%s AND active=TRUE AND expires_at > NOW()", (ss_token,))
             row = cur.fetchone()
-            conn.close()
+            release_db(conn)
             if row:
                 email = row[0]
         except Exception:
@@ -2129,7 +2138,7 @@ async def demo(domain: str, request: Request):
             cur = conn.cursor()
             cur.execute("SELECT COALESCE(api_key, \"key\") FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
             row = cur.fetchone()
-            conn.close()
+            release_db(conn)
             if row:
                 user_api_key = row[0]
         except Exception:
@@ -2327,7 +2336,7 @@ async def bulk(request: Request, x_api_key: str = Header(None)):
     cur = conn.cursor()
     cur.execute("SELECT requests_used, requests_limit FROM api_keys WHERE api_key=%s", (api_key,))
     row = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     if not row:
         raise HTTPException(status_code=401, detail="Invalid API key")
     used, limit = row
@@ -2372,7 +2381,7 @@ async def usage(x_api_key: str = Header(None), key: str = None):
     cur = conn.cursor()
     cur.execute("SELECT plan, requests_used, requests_limit, created_at FROM api_keys WHERE api_key=%s", (k,))
     row = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     if not row:
         raise HTTPException(status_code=401, detail="Invalid API key")
     plan, used, limit, created = row
@@ -2426,7 +2435,7 @@ async def billing_portal(request: Request, ss_session: str = Cookie(default=None
     cur = conn.cursor()
     cur.execute("SELECT stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
     row = cur.fetchone()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     if not row or not row[0]:
         raise HTTPException(status_code=400, detail="No billing account found")
     portal = stripe.billing_portal.Session.create(
@@ -2499,7 +2508,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                     (customer_id,)
                 )
                 conn.commit()
-                cur.close(); conn.close()
+                cur.close(); release_db(conn)
 
         elif event["type"] == "customer.subscription.deleted":
             # Subscription cancelled -- downgrade to free
@@ -2515,7 +2524,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                     (customer_id,)
                 )
                 conn.commit()
-                cur.close(); conn.close()
+                cur.close(); release_db(conn)
 
         elif event["type"] == "invoice.payment_failed":
             pass
@@ -3061,7 +3070,7 @@ async def admin_dashboard(request: Request, pw: str = None, totp: str = None):
     """)
     users = cur.fetchall()
     cur.close()
-    conn.close()
+    release_db(conn)
 
     rows = ""
     for u in users:
@@ -3179,7 +3188,7 @@ async def admin_toggle_key(request: Request):
     cur = conn.cursor()
     cur.execute("UPDATE api_keys SET active=%s WHERE email=%s", (active, email))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     return {"ok": True}
 
 @app.post("/admin/delete-user")
@@ -3197,7 +3206,7 @@ async def admin_delete_user(request: Request):
     cur.execute("DELETE FROM sessions WHERE email=%s", (email,))
     cur.execute("DELETE FROM magic_links WHERE email=%s", (email,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     return {"ok": True}
 
 @app.post("/admin/reset-usage")
@@ -3218,7 +3227,7 @@ async def admin_reset_usage(request: Request):
     """)
     reset_count = cur.rowcount
     conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_db(conn)
     return {"ok": True, "keys_reset": reset_count}
 
 
