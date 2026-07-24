@@ -1897,6 +1897,7 @@ resp = requests.get(
   </div>
   {upgrade_html and f"<div class='upgrade-section'><p>Unlock more requests and higher rate limits</p>{upgrade_html}</div>" or ""}
   {f"<div class='billing-section'><a href='/billing-portal' class='billing-btn'>Manage Billing &amp; Cancel</a></div>" if stripe_customer_id else ""}
+  <div style='text-align:center;padding:24px 0 8px;font-size:13px;color:#444'>Experiencing issues? <a href='mailto:support@stacksight.org' style='color:#71717a;text-decoration:underline'>support@stacksight.org</a></div>
 </div>
 <script>
 function toggleKey() {{
