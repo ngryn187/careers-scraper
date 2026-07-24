@@ -219,14 +219,14 @@ def init_db():
     """)
     #  Migrations (safe to re-run)
     # Rename legacy 'key' column to 'api_key' if it exists
-    cur.execute("""
-        DO $$ BEGIN
-            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='api_keys' AND column_name='key') THEN
-                ALTER TABLE api_keys RENAME COLUMN "key" TO api_key;
-            END IF;
-        END $$;
-    """)
-    conn.commit()
+    try:
+        cur.execute("""SELECT column_name FROM information_schema.columns WHERE table_name='api_keys' AND column_name='key'""")
+        if cur.fetchone():
+            cur.execute('ALTER TABLE api_keys RENAME COLUMN "key" TO api_key')
+            conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"[MIGRATION] key rename skipped: {e}")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS api_key VARCHAR(64)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS email VARCHAR(255)")
     cur.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS plan VARCHAR(20) DEFAULT 'free'")
