@@ -705,6 +705,10 @@ Allow: /
 Disallow: /dashboard
 Disallow: /auth
 Disallow: /logout
+Disallow: /admin
+Disallow: /success
+Disallow: /billing-portal
+Disallow: /checkout
 Sitemap: https://stacksight.org/sitemap.xml"""
 
 @app.get("/sitemap.xml")
@@ -727,6 +731,12 @@ async def docs_page():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="StackSight API documentation. Simple REST API for B2B hiring intent signals and tech stack detection. Get started free.">
+<meta property="og:title" content="API Docs - StackSight">
+<meta property="og:description" content="Simple REST API for B2B hiring intent signals and tech stack detection. Get started free.">
+<meta property="og:image" content="https://stacksight.org/og-image.png">
+<meta property="og:url" content="https://stacksight.org/docs">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
 <title>API Docs - StackSight</title>
 <style>
@@ -1616,6 +1626,8 @@ async def login_page(request: Request):
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Sign in to your StackSight account to access your API key, usage stats, and dashboard.">
+<meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
 <title>Sign In - StackSight</title>
 <style>
@@ -1805,6 +1817,7 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
 <head>
 <meta charset='UTF-8'>
 <meta name='viewport' content='width=device-width,initial-scale=1'>
+<meta name='robots' content='noindex,nofollow'>
 <title>Dashboard - StackSight</title>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -2552,11 +2565,20 @@ async def trending():
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
 <title>Companies Actively Hiring Now - StackSight</title>
 <meta name="description" content="Live feed of companies actively hiring engineers, sales reps, and more. Updated daily from real job postings. Powered by StackSight.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://stacksight.org/trending">
+<meta property="og:title" content="Companies Actively Hiring Now - StackSight">
+<meta property="og:description" content="Live feed of companies actively hiring engineers and sales reps. Updated daily from real job postings.">
+<meta property="og:image" content="https://stacksight.org/og-image.png">
+<meta property="og:url" content="https://stacksight.org/trending">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Companies Actively Hiring Now - StackSight">
+<meta name="twitter:description" content="Live feed of companies actively hiring engineers and sales reps. Updated daily from real job postings.">
+<meta name="twitter:image" content="https://stacksight.org/og-image.png">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="shortcut icon" href="/favicon.ico">
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;min-height:100vh}}
