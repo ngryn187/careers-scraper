@@ -497,19 +497,19 @@ def send_api_key_email(to_email: str, api_key: str, plan: str):
         <tr>
           <td style="padding:8px 0;border-bottom:1px solid #1f1f1f">
             <a href="{BASE_URL}/dashboard" style="color:#a855f7;text-decoration:none">📊 Dashboard</a>
-            <span style="color:#555;font-size:13px;margin-left:8px">View usage & manage your key</span>
+            <span style="color:#888;font-size:13px;margin-left:8px">View usage & manage your key</span>
           </td>
         </tr>
         <tr>
           <td style="padding:8px 0;border-bottom:1px solid #1f1f1f">
             <a href="{BASE_URL}/docs" style="color:#a855f7;text-decoration:none">📖 Docs</a>
-            <span style="color:#555;font-size:13px;margin-left:8px">Full API reference & examples</span>
+            <span style="color:#888;font-size:13px;margin-left:8px">Full API reference & examples</span>
           </td>
         </tr>
         <tr>
           <td style="padding:8px 0">
             <a href="{BASE_URL}/demo/stripe.com" style="color:#a855f7;text-decoration:none">🔍 Try the Demo</a>
-            <span style="color:#555;font-size:13px;margin-left:8px">See live results for any domain</span>
+            <span style="color:#888;font-size:13px;margin-left:8px">See live results for any domain</span>
           </td>
         </tr>
       </table>
@@ -541,7 +541,7 @@ def send_verification_email(email: str, token: str):
       <h2 style="color:#fff">Verify your email</h2>
       <p style="color:#aaa">Click the button below to verify your email and get your free API key. You'll be signed in automatically.</p>
       <a href="{verify_url}" style="display:inline-block;background:#a855f7;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0;font-size:16px">Verify Email & Get API Key</a>
-      <p style="color:#555;font-size:13px">Or paste this link:<br><span style="color:#a855f7">{verify_url}</span></p>
+      <p style="color:#888;font-size:13px">Or paste this link:<br><span style="color:#a855f7">{verify_url}</span></p>
       <p style="color:#444;font-size:12px;margin-top:24px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
     </div>"""
     text_body = f"Verify your StackSight email:\n\n{verify_url}\n\nExpires in 24 hours."
@@ -1078,6 +1078,8 @@ async def landing():
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.6}}
+.skip-link{{position:absolute;left:-9999px;top:8px;background:#a855f7;color:#fff;padding:8px 16px;border-radius:6px;font-weight:700;font-size:14px;z-index:9999;text-decoration:none}}.skip-link:focus{{left:8px}}
+*:focus-visible{{outline:2px solid #a855f7;outline-offset:2px}}
 nav{{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:rgba(10,10,10,0.95);backdrop-filter:blur(10px);z-index:100}}
 .logo{{font-size:22px;font-weight:700;color:#a855f7;text-decoration:none}}
 .nav-links a{{color:#c0c0c0;text-decoration:none;margin-left:24px;font-size:14px;transition:color .2s}}
@@ -1125,7 +1127,7 @@ pre{{background:#0d0d0d;border:1px solid #1f1f1f;border-top:none;border-radius:0
 .signup-section p{{color:#aaa;margin-bottom:28px;font-size:15px}}
 .form-row{{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}}
 .form-row input{{flex:1;min-width:240px;background:#111;border:1px solid #2a2a2a;color:#fff;padding:13px 16px;border-radius:9px;font-size:15px;transition:border-color .2s}}
-.form-row input:focus{{outline:none;border-color:#a855f7}}
+.form-row input:focus{{border-color:#a855f7}}.form-row input:focus-visible{{outline:2px solid #a855f7;outline-offset:2px}}
 .form-row button{{background:#a855f7;color:#fff;border:none;padding:13px 24px;border-radius:9px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s}}
 .form-row button:hover{{background:#9333ea}}
 .msg{{margin-top:16px;padding:12px 16px;border-radius:8px;font-size:14px;display:none}}
@@ -1191,6 +1193,7 @@ footer a:hover{{color:#fff}}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <nav>
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
@@ -1211,7 +1214,7 @@ footer a:hover{{color:#fff}}
   }}).catch(function(){{}});
 }})();
 </script>
-<div class="hero">
+<div class="hero" id="main-content">
   <div class="badge">Live Data</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
   <p>Real-time hiring intent signals, AI-powered tech stack detection, and bulk enrichment &mdash; all in one REST API.</p>
@@ -1222,8 +1225,9 @@ footer a:hover{{color:#fff}}
   <div style="margin-top:48px;text-align:center">
     <div <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;margin-top:12px">Try any domain</p>
     <div "hero-demo-row" style="display:flex;background:#111;border:1.5px solid #2a2a2a;border-radius:14px;padding:6px 6px 6px 18px;align-items:center;max-width:480px;margin:0 auto">
-      <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off"
-        style="flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none"
+      <label for="hero-domain-input" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Company domain</label>
+        <input id="hero-domain-input" type="text" placeholder="stripe.com" autocomplete="off"
+        style="flex:1;padding:10px 0;background:transparent;border:none;color:#fff;font-size:15px;outline:none" aria-label="Company domain"
         onfocus="this.closest('#hero-demo-row').style.borderColor='#7c3aed'"
         onblur="this.closest('#hero-demo-row').style.borderColor='#2a2a2a'">
       <button id="hero-demo-btn" onclick="heroDemo()"
@@ -1293,6 +1297,7 @@ footer a:hover{{color:#fff}}
   <h2>Start for free</h2>
   <p>25 lookups &nbsp;&bull;&nbsp; no credit card &nbsp;&bull;&nbsp; instant delivery</p>
   <div class="form-row">
+    <label for="email-input" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Your work email</label>
     <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
     <button onclick="signup()">Get My Free Key</button>
   </div>
@@ -1449,7 +1454,7 @@ h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
 .btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
 .btn:hover{{background:#9333ea}}
 .verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
-footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+footer{{text-align:center;padding:40px;color:#888;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
 </style>
 </head>
 <body>
@@ -1534,7 +1539,7 @@ h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
 .btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
 .btn:hover{{background:#9333ea}}
 .verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
-footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+footer{{text-align:center;padding:40px;color:#888;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
 </style>
 </head>
 <body>
@@ -1619,7 +1624,7 @@ h2{{font-size:24px;font-weight:700;margin:48px 0 16px;color:#fff}}
 .btn{{display:inline-block;background:#a855f7;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px}}
 .btn:hover{{background:#9333ea}}
 .verdict{{background:#0d0020;border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin:24px 0;font-size:15px;color:#d0d0d0}}
-footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
+footer{{text-align:center;padding:40px;color:#888;font-size:13px;border-top:1px solid #1a0a2e;margin-top:60px}}
 </style>
 </head>
 <body>
@@ -1701,7 +1706,7 @@ h1{font-size:26px;font-weight:700;margin-bottom:8px;text-align:center}
 .sub{color:#6b7280;font-size:14px;text-align:center;margin-bottom:32px;line-height:1.5}
 .sub span{color:#a78bfa}
 label{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:8px}
-input[type=email]{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}
+input[type=email]{width:100%;background:#0a0a0a;border:1.5px solid #2a2a2a;border-radius:10px;padding:14px 16px;color:#fff;font-size:15px;outline:none;transition:border-color .2s}input[type=email]:focus-visible{outline:2px solid #a855f7;outline-offset:2px;border-color:#a855f7}
 input[type=email]:focus{border-color:#7c3aed}
 input[type=email]::placeholder{color:#374151}
 .btn{width:100%;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
@@ -1909,7 +1914,7 @@ h1{{font-size:1.875rem;font-weight:700;margin-bottom:4px}}
 .key-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
 .key-label{{font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#71717a;margin-bottom:12px}}
 .key-row{{display:flex;gap:8px;align-items:center}}
-.key-input{{flex:1;background:#0d0d0f;border:1px solid #27272a;border-radius:8px;padding:10px 14px;color:#a1a1aa;font-family:'Courier New',monospace;font-size:0.875rem;outline:none}}
+.key-input{{flex:1;background:#0d0d0f;border:1px solid #27272a;border-radius:8px;padding:10px 14px;color:#a1a1aa;font-family:'Courier New',monospace;font-size:0.875rem;outline:none}}.key-input:focus-visible{{outline:2px solid #a855f7;outline-offset:2px}}
 .copy-btn{{background:#1f1f23;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#a1a1aa;cursor:pointer;font-size:0.875rem;white-space:nowrap;transition:all 0.2s}}
 .copy-btn:hover{{background:#27272a;color:#fff}}
 .code-card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:24px}}
@@ -2222,7 +2227,7 @@ nav{{background:#111113;border-bottom:1px solid #1f1f23;padding:0 32px;height:60
 .logo span{{color:#2563eb}}
 .container{{max-width:860px;margin:0 auto;padding:40px 24px}}
 .search-bar{{display:flex;gap:8px;margin-bottom:32px}}
-.search-bar input{{flex:1;background:#111113;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#fff;font-size:1rem;outline:none}}
+.search-bar input{{flex:1;background:#111113;border:1px solid #27272a;border-radius:8px;padding:10px 16px;color:#fff;font-size:1rem;outline:none}}.search-bar input:focus-visible{{outline:2px solid #a855f7;outline-offset:2px}}
 .search-bar input:focus{{border-color:#2563eb}}
 .search-bar button{{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 20px;cursor:pointer;font-weight:600}}
 .card{{background:#111113;border:1px solid #1f1f23;border-radius:12px;padding:24px;margin-bottom:20px}}
@@ -2622,7 +2627,7 @@ async def trending():
   <div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px'>
     <div>
       <span style='font-size:16px;font-weight:700;color:#fff'>{r["company_name"]}</span>
-      <span style='color:#555;font-size:13px;margin-left:8px'>{r["domain"]}</span>
+      <span style='color:#888;font-size:13px;margin-left:8px'>{r["domain"]}</span>
     </div>
     <span style='background:#052e16;color:#22c55e;border:1px solid #166534;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600'>{r["open_roles"]} open roles</span>
   </div>
@@ -2673,6 +2678,7 @@ h1{{font-size:36px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <nav>
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
@@ -2744,6 +2750,7 @@ footer a:hover{color:#fff}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <nav>
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
@@ -2878,6 +2885,7 @@ footer a:hover{color:#fff}
 </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
 <nav>
   <a href="/" class="logo">StackSight</a>
   <div class="nav-links">
