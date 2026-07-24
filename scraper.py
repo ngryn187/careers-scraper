@@ -1731,12 +1731,12 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
         conn.close()
         return RedirectResponse(url="/login", status_code=302)
     email = row[0]
-    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at, usage_reset_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     key_row = cur.fetchone()
     conn.close()
     if not key_row or not key_row[0]:
         return HTMLResponse("""<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Dashboard - StackSight</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111;border:1px solid #222;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%}h2{font-size:1.5rem;margin-bottom:12px}p{color:#888;margin-bottom:24px}a{display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class='card'><h2>No API Key Found</h2><p>Contact support or generate a new key.</p><a href='/'>Go Home</a></div></body></html>""")
-    api_key, plan, requests_used, requests_limit, created_at, usage_reset_at = key_row
+    api_key, plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id = key_row
     plan_color = {"free": "#6b7280", "starter": "#2563eb", "pro": "#7c3aed", "business": "#059669"}.get(plan, "#6b7280")
     plan_limits = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
     monthly_limit = plan_limits.get(plan, 25)
@@ -1812,6 +1812,9 @@ code .kw{{color:#60a5fa}}
 .upgrade-section p{{color:#71717a;margin-bottom:16px;font-size:0.9375rem}}
 .upgrade-btn{{display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9375rem;transition:background 0.2s}}
 .upgrade-btn:hover{{background:#1d4ed8}}
+.billing-section{{text-align:center;padding:16px;margin-bottom:24px}}
+.billing-btn{{display:inline-block;background:transparent;color:#71717a;border:1px solid #333;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:0.875rem;transition:all 0.2s}}
+.billing-btn:hover{{color:#fff;border-color:#555}}
 </style>
 </head>
 <body>
@@ -1888,6 +1891,7 @@ resp = requests.get(
     </div>
   </div>
   {upgrade_html and f"<div class='upgrade-section'><p>Unlock more requests and higher rate limits</p>{upgrade_html}</div>" or ""}
+  {f"<div class='billing-section'><a href='/billing-portal' class='billing-btn'>Manage Billing &amp; Cancel</a></div>" if stripe_customer_id else ""}
 </div>
 <script>
 function toggleKey() {{
@@ -2293,6 +2297,27 @@ async def checkout(plan: str, request: Request, ss_session: str = Cookie(default
         metadata={"plan": plan, "email": email or ""},
     )
     return RedirectResponse(session.url)
+
+
+@app.get("/billing-portal")
+async def billing_portal(request: Request, ss_session: str = Cookie(default=None)):
+    if not ss_session:
+        return RedirectResponse(url="/login", status_code=302)
+    email = get_session_email(request)
+    if not email:
+        return RedirectResponse(url="/login", status_code=302)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE LIMIT 1", (email,))
+    row = cur.fetchone()
+    cur.close(); conn.close()
+    if not row or not row[0]:
+        raise HTTPException(status_code=400, detail="No billing account found")
+    portal = stripe.billing_portal.Session.create(
+        customer=row[0],
+        return_url=f"{BASE_URL}/dashboard",
+    )
+    return RedirectResponse(portal.url)
 
 
 @app.get("/success", response_class=HTMLResponse)
