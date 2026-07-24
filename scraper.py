@@ -1720,12 +1720,12 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
         conn.close()
         return RedirectResponse(url="/login", status_code=302)
     email = row[0]
-    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at, usage_reset_at FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     key_row = cur.fetchone()
     conn.close()
     if not key_row or not key_row[0]:
         return HTMLResponse("""<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Dashboard - StackSight</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}.card{background:#111;border:1px solid #222;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%}h2{font-size:1.5rem;margin-bottom:12px}p{color:#888;margin-bottom:24px}a{display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class='card'><h2>No API Key Found</h2><p>Contact support or generate a new key.</p><a href='/'>Go Home</a></div></body></html>""")
-    api_key, plan, requests_used, requests_limit, created_at = key_row
+    api_key, plan, requests_used, requests_limit, created_at, usage_reset_at = key_row
     plan_color = {"free": "#6b7280", "starter": "#2563eb", "pro": "#7c3aed", "business": "#059669"}.get(plan, "#6b7280")
     plan_limits = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
     monthly_limit = plan_limits.get(plan, 25)
@@ -1739,6 +1739,17 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
     elif plan == "pro":
         upgrade_html = "<a href='/choose/business' class='upgrade-btn'>Upgrade to Business &mdash; $199/mo</a>"
     created_str = created_at.strftime("%B %d, %Y") if created_at else "N/A"
+    from datetime import datetime, timezone, timedelta
+    now_utc = datetime.now(timezone.utc)
+    if usage_reset_at:
+        reset_base = usage_reset_at.replace(tzinfo=timezone.utc) if usage_reset_at.tzinfo is None else usage_reset_at
+        next_reset = reset_base + timedelta(days=30)
+    elif created_at:
+        reset_base = created_at.replace(tzinfo=timezone.utc) if created_at.tzinfo is None else created_at
+        next_reset = reset_base + timedelta(days=30)
+    else:
+        next_reset = now_utc + timedelta(days=30)
+    days_remaining = max(0, (next_reset - now_utc).days)
     html = f"""<!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -1889,13 +1900,7 @@ function showTab(el, name) {{
     document.getElementById('tab-'+t).style.display = t === name ? '' : 'none';
   }});
 }}
-// Days until end of month
-(function() {{
-  const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth()+1, 1);
-  const days = Math.ceil((end - now) / 86400000);
-  document.getElementById('reset-countdown').textContent = days;
-}})();
+document.getElementById('reset-countdown').textContent = '{days_remaining}';
 // Replace YOUR_KEY placeholders with masked key
 document.querySelectorAll('code').forEach(el => {{
   el.innerHTML = el.innerHTML.replace(/YOUR_KEY/g, '{api_key[:8]}...');
