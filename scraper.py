@@ -55,6 +55,17 @@ RATE_LIMITS = {"free": 10, "starter": 60, "pro": 300, "business": 1000}
 redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
     return HTMLResponse("""<!DOCTYPE html>
@@ -689,6 +700,8 @@ async def sitemap():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://stacksight.org/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://stacksight.org/docs</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://stacksight.org/trending</loc><priority>0.8</priority><changefreq>daily</changefreq></url>
+  <url><loc>https://stacksight.org/demo/vercel.com</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://stacksight.org/demo/stripe.com</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://stacksight.org/login</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
 </urlset>"""
@@ -1131,7 +1144,7 @@ footer a:hover{{color:#fff}}
 <div class="hero">
   <div class="badge">Live Data</div>
   <h1>Turn any domain into<br><span>B2B sales intelligence</span></h1>
-  <p>Real-time hiring intent signals, deterministic tech stack detection, and bulk enrichment  all in one REST API.</p>
+  <p>Real-time hiring intent signals, AI-powered tech stack detection, and bulk enrichment &mdash; all in one REST API.</p>
   <div class="cta-group">
     <a href="#signup" class="btn-primary"> Start for Free</a>
     <a href="/demo/vercel.com" class="btn-secondary">See Example</a>
@@ -1272,7 +1285,7 @@ footer a:hover{{color:#fff}}
 <div class="faq">
   <h2>Frequently Asked Questions</h2>
   <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What is hiring intent data?</span><span>+</span></div><div class="faq-a">Hiring intent data tells you when a company is actively growing by tracking their job postings. When a company posts multiple new roles it is a strong signal they have budget and momentum. StackSight captures this in real time.</div></div>
-  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the tech stack detection?</span><span>+</span></div><div class="faq-a">Very accurate. We parse actual HTML script tags and headers, not guesses. If a company uses React, we see the React bundle in their page source. 100% deterministic.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How accurate is the tech stack detection?</span><span>+</span></div><div class="faq-a">Very accurate. We scrape each company's public careers page and use AI to extract technologies mentioned in job descriptions, plus signal detection from page source. Results improve as more companies are analyzed.</div></div>
   <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>How fresh is the data?</span><span>+</span></div><div class="faq-a">Results are cached for 7 days in Redis. For most use cases this is ideal. Cache misses trigger a live scrape that returns in seconds.</div></div>
   <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>Can I use this in my CRM?</span><span>+</span></div><div class="faq-a">Yes. Our REST API returns structured JSON that integrates with any CRM, data warehouse, or automation tool. Many customers pipe signals directly into Salesforce, HubSpot, or Clay.</div></div>
   <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)"><span>What happens when I hit my limit?</span><span>+</span></div><div class="faq-a">You will get a 429 response with a clear error message. Upgrade any time from your dashboard. Your API key stays the same.</div></div>
@@ -1572,6 +1585,14 @@ footer{{text-align:center;padding:40px;color:#555;font-size:13px;border-top:1px 
 </div>
 <footer>-- 2026 StackSight -- <a href="/vs/builtwith" style="color:#a855f7">vs BuiltWith</a> -- <a href="/vs/wappalyzer" style="color:#a855f7">vs Wappalyzer</a></footer>
 </body></html>""")
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_redirect():
+    return RedirectResponse("/login", status_code=301)
+
+@app.get("/signup", response_class=HTMLResponse)
+async def signup_redirect():
+    return RedirectResponse("/login", status_code=301)
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -1999,10 +2020,20 @@ async def pricing_redirect():
 
 @app.get("/demo/{domain}", response_class=HTMLResponse)
 async def demo(domain: str, request: Request):
-    # Demo is public — no login required
-    # Optionally track usage if user is logged in
-    email = None
+    # Demo is public but rate-limited for anonymous users
     ss_token = request.cookies.get("ss_session")
+    email = None
+    if not ss_token:
+        # Anonymous: allow 3 demo lookups per IP per hour
+        ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "anon").split(",")[0].strip()
+        anon_key = f"demo_anon:{ip}"
+        count = redis_client.get(anon_key)
+        if count and int(count) >= 3:
+            return RedirectResponse(f"/login?next=/demo/{domain}", status_code=302)
+        pipe = redis_client.pipeline()
+        pipe.incr(anon_key)
+        pipe.expire(anon_key, 3600)
+        pipe.execute()
     if ss_token:
         try:
             conn = get_db()
@@ -2402,7 +2433,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                 conn = get_db()
                 cur = conn.cursor()
                 cur.execute(
-                    "UPDATE api_keys SET plan = 'free', requests_limit = 10, requests_used = 0 WHERE stripe_customer_id = %s",
+                    "UPDATE api_keys SET plan = 'free', requests_limit = 25, requests_used = 0 WHERE stripe_customer_id = %s",
                     (customer_id,)
                 )
                 conn.commit()
@@ -2441,9 +2472,17 @@ async def trending():
                 open_roles = len(eng) + len(sales) + len(other)
                 if open_roles == 0:
                     continue
+                # Sanity-check company name against domain to catch subsidiary/redirect mismatches
+                # e.g. segment.com cached as "Twilio" because Segment was acquired
+                raw_name = data.get("company_name", "")
+                domain_base = domain.split(".")[0].lower()
+                if raw_name and domain_base in raw_name.lower():
+                    company_name = raw_name
+                else:
+                    company_name = domain.split(".")[0].title()
                 results.append({
                     "domain": domain,
-                    "company_name": data.get("company_name", domain.split(".")[0].title()),
+                    "company_name": company_name,
                     "open_roles": open_roles,
                     "eng_count": len(eng),
                     "sales_count": len(sales),
