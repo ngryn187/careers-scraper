@@ -516,11 +516,16 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
             WHERE email=%s
         """, (plan, limit, stripe_customer_id, stripe_session_id, matched_email))
         if cur.rowcount > 0:
-            cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (matched_email,))
+            cur.execute("SELECT COALESCE(api_key, \"key\"), stripe_session_id FROM api_keys WHERE email=%s LIMIT 1", (matched_email,))
             row = cur.fetchone()
             if row and row[0]:
                 api_key = row[0]
-            email = matched_email  # send welcome email to the correct address
+            email = matched_email
+            # Don't resend welcome email if this session was already provisioned
+            if row and row[1] == stripe_session_id and stripe_session_id:
+                print(f"[PROVISION] Skipping duplicate welcome email for {email} session {stripe_session_id}")
+                conn.commit(); cur.close(); conn.close()
+                return api_key
         else:
             # No existing account — create one under the checkout email
             cur.execute("""
