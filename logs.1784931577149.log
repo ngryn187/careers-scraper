@@ -1,0 +1,617 @@
+2026-07-24T22:14:31.202190696Z [inf]  Starting Container
+2026-07-24T22:14:32.974491438Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:32.974598891Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:32.974609000Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:32.974616200Z [err]      sys.exit(main())
+2026-07-24T22:14:32.974623639Z [err]               ^^^^^^
+2026-07-24T22:14:32.974634787Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:32.974643706Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:32.974652757Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:32.974664647Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:32.974749083Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:32.974756041Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:32.974761099Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:32.974841800Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:32.974859112Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:32.974868125Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:32.974875353Z [err]      run(
+2026-07-24T22:14:32.974894188Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:32.974902288Z [err]      config.load_app()
+2026-07-24T22:14:32.974909225Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:32.974916039Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:32.974964773Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:32.974979859Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.911246039Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.911251404Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:33.911256246Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:33.911260754Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.911265482Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:33.911269965Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:33.911274193Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.911279070Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:33.911283183Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:33.911287510Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:33.911291696Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:33.911295666Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:33.911300194Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:33.911304635Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:33.911308972Z [err]      sentry_sdk.init(
+2026-07-24T22:14:33.911313560Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:33.911318227Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:33.911323116Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.911328209Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:33.912354598Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:33.912365278Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:33.912380828Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.912386636Z [err]      self._init_impl()
+2026-07-24T22:14:33.912389730Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:33.912395076Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:33.912400481Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:33.912404732Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:33.912410078Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.912420555Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:33.912428651Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:33.912435965Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:33.912453433Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:33.912460363Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:33.912467423Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:35.965716737Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:35.965722473Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:35.965728259Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:35.965729975Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:35.965735457Z [err]      config.load_app()
+2026-07-24T22:14:35.965738184Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.965739646Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:35.965745614Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:35.965748735Z [err]      sys.exit(main())
+2026-07-24T22:14:35.965749873Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:35.965755318Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:35.965758264Z [err]               ^^^^^^
+2026-07-24T22:14:35.965759762Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:35.965767631Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.965777783Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:35.965784358Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:35.965790025Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.965800403Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:35.965807327Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:35.965815394Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.965822656Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:35.965828786Z [err]      run(
+2026-07-24T22:14:35.972778011Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.972784618Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:35.972790678Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:35.972797247Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.972803930Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:35.972809949Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:35.972815887Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.972821946Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:35.972828018Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:35.972833225Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:35.972839103Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:35.972844688Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:35.972850727Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:35.972857580Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:35.972863982Z [err]      sentry_sdk.init(
+2026-07-24T22:14:35.972869975Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:35.972876489Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:35.972881670Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.972886628Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:35.980618725Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:35.980625791Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:35.980628482Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:35.980637199Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:35.980645408Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.980647403Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:35.980652455Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:35.980657901Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:35.980697294Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:35.980747990Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:35.980748210Z [err]      self._init_impl()
+2026-07-24T22:14:35.980758882Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:35.980764180Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:35.980771444Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:35.980780605Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.529737138Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:39.529744129Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:39.529751786Z [err]      sys.exit(main())
+2026-07-24T22:14:39.529758059Z [err]               ^^^^^^
+2026-07-24T22:14:39.529764040Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:39.529770827Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:39.529777430Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.529784251Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:39.529790756Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:39.529796877Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.529804348Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:39.529814152Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:39.529820224Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.529826894Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:39.529834228Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:39.529840634Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.529847046Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:39.529852903Z [err]      run(
+2026-07-24T22:14:39.529859360Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:39.529865428Z [err]      config.load_app()
+2026-07-24T22:14:39.529872026Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:39.529878282Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:39.532701852Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.532707691Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:39.532715798Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:39.532721382Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.532727257Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:39.532732859Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:39.532739401Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.532746869Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:39.532752473Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:39.532758933Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:39.532764878Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:39.532770492Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:39.532776803Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:39.532782068Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:39.532789191Z [err]      sentry_sdk.init(
+2026-07-24T22:14:39.532795111Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:39.532801217Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:39.532807237Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.532813295Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:39.535252461Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:39.535266046Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.535274984Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:39.535282306Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:39.535289280Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.535297888Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:39.535306064Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:39.535314193Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:39.535322245Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:39.535330559Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:39.535338100Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:39.535347170Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:39.535356457Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:39.535631256Z [err]      self._init_impl()
+2026-07-24T22:14:39.535644642Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:41.490902735Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:41.490915797Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:41.490923098Z [err]      sys.exit(main())
+2026-07-24T22:14:41.490929666Z [err]               ^^^^^^
+2026-07-24T22:14:41.490935670Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:41.490942505Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:41.490949152Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.490956293Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:41.490962595Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:41.490967957Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:41.490971717Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.490976365Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.490978432Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:41.490985773Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:41.490994936Z [err]      run(
+2026-07-24T22:14:41.490998777Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:41.491002329Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:41.491009900Z [err]      config.load_app()
+2026-07-24T22:14:41.491010968Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.491017469Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:41.491018748Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:41.491023964Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:41.494010778Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.494022708Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:41.494030527Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:41.494036981Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.494043390Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:41.494050903Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:41.494057982Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.494065327Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:41.494079188Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:41.494086729Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:41.494093192Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:41.494100004Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:41.494109299Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:41.494116862Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:41.494127617Z [err]      sentry_sdk.init(
+2026-07-24T22:14:41.494139305Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:41.494146595Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:41.494153512Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.494160034Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:41.496976672Z [err]      self._init_impl()
+2026-07-24T22:14:41.496987189Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:41.496988285Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:41.496993410Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:41.496998839Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.497001258Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.497004758Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:41.497010218Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:41.497011217Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:41.497018329Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:41.497018957Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:41.497025906Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:41.497026783Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:41.497032097Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:41.497036626Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:45.394561124Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:45.394571960Z [err]               ^^^^^^
+2026-07-24T22:14:45.394573873Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:45.394580896Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:45.394583799Z [err]      sys.exit(main())
+2026-07-24T22:14:45.394587319Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:45.394592332Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.394597296Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:45.394607458Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.394615336Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:45.394622017Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:45.394629062Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.394635403Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:45.394641844Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:45.394707026Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.394713062Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:45.394718750Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:45.394726805Z [err]      run(
+2026-07-24T22:14:45.394739745Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:45.394747480Z [err]      config.load_app()
+2026-07-24T22:14:45.394754785Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:45.394762062Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:45.395229803Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:45.395239709Z [err]      sentry_sdk.init(
+2026-07-24T22:14:45.395249334Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:45.395255801Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:45.395262098Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.395269187Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:45.395300780Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.395307282Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:45.395313166Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:45.395319774Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.395325607Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:45.395333040Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:45.395339522Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.395346497Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:45.395353733Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:45.395360119Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:45.395368149Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:45.395376997Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:45.395383146Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:45.398060749Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:45.398073727Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.398087442Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:45.398095628Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:45.398104763Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:45.398112005Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:45.398119306Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.398126634Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:45.398134235Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:45.398141895Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:45.398174767Z [err]      self._init_impl()
+2026-07-24T22:14:45.398180203Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:45.398185691Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:45.398191993Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:45.398200666Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:48.432447044Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:48.432461938Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:48.432477093Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.432480052Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:48.432488420Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:48.432494450Z [err]      sys.exit(main())
+2026-07-24T22:14:48.432499531Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:48.432503589Z [err]               ^^^^^^
+2026-07-24T22:14:48.432510500Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:48.432521021Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:48.432534441Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.432543054Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:48.432551321Z [err]      run(
+2026-07-24T22:14:48.432560921Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.432563216Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:48.432574126Z [err]      config.load_app()
+2026-07-24T22:14:48.432574809Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:48.432584863Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:48.432585461Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:48.432593059Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.432596442Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:48.432600682Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:48.435631813Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:48.435645564Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:48.435654564Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.435663287Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:48.435687670Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:48.435692995Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:48.435698118Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:48.435706174Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.435706530Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:48.435714230Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:48.435720771Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:48.435726011Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:48.435730750Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:48.435734226Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.435740384Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:48.435752580Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:48.435760989Z [err]      sentry_sdk.init(
+2026-07-24T22:14:48.435808476Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.435817359Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:48.439675887Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:48.439693933Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.439702198Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:48.439713109Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:48.439720132Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:48.439727422Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:48.439734021Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.439740360Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:48.439747124Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:48.439755099Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:48.439989384Z [err]      self._init_impl()
+2026-07-24T22:14:48.440002070Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:48.440007972Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:48.440013888Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:48.440020040Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:50.585730568Z [err]      run(
+2026-07-24T22:14:50.585741621Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:50.585749347Z [err]      config.load_app()
+2026-07-24T22:14:50.585756308Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:50.585763062Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:50.585798782Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:50.585808057Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:50.585814668Z [err]      sys.exit(main())
+2026-07-24T22:14:50.585822692Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.585827781Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:50.585834857Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:50.585841789Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:50.585844573Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:50.585851240Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.585855482Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.585859555Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:50.585872595Z [err]               ^^^^^^
+2026-07-24T22:14:50.585881719Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:50.585888530Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:50.585896177Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.585903134Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:50.585911181Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:50.592981103Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:50.592991126Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.592996945Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:50.593080489Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:50.593090821Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:50.593095941Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.593108375Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:50.593111619Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:50.593124144Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.593128873Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:50.593140851Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:50.593141443Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:50.593150215Z [err]      sentry_sdk.init(
+2026-07-24T22:14:50.593151472Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:50.593159671Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:50.593160640Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.593167033Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:50.593176860Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:50.593216670Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:50.594775229Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:50.594783266Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:50.594796915Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:50.594806429Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.594817031Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:50.594825638Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:50.594838780Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.594839586Z [err]      self._init_impl()
+2026-07-24T22:14:50.594851989Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:50.594857624Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:50.594866401Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:50.594875342Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:50.594883388Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:50.594892288Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:50.594898552Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:53.594370360Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:53.594380746Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:53.594396245Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.594403605Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:53.594410566Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:53.594419303Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.594434681Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:53.594441719Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:53.594447610Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.594454793Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:53.594460611Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:53.594466986Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.594473547Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:53.594480841Z [err]      run(
+2026-07-24T22:14:53.594487495Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:53.594496578Z [err]      config.load_app()
+2026-07-24T22:14:53.594504436Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:53.594511680Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:53.594617027Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:53.594623332Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:53.594629231Z [err]      sys.exit(main())
+2026-07-24T22:14:53.594635411Z [err]               ^^^^^^
+2026-07-24T22:14:53.597663465Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:53.597665042Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:53.597670488Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:53.597676951Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.597683654Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:53.597685681Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:53.597694248Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:53.597696253Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:53.597704584Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.597708266Z [err]      sentry_sdk.init(
+2026-07-24T22:14:53.597714973Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:53.597719671Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:53.597724343Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:53.597725079Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:53.597731314Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:53.598339434Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.598346800Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:53.598354530Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:53.598361058Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.600479852Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.600489634Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:53.600497326Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:53.600505866Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:53.600510135Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.600522593Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:53.600528886Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:53.600534330Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:53.600540989Z [err]      self._init_impl()
+2026-07-24T22:14:53.600541614Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:53.600556699Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:53.600564818Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:53.600572001Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:53.600579113Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:53.600587234Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:56.658901265Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:56.658901377Z [err]      sys.exit(main())
+2026-07-24T22:14:56.658909639Z [err]               ^^^^^^
+2026-07-24T22:14:56.658916511Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:56.658920596Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:56.658926816Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:56.658933716Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.658938220Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:56.658943242Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:56.658948763Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.658949590Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:56.658957629Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:56.658960434Z [err]      run(
+2026-07-24T22:14:56.658968159Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:56.658970325Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:56.658979864Z [err]      config.load_app()
+2026-07-24T22:14:56.658982107Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.658990057Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:56.658998270Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:56.659005601Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.659023480Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:56.659029162Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:56.662397681Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:56.662414119Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:56.662423973Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.662433406Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:56.662572868Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:56.662589350Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.662604243Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:56.662611346Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:56.662618261Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.662625353Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:56.662632253Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:56.662638432Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:56.662645062Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:56.662653374Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:56.662659170Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:56.662665374Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:56.662671756Z [err]      sentry_sdk.init(
+2026-07-24T22:14:56.662773694Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.662779818Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:56.665423286Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:56.665437701Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:14:56.665634299Z [err]      self._init_impl()
+2026-07-24T22:14:56.665641035Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:56.665647468Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:56.665653594Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.665660380Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:56.665667174Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:56.665674738Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.665684651Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:56.665691784Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:56.665699144Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:56.665706649Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:56.665713922Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:56.665720731Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:59.764415095Z [err]      sys.exit(main())
+2026-07-24T22:14:59.764423061Z [err]               ^^^^^^
+2026-07-24T22:14:59.764428437Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:14:59.764433400Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:14:59.764471205Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.764474309Z [err]  Traceback (most recent call last):
+2026-07-24T22:14:59.764478830Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:14:59.764482457Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:14:59.764485155Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:14:59.764489614Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.764494054Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:14:59.764498994Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:14:59.764503020Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.764507524Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:14:59.764512633Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:14:59.764517945Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.764522213Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:14:59.764526338Z [err]      run(
+2026-07-24T22:14:59.764533413Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:14:59.764537796Z [err]      config.load_app()
+2026-07-24T22:14:59.764541926Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:14:59.764548420Z [err]      return import_from_string(self.app)
+2026-07-24T22:14:59.765413227Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:14:59.765422573Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:14:59.765430856Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:14:59.765437850Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:14:59.765444179Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:14:59.765451768Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:14:59.765457556Z [err]      sentry_sdk.init(
+2026-07-24T22:14:59.765463658Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.765465636Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:14:59.765469757Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:14:59.765474212Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:14:59.765479087Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.765482991Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:14:59.765483364Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:14:59.765487649Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:14:59.765492897Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.765496663Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.765498024Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:14:59.765504330Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:14:59.772463586Z [err]      self._init_impl()
+2026-07-24T22:14:59.772476763Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:14:59.772481945Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:14:59.772485745Z [err]      transport = transport_cls(options)
+2026-07-24T22:14:59.772490183Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:14:59.772497693Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.772501788Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.772508356Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:14:59.772522600Z [err]      Transport.__init__(self, options)
+2026-07-24T22:14:59.772531543Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:14:59.772537381Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:14:59.772542107Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:14:59.772546048Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:14:59.772550901Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:14:59.772554673Z [err]  sentry_sdk.utils.BadDsn: Missing public key
+2026-07-24T22:15:02.676561769Z [err]  Traceback (most recent call last):
+2026-07-24T22:15:02.676568073Z [err]    File "/usr/local/bin/uvicorn", line 8, in <module>
+2026-07-24T22:15:02.676575508Z [err]      sys.exit(main())
+2026-07-24T22:15:02.676581722Z [err]               ^^^^^^
+2026-07-24T22:15:02.676607508Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1569, in __call__
+2026-07-24T22:15:02.676613376Z [err]      return self.main(*args, **kwargs)
+2026-07-24T22:15:02.676617963Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:02.676622606Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1490, in main
+2026-07-24T22:15:02.676628540Z [err]      rv = self.invoke(ctx)
+2026-07-24T22:15:02.676635208Z [err]           ^^^^^^^^^^^^^^^^
+2026-07-24T22:15:02.676639969Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 1353, in invoke
+2026-07-24T22:15:02.676644513Z [err]      return ctx.invoke(self.callback, **ctx.params)
+2026-07-24T22:15:02.676648599Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:02.676653175Z [err]    File "/usr/local/lib/python3.11/site-packages/click/core.py", line 907, in invoke
+2026-07-24T22:15:02.676657566Z [err]      return callback(*args, **kwargs)
+2026-07-24T22:15:02.676662681Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:02.676668536Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 440, in main
+2026-07-24T22:15:02.676732778Z [err]      run(
+2026-07-24T22:15:02.676738348Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/main.py", line 609, in run
+2026-07-24T22:15:02.676743821Z [err]      config.load_app()
+2026-07-24T22:15:02.676751081Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/config.py", line 427, in load_app
+2026-07-24T22:15:02.676756828Z [err]      return import_from_string(self.app)
+2026-07-24T22:15:03.691648186Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:03.691655435Z [err]    File "/usr/local/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+2026-07-24T22:15:03.691662175Z [err]      module = importlib.import_module(module_str)
+2026-07-24T22:15:03.691668435Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:03.691675220Z [err]    File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+2026-07-24T22:15:03.691681752Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2026-07-24T22:15:03.691688457Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:03.691695415Z [err]    File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+2026-07-24T22:15:03.691702191Z [err]    File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+2026-07-24T22:15:03.691707122Z [err]    File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+2026-07-24T22:15:03.691711440Z [err]    File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+2026-07-24T22:15:03.691716799Z [err]    File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+2026-07-24T22:15:03.691721621Z [err]    File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+2026-07-24T22:15:03.691726589Z [err]    File "/app/scraper.py", line 24, in <module>
+2026-07-24T22:15:03.691731845Z [err]      sentry_sdk.init(
+2026-07-24T22:15:03.691736468Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/_init_implementation.py", line 56, in _init
+2026-07-24T22:15:03.691741193Z [err]      client = sentry_sdk.Client(*args, **kwargs)
+2026-07-24T22:15:03.691747304Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:03.691753904Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 517, in __init__
+2026-07-24T22:15:04.688047504Z [err]      self._init_impl()
+2026-07-24T22:15:04.688053508Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/client.py", line 611, in _init_impl
+2026-07-24T22:15:04.688067533Z [err]      self.transport = make_transport(self.options)
+2026-07-24T22:15:04.688074573Z [err]                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:04.688080122Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 1248, in make_transport
+2026-07-24T22:15:04.688089726Z [err]      transport = transport_cls(options)
+2026-07-24T22:15:04.688095653Z [err]                  ^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:04.688101524Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 222, in __init__
+2026-07-24T22:15:04.688107091Z [err]      Transport.__init__(self, options)
+2026-07-24T22:15:04.688113371Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/transport.py", line 113, in __init__
+2026-07-24T22:15:04.688118971Z [err]      self.parsed_dsn = Dsn(options["dsn"], options.get("org_id"))
+2026-07-24T22:15:04.688125598Z [err]                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-07-24T22:15:04.688131788Z [err]    File "/usr/local/lib/python3.11/site-packages/sentry_sdk/utils.py", line 335, in __init__
+2026-07-24T22:15:04.688136935Z [err]      raise BadDsn("Missing public key")
+2026-07-24T22:15:04.688141168Z [err]  sentry_sdk.utils.BadDsn: Missing public key
