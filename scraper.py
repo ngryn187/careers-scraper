@@ -74,7 +74,9 @@ async def security_and_analytics(request: Request, call_next):
         async for chunk in response.body_iterator:
             body += chunk if isinstance(chunk, bytes) else chunk.encode()
         body = body.replace(b"</head>", (GA_TAG + "</head>").encode(), 1)
-        return Response(content=body, status_code=response.status_code, headers=dict(response.headers), media_type="text/html")
+        headers = dict(response.headers)
+        headers.pop("content-length", None)  # remove stale length; will be recalculated
+        return Response(content=body, status_code=response.status_code, headers=headers, media_type="text/html")
     return response
 
 @app.exception_handler(404)
