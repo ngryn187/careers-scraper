@@ -513,9 +513,9 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
                 api_key = row[0]
         else:
             cur.execute("""
-                INSERT INTO api_keys (api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id, active)
-                VALUES (%s, %s, %s, %s, %s, %s, TRUE)
-            """, (api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
+                INSERT INTO api_keys ("key", api_key, email, plan, requests_limit, stripe_customer_id, stripe_session_id, active)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE)
+            """, (api_key, api_key, email, plan, limit, stripe_customer_id, stripe_session_id))
     else:
         # Free signup: deduplicate on email -- reuse the existing key if the user already has one.
         cur.execute("SELECT api_key FROM api_keys WHERE email=%s LIMIT 1", (email,))
@@ -524,9 +524,9 @@ def provision_api_key(email: str, plan: str, stripe_customer_id: str = None, str
             api_key = row[0]
         else:
             cur.execute("""
-                INSERT INTO api_keys (api_key, email, plan, requests_limit, active)
-                VALUES (%s, %s, %s, %s, TRUE)
-            """, (api_key, email, plan, limit))
+                INSERT INTO api_keys ("key", api_key, email, plan, requests_limit, active)
+                VALUES (%s, %s, %s, %s, %s, TRUE)
+            """, (api_key, api_key, email, plan, limit))
     conn.commit()
     cur.close()
     conn.close()
