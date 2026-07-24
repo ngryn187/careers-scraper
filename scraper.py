@@ -46,6 +46,8 @@ STRIPE_PRICES = {
 }
 PLAN_LIMITS = {"free": 25, "starter": 500, "pro": 5000, "business": 50000}
 
+GA_TAG = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-LKSSZ6SK9E"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-LKSSZ6SK9E");</script>'
+
 #  Rate limiting 
 _rate_limit: dict = {}
 RATE_LIMIT_WINDOW = 60
@@ -56,14 +58,23 @@ redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
 app = FastAPI(title="StackSight API", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
 @app.middleware("http")
-async def security_headers(request: Request, call_next):
+async def security_and_analytics(request: Request, call_next):
     response = await call_next(request)
+    # Security headers
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Inject GA4 into all HTML responses
+    ct = response.headers.get("content-type", "")
+    if "text/html" in ct:
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk if isinstance(chunk, bytes) else chunk.encode()
+        body = body.replace(b"</head>", (GA_TAG + "</head>").encode(), 1)
+        return Response(content=body, status_code=response.status_code, headers=dict(response.headers), media_type="text/html")
     return response
 
 @app.exception_handler(404)
