@@ -2301,53 +2301,66 @@ a{background:#a855f7;color:#fff;padding:12px 24px;border-radius:8px;text-decorat
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     payload = await request.body()
     sig = request.headers.get("stripe-signature", "")
+    print(f"[WEBHOOK] Received stripe event. sig present: {bool(sig)}, secret set: {bool(STRIPE_WEBHOOK_SECRET)}, secret prefix: {STRIPE_WEBHOOK_SECRET[:10] if STRIPE_WEBHOOK_SECRET else 'NONE'}")
     try:
         event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
-    except Exception:
+    except stripe.error.SignatureVerificationError as e:
+        print(f"[WEBHOOK] Signature verification failed: {e}")
         raise HTTPException(status_code=400, detail="Invalid signature")
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        email = session.get("customer_details", {}).get("email") or session.get("customer_email")
-        plan = session.get("metadata", {}).get("plan", "pro")
-        customer_id = session.get("customer")
-        session_id = session.get("id")
-        if email:
-            background_tasks.add_task(provision_api_key, email, plan, customer_id, session_id)
+    except Exception as e:
+        print(f"[WEBHOOK] construct_event error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")
+    print(f"[WEBHOOK] Event type: {event['type']}")
+    try:
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+            plan = session.get("metadata", {}).get("plan", "starter")
+            customer_id = session.get("customer")
+            session_id = session.get("id")
+            print(f"[WEBHOOK] checkout.session.completed: email={email}, plan={plan}, customer={customer_id}")
+            if email:
+                background_tasks.add_task(provision_api_key, email, plan, customer_id, session_id)
+            else:
+                print(f"[WEBHOOK] WARNING: no email found in session. customer_details={session.get('customer_details')}")
 
-    elif event["type"] == "invoice.payment_succeeded":
-        # Subscription renewed -- reset usage for this customer
-        invoice = event["data"]["object"]
-        customer_id = invoice.get("customer")
-        billing_reason = invoice.get("billing_reason", "")
-        # Only reset on renewals, not the initial payment (that's handled by checkout.session.completed)
-        if customer_id and billing_reason == "subscription_cycle":
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute(
-                "UPDATE api_keys SET requests_used = 0, usage_reset_at = NOW() WHERE stripe_customer_id = %s AND active = TRUE",
-                (customer_id,)
-            )
-            conn.commit()
-            cur.close(); conn.close()
+        elif event["type"] == "invoice.payment_succeeded":
+            # Subscription renewed -- reset usage for this customer
+            invoice = event["data"]["object"]
+            customer_id = invoice.get("customer")
+            billing_reason = invoice.get("billing_reason", "")
+            # Only reset on renewals, not the initial payment (that's handled by checkout.session.completed)
+            if customer_id and billing_reason == "subscription_cycle":
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute(
+                    "UPDATE api_keys SET requests_used = 0, usage_reset_at = NOW() WHERE stripe_customer_id = %s AND active = TRUE",
+                    (customer_id,)
+                )
+                conn.commit()
+                cur.close(); conn.close()
 
-    elif event["type"] == "customer.subscription.deleted":
-        # Subscription cancelled -- downgrade to free
-        subscription = event["data"]["object"]
-        customer_id = subscription.get("customer")
-        if customer_id:
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute(
-                "UPDATE api_keys SET plan = 'free', requests_limit = 10, requests_used = 0 WHERE stripe_customer_id = %s",
-                (customer_id,)
-            )
-            conn.commit()
-            cur.close(); conn.close()
+        elif event["type"] == "customer.subscription.deleted":
+            # Subscription cancelled -- downgrade to free
+            subscription = event["data"]["object"]
+            customer_id = subscription.get("customer")
+            if customer_id:
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute(
+                    "UPDATE api_keys SET plan = 'free', requests_limit = 10, requests_used = 0 WHERE stripe_customer_id = %s",
+                    (customer_id,)
+                )
+                conn.commit()
+                cur.close(); conn.close()
 
-    elif event["type"] == "invoice.payment_failed":
-        # Payment failed -- leave access for now but could notify user
-        # Stripe will retry; subscription.deleted fires if all retries fail
-        pass
+        elif event["type"] == "invoice.payment_failed":
+            pass
+
+    except Exception as e:
+        print(f"[WEBHOOK] Handler error: {type(e).__name__}: {e}")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Webhook handler error: {str(e)}")
 
     return {"status": "ok"}
 
