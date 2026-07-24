@@ -308,7 +308,7 @@ def verify_api_key(x_api_key: str):
         raise HTTPException(status_code=401, detail="Missing X-API-Key header")
     conn = get_db()
     cur = conn.cursor()
-    cur.execute("SELECT plan, requests_used, requests_limit, active FROM api_keys WHERE api_key=%s", (x_api_key,))
+    cur.execute("SELECT plan, requests_used, requests_limit, active FROM api_keys WHERE api_key=%s OR \"key\"=%s", (x_api_key, x_api_key))
     row = cur.fetchone()
     cur.close()
     conn.close()
@@ -326,8 +326,8 @@ def increment_usage(api_key: str):
     conn = get_db()
     cur = conn.cursor()
     cur.execute(
-        "UPDATE api_keys SET requests_used = requests_used + 1 WHERE api_key=%s RETURNING email, requests_used, requests_limit, alert_80_sent",
-        (api_key,)
+        "UPDATE api_keys SET requests_used = requests_used + 1 WHERE api_key=%s OR \"key\"=%s RETURNING email, requests_used, requests_limit, alert_80_sent",
+        (api_key, api_key)
     )
     row = cur.fetchone()
     conn.commit()
@@ -1731,7 +1731,7 @@ async def dashboard(request: Request, ss_session: str = Cookie(default=None)):
         conn.close()
         return RedirectResponse(url="/login", status_code=302)
     email = row[0]
-    cur.execute("SELECT api_key, plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE", (email,))
+    cur.execute("SELECT COALESCE(api_key, \"key\"), plan, requests_used, requests_limit, created_at, usage_reset_at, stripe_customer_id FROM api_keys WHERE email=%s AND active=TRUE", (email,))
     key_row = cur.fetchone()
     conn.close()
     if not key_row or not key_row[0]:
