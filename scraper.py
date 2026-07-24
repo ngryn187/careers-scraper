@@ -2773,14 +2773,6 @@ async def session_check(request: Request):
         return JSONResponse({"logged_in": True, "email": email})
     return JSONResponse({"logged_in": False})
 
-@app.get("/debug/schema")
-async def debug_schema():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name='api_keys' ORDER BY ordinal_position")
-    cols = cur.fetchall()
-    cur.close(); conn.close()
-    return {"columns": [{"name": c[0], "type": c[1]} for c in cols]}
 
 @app.get("/health")
 async def health():
