@@ -1067,6 +1067,9 @@ async def landing():
 <meta name="twitter:image" content="https://stacksight.org/og-image.png">
 <!-- Schema.org -->
 <script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"Organization","name":"StackSight","url":"https://stacksight.org","logo":"https://stacksight.org/favicon.png","sameAs":["https://x.com/StackSightOrg","https://linkedin.com/company/stacksight"],"contactPoint":{{"@type":"ContactPoint","email":"support@stacksight.org","contactType":"customer support"}}}}
+</script>
+<script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"SoftwareApplication","name":"StackSight","url":"https://stacksight.org","description":"Real-time B2B hiring intent API. Know which companies are actively growing before your competitors do.","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":[{{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"}},{{"@type":"Offer","name":"Pro","price":"49","priceCurrency":"USD","billingIncrement":"P1M"}},{{"@type":"Offer","name":"Business","price":"199","priceCurrency":"USD","billingIncrement":"P1M"}}]}}
 </script>
 <script type="application/ld+json">
@@ -2586,15 +2589,25 @@ async def trending():
         for domain, data in DEMO_DATA.items():
             eng = data.get("engineering_roles", [])
             sales = data.get("sales_roles", [])
+            other = data.get("other_roles", [])
             tech = data.get("detected_tech_stack", [])
+            open_roles = len(eng) + len(sales) + len(other)
+            if open_roles == 0:
+                continue
+            raw_name = data.get("company_name", "")
+            domain_base = domain.split(".")[0].lower()
+            if raw_name and domain_base in raw_name.lower():
+                company_name = raw_name
+            else:
+                company_name = domain.split(".")[0].title()
             results.append({
                 "domain": domain,
-                "company_name": data.get("company_name", domain.split(".")[0].title()),
-                "open_roles": len(eng) + len(sales),
+                "company_name": company_name,
+                "open_roles": open_roles,
                 "eng_count": len(eng),
                 "sales_count": len(sales),
                 "tech": tech[:6],
-                "sample_roles": (eng + sales)[:3],
+                "sample_roles": (eng + sales + other)[:3],
             })
 
     results.sort(key=lambda x: x["open_roles"], reverse=True)
